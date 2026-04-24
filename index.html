@@ -62,7 +62,59 @@
   nav.top ul { display: flex; gap: 32px; list-style: none; }
   nav.top a { opacity: .6; transition: opacity .2s; }
   nav.top a:hover { opacity: 1; }
-  @media (max-width: 720px) { nav.top ul { display: none; } nav.top { padding: 18px 24px; } }
+  nav.top .burger {
+    display: none;
+    background: transparent; border: 1px solid var(--line);
+    padding: 8px 10px; cursor: pointer;
+    flex-direction: column; gap: 4px;
+    width: 36px; height: 32px;
+    align-items: center; justify-content: center;
+  }
+  nav.top .burger span {
+    display: block; width: 16px; height: 1.5px;
+    background: var(--ink); transition: transform .3s, opacity .3s;
+  }
+  nav.top .burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
+  nav.top .burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  nav.top .burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
+  @media (max-width: 720px) {
+    nav.top {
+      padding: 14px 20px;
+      align-items: center;
+    }
+    nav.top .mark { font-size: 10.5px; letter-spacing: .18em; }
+    nav.top .burger { display: flex; }
+    nav.top ul {
+      position: fixed;
+      top: 60px; left: 0; right: 0;
+      flex-direction: column;
+      gap: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .35s cubic-bezier(.2,.6,.2,1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    nav.top ul.open { max-height: 480px; }
+    nav.top ul li {
+      border-bottom: 1px solid var(--line);
+    }
+    nav.top ul li:last-child { border-bottom: none; }
+    nav.top ul a {
+      display: block;
+      padding: 18px 24px;
+      font-size: 12px;
+      letter-spacing: .16em;
+      opacity: 1;
+    }
+    nav.top ul .nav-cv {
+      color: var(--accent);
+    }
+  }
 
   /* =========================================================
      HERO
@@ -86,15 +138,15 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 20%;
-    filter: grayscale(100%) contrast(1.05) brightness(.95);
-    transition: filter .8s cubic-bezier(.2,.6,.2,1), transform 1.2s cubic-bezier(.2,.6,.2,1);
+    object-position: 62% center;
+    filter: none;
+    transition: transform 1.2s cubic-bezier(.2,.6,.2,1);
   }
-  .hero .portrait:hover img { filter: grayscale(0%) contrast(1) brightness(1); transform: scale(1.03); }
+  .hero .portrait:hover img { transform: scale(1.03); }
   .hero .portrait::after {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(11,11,12,0) 40%, rgba(11,11,12,.55) 100%);
+    background: linear-gradient(180deg, rgba(11,11,12,0) 70%, rgba(11,11,12,.25) 100%);
     pointer-events: none;
   }
   .hero .portrait .tag {
@@ -125,36 +177,10 @@
   .hero h1 {
     font-family: var(--serif);
     font-weight: 300;
-    font-size: clamp(48px, 7.6vw, 112px);
-    line-height: .95;
+    font-size: clamp(52px, 8.8vw, 132px);
+    line-height: .93;
     letter-spacing: -.025em;
     font-variation-settings: "opsz" 144, "SOFT" 40;
-  }
-  .hero .greeting {
-    font-family: var(--mono);
-    font-size: 12px; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--muted);
-    margin-bottom: 14px;
-    display: flex; align-items: center; gap: 12px;
-  }
-  .hero .greeting::before {
-    content: ''; display: inline-block;
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--accent);
-    animation: wave 2s ease-in-out infinite;
-  }
-  @keyframes wave {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-3px) scale(1.15); }
-  }
-  .hero .full-name {
-    font-family: var(--mono);
-    font-size: 11px; letter-spacing: .2em;
-    text-transform: uppercase; color: var(--muted);
-    margin-top: 24px;
-    padding-top: 14px;
-    border-top: 1px solid var(--line);
-    max-width: 280px;
   }
   .hero h1 em {
     font-style: italic;
@@ -178,7 +204,34 @@
   .hero .summary { font-size: 15.5px; line-height: 1.65; color: #C9C3B8; max-width: 42ch; }
   .hero .summary b { color: var(--ink); font-weight: 500; }
 
-  .hero .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .hero .chips { display: flex; flex-wrap: wrap; gap: 8px; max-width: 420px; }
+
+  .cv-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-top: 24px;
+    padding: 14px 20px;
+    background: var(--accent);
+    color: #0B0B0C;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .16em;
+    text-transform: uppercase;
+    border: 1px solid var(--accent);
+    transition: all .3s;
+    width: fit-content;
+  }
+  .cv-btn:hover { background: transparent; color: var(--accent); }
+  .cv-btn .ext {
+    padding-left: 10px; margin-left: 2px;
+    border-left: 1px solid currentColor;
+    opacity: .7;
+  }
+  .nav-cv {
+    color: var(--accent) !important;
+    opacity: 1 !important;
+    padding: 6px 12px;
+    border: 1px solid var(--accent);
+    border-radius: 100px;
+  }
+  .nav-cv:hover { background: var(--accent); color: #0B0B0C !important; }
   .hero .chip {
     font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
     text-transform: uppercase;
@@ -189,7 +242,7 @@
   }
 
   .hero-footer {
-    position: absolute; bottom: 30px; left: 0; right: 0;
+    position: absolute; bottom: 30px; left: 40px; right: 40px;
     display: flex; justify-content: space-between; align-items: end;
     font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
     text-transform: uppercase; color: var(--muted);
@@ -205,11 +258,55 @@
   }
 
   @media (max-width: 900px) {
-    .hero { grid-template-columns: 1fr; padding: 120px 0 100px; align-items: start; gap: 32px; }
-    .hero .right { padding-bottom: 0; }
-    .hero .meta-top { position: static; margin-bottom: 20px; }
-    .hero-footer { position: static; margin-top: 40px; }
-    .hero .portrait { max-width: 300px; margin: 0; }
+    .hero {
+      display: flex !important;
+      flex-direction: column;
+      padding: 100px 0 40px;
+      align-items: stretch;
+      gap: 28px;
+      min-height: auto;
+    }
+    .hero .meta-top {
+      position: static !important;
+      top: auto !important;
+      left: auto !important;
+      order: 1;
+      display: flex; flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 14px;
+      margin-bottom: 8px;
+      font-size: 10px;
+    }
+    .hero > div:nth-of-type(2) { order: 2; text-align: center; width: 100%; }
+    .hero > div:nth-of-type(2) h1 { text-align: center; }
+    .hero .portrait { order: 3; max-width: 320px; margin: 0 auto; width: 100%; }
+    .hero .right {
+      order: 4;
+      padding-bottom: 0;
+      text-align: center;
+      align-items: center;
+    }
+    .hero .right .summary { text-align: center; max-width: 480px; margin: 0 auto; }
+    .hero .right .chips { justify-content: center; max-width: 100%; }
+    .hero-footer {
+      position: static !important;
+      left: auto !important; right: auto !important; bottom: auto !important;
+      order: 5;
+      margin-top: 24px;
+      padding: 20px 0 0;
+      border-top: 1px solid var(--line);
+    }
+    .hero .chips { max-width: 100%; }
+    .cv-btn { width: 100%; justify-content: center; }
+  }
+  @media (max-width: 560px) {
+    .hero h1 { font-size: clamp(42px, 13vw, 64px); }
+    .hero { padding: 110px 0 40px; }
+    .hero .summary { font-size: 15px; }
+    .hero .portrait { max-width: 280px; }
+    .hero .meta-top { font-size: 9.5px; gap: 6px 12px; }
+    nav.top { padding: 12px 18px; }
+    nav.top .mark { font-size: 10px; letter-spacing: .15em; }
   }
 
   /* =========================================================
@@ -288,9 +385,10 @@
     position: relative;
     overflow: hidden;
     transition: transform .5s cubic-bezier(.2,.6,.2,1), border-color .3s;
-    cursor: default;
+    cursor: pointer;
     min-height: 440px;
     display: flex; flex-direction: column;
+    color: inherit; text-decoration: none;
   }
   .project .p-body { padding: 28px 36px 36px; display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
   .project .p-visual {
@@ -400,7 +498,7 @@
     transition: gap .25s;
   }
   .project .p-link:hover { gap: 14px; }
-  .project .p-link::after { content: '→'; }
+  .project .p-link::after { content: ''; }
 
   /* Decorative corner mark */
   .project::after {
@@ -500,11 +598,35 @@
 
   .certs { display: flex; flex-direction: column; }
   .cert {
-    display: grid; grid-template-columns: 32px 1fr auto; gap: 18px;
+    display: grid; grid-template-columns: 32px 1fr auto auto; gap: 18px;
     padding: 18px 0;
     border-top: 1px solid var(--line);
     align-items: center;
+    color: var(--ink);
+    position: relative;
+    transition: padding-left .25s cubic-bezier(.2,.6,.2,1), background .25s;
   }
+  .cert::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform .3s cubic-bezier(.2,.6,.2,1);
+  }
+  .cert:hover { padding-left: 16px; }
+  .cert:hover::before { transform: scaleY(1); }
+  .cert:hover .cert-arrow { opacity: 1; transform: translate(2px, -2px); }
+  .cert:hover .title { color: var(--accent); }
+  .cert .cert-arrow {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--muted);
+    opacity: .4;
+    transition: opacity .25s, transform .25s, color .25s;
+  }
+  .cert:hover .cert-arrow { color: var(--accent); }
   .cert:last-child { border-bottom: 1px solid var(--line); }
   .cert .n {
     font-family: var(--mono); font-size: 11px; color: var(--muted);
@@ -517,8 +639,9 @@
     white-space: nowrap;
   }
   @media (max-width: 600px) {
-    .cert { grid-template-columns: 24px 1fr; }
+    .cert { grid-template-columns: 24px 1fr auto; }
     .cert .yr { grid-column: 2; font-size: 10px; }
+    .cert .cert-arrow { grid-column: 3; grid-row: 1; }
   }
 
   /* =========================================================
@@ -533,6 +656,10 @@
     font-variation-settings: "opsz" 144, "SOFT" 40;
   }
   .contact h2 em { font-style: italic; color: var(--accent); font-variation-settings: "opsz" 144, "SOFT" 100; }
+  .contact .contact-sub {
+    font-family: var(--sans); font-size: 17px; line-height: 1.6;
+    color: #B8B2A6; max-width: 54ch; margin-top: 28px;
+  }
   .contact .email {
     font-family: var(--serif); font-weight: 300;
     font-size: clamp(22px, 2.8vw, 34px);
@@ -554,8 +681,15 @@
     display: inline-flex; align-items: center; gap: 10px;
     transition: color .25s;
   }
-  .contact .link:hover { color: var(--ink); }
-  .contact .link::after { content: '↗'; color: var(--accent); }
+  .contact .link .link-ico {
+    flex-shrink: 0;
+    color: var(--accent);
+    opacity: .9;
+    transition: opacity .25s, transform .25s;
+  }
+  .contact a.link:hover { color: var(--ink); }
+  .contact a.link:hover .link-ico { opacity: 1; transform: translate(-1px, -1px); }
+  .contact a.link::after { content: '↗'; color: var(--accent); margin-left: 2px; }
 
   /* =========================================================
      FOOTER
@@ -629,12 +763,16 @@
      ========================================================= -->
 <nav class="top">
   <div class="mark"><span class="dot"></span>Elvino Dwi Saputra</div>
-  <ul>
+  <button class="burger" id="burger" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <ul id="nav-menu">
     <li><a href="#work">Work</a></li>
     <li><a href="#organization">Organization</a></li>
     <li><a href="#projects">Projects</a></li>
     <li><a href="#skills">Skills</a></li>
     <li><a href="#contact">Contact</a></li>
+    <li><a class="nav-cv" href="assets/Elvino-Dwi-Saputra-CV.pdf" download="Elvino-Dwi-Saputra-CV.pdf">CV ↓</a></li>
   </ul>
 </nav>
 
@@ -649,37 +787,39 @@
   </div>
 
   <div>
-    <div class="greeting">Hi, I'm</div>
     <h1>
-      <em>Vino</em> —<br>
-      nice to<br>
-      meet you.
+      Elvino<br>
+      Dwi <em>Saputra</em>
     </h1>
-    <div class="full-name">Elvino Dwi Saputra</div>
   </div>
 
   <div class="portrait">
     <span class="portrait-corner"></span>
-    <img src="assets/elvino-portrait.jpg" alt="Elvino Dwi Saputra" loading="eager">
+    <img src="assets/elvino-portrait.png" alt="Elvino Dwi Saputra — Progress, not perfection" loading="eager">
     <span class="tag">Jakarta · 2025</span>
   </div>
 
   <div class="right">
     <div class="role">Generative AI Developer</div>
     <p class="summary">
-      I build AI systems that make data <b>actually useful</b>. These days I spend most of my time at <b>Astra International</b> — turning messy enterprise data into decisions people can act on. One of the things I built now runs across <b>14 regions</b> and cut analysis time by <b>97%</b>. I love problems that sit somewhere between research and production.
+      Hey — I'm Vino. I build AI stuff that makes data <b>actually useful</b>. Most days you'll find me at <b>Astra International</b>, helping messy enterprise data turn into answers people can act on. One thing I built quietly runs across <b>14 regions</b> now, and shaved <b>97%</b> off the time it used to take. Honestly? I just really enjoy the weird middle-ground between research papers and production code.
     </p>
     <div class="chips">
       <span class="chip">Generative AI</span>
       <span class="chip">RAG</span>
       <span class="chip">Agentic AI</span>
       <span class="chip">LangChain</span>
+      <span class="chip">Mobile · Kotlin</span>
       <span class="chip">Python · SQL</span>
-      <span class="chip">GCP · Docker</span>
     </div>
+    <a class="cv-btn" href="assets/Elvino-Dwi-Saputra-CV.pdf" download="Elvino-Dwi-Saputra-CV.pdf">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Download CV</span>
+      <span class="ext">PDF</span>
+    </a>
   </div>
 
-  <div class="hero-footer wrap" style="max-width:1240px; left:40px; right:40px;">
+  <div class="hero-footer" style="max-width:1240px; margin: 0 auto;">
     <div class="scroll"><span class="scroll-line"></span> Scroll</div>
     <span>Cum Laude · GPA 3.82</span>
   </div>
@@ -865,8 +1005,8 @@
         </div>
       </article>
 
-      <!-- Project 3: Broom Bot — Chat / motor icon -->
-      <article class="project reveal">
+      <!-- Project 3: Broom Bot -->
+      <a class="project reveal" href="https://s.id/broom-bot" target="_blank" rel="noopener">
         <div class="p-visual">
           <svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="38" cy="78" r="14" />
@@ -900,13 +1040,13 @@
             <div class="p-stats">
               <div class="stat"><div class="n">70<em>%</em></div><div class="l">Faster booking</div></div>
             </div>
-            <a class="p-link" href="https://s.id/broom-bot" target="_blank" rel="noopener">s.id/broom-bot</a>
+            <span class="p-link">s.id/broom-bot ↗</span>
           </div>
         </div>
-      </article>
+      </a>
 
       <!-- Project 4: E-Mufassir (Featured) — Book / crescent icon -->
-      <article class="project featured reveal">
+      <a class="project featured reveal" href="https://e-mufassir.com" target="_blank" rel="noopener">
         <div class="p-visual">
           <svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 30 L60 22 L60 98 L22 104 Z" />
@@ -945,13 +1085,13 @@
               <div class="stat"><div class="n">100<em>+</em></div><div class="l">Active users</div></div>
               <div class="stat"><div class="n">2</div><div class="l">Platforms</div></div>
             </div>
-            <a class="p-link" href="https://e-mufassir.com" target="_blank" rel="noopener">e-mufassir.com</a>
+            <span class="p-link">e-mufassir.com ↗</span>
           </div>
         </div>
-      </article>
+      </a>
 
       <!-- Project 5: OPet — Paw + stethoscope -->
-      <article class="project reveal">
+      <a class="project reveal" href="https://youtu.be/PYU9eeMu6Xc" target="_blank" rel="noopener">
         <div class="p-visual">
           <svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
             <ellipse cx="60" cy="78" rx="18" ry="14" fill="currentColor" stroke="none"/>
@@ -981,12 +1121,12 @@
               <span class="p-tag">Capstone</span>
             </div>
           </div>
-          <a class="p-link" href="https://youtu.be/PYU9eeMu6Xc" target="_blank" rel="noopener">Watch demo · YouTube</a>
+          <span class="p-link">Watch demo · YouTube ↗</span>
         </div>
-      </article>
+      </a>
 
       <!-- Project 6: Football School — Soccer ball icon -->
-      <article class="project reveal">
+      <a class="project reveal" href="https://youtu.be/QxZAYQPUrew" target="_blank" rel="noopener">
         <div class="p-visual">
           <svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="60" cy="60" r="30" />
@@ -1016,9 +1156,9 @@
               <span class="p-tag">UX</span>
             </div>
           </div>
-          <a class="p-link" href="https://youtu.be/QxZAYQPUrew" target="_blank" rel="noopener">Watch demo · YouTube</a>
+          <span class="p-link">Watch demo · YouTube ↗</span>
         </div>
-      </article>
+      </a>
 
       <!-- (Bookstore project removed) -->
 
@@ -1127,36 +1267,42 @@
 
       <div class="reveal">
         <div class="certs">
-          <div class="cert">
+          <a class="cert" href="https://www.credly.com/badges/6fb79539-6ee1-4f1e-850b-82fb51164d01/public_url" target="_blank" rel="noopener">
             <span class="n">01</span>
             <span class="title">Google Cloud Associate Cloud Engineer <span class="by">— Google</span></span>
             <span class="yr">Feb 2026 — Feb 2029</span>
-          </div>
-          <div class="cert">
+            <span class="cert-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="cert" href="https://catalog-education.oracle.com/ords/certview/sharebadge?id=7FBEF9C6DC946BF05723A1C7E3CA301AE743EAAAD004DFD918BC2353E61A4D6A" target="_blank" rel="noopener">
             <span class="n">02</span>
             <span class="title">OCI Generative AI Professional <span class="by">— Oracle</span></span>
             <span class="yr">Jan 2026 — Jan 2028</span>
-          </div>
-          <div class="cert">
+            <span class="cert-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="cert" href="https://www.udemy.com/certificate/UC-bce2da6b-8dc7-409c-b210-ab337ac73b5c/" target="_blank" rel="noopener">
             <span class="n">03</span>
             <span class="title">The Complete Agentic AI Engineering <span class="by">— Udemy</span></span>
             <span class="yr">Sep 2025</span>
-          </div>
-          <div class="cert">
+            <span class="cert-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="cert" href="https://www.credly.com/badges/765ac610-f7aa-4821-8368-aab555113d82/public_url" target="_blank" rel="noopener">
             <span class="n">04</span>
             <span class="title">GenAI Apps with Gemini &amp; Streamlit <span class="by">— Google</span></span>
             <span class="yr">Jul 2025</span>
-          </div>
-          <div class="cert">
+            <span class="cert-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="cert" href="https://dev.id/certificate/verify/JE0PQYOW75" target="_blank" rel="noopener">
             <span class="n">05</span>
             <span class="title">Dev Certification for Android (DCA) <span class="by">— dev.id</span></span>
             <span class="yr">Mar 2025 — Mar 2028</span>
-          </div>
-          <div class="cert">
+            <span class="cert-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="cert" href="https://drive.google.com/file/d/1-OxU5yZNWc3zpY5CLzcWgmg917bWNJH3/view?usp=drive_link" target="_blank" rel="noopener">
             <span class="n">06</span>
             <span class="title">Mobile Development Distinction Graduate <span class="by">— Bangkit Academy</span></span>
             <span class="yr">Jul 2023</span>
-          </div>
+            <span class="cert-arrow" aria-hidden="true">↗</span>
+          </a>
         </div>
       </div>
     </div>
@@ -1169,12 +1315,31 @@
 <section class="wrap contact" id="contact" data-screen-label="06 Contact">
   <div class="reveal">
     <div class="section-label" style="margin-bottom:32px;">§ 05 — Let's talk</div>
-    <h2>Got a data<br>problem <em>worth solving?</em></h2>
+    <h2>Got a data problem<br>worth <em>solving?</em></h2>
+    <p class="contact-sub">Or just want to chat about gen AI, RAG, or weird data pipelines? Let's talk — I'm easy to reach.</p>
     <a class="email" href="mailto:elvino.rgt15@gmail.com">elvino.rgt15@gmail.com</a>
     <div class="links">
-      <a class="link" href="https://linkedin.com/in/el-vino" target="_blank" rel="noopener">LinkedIn</a>
-      <a class="link" href="tel:+6281228214558">+62 812-2821-4558</a>
-      <span class="link" style="color:var(--muted);">◆ Jakarta, Indonesia</span>
+      <a class="link" href="https://linkedin.com/in/el-vino" target="_blank" rel="noopener">
+        <svg class="link-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/>
+          <rect x="2" y="9" width="4" height="12"/>
+          <circle cx="4" cy="4" r="2"/>
+        </svg>
+        <span>LinkedIn</span>
+      </a>
+      <a class="link" href="https://github.com/elvino1110" target="_blank" rel="noopener">
+        <svg class="link-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+        </svg>
+        <span>GitHub</span>
+      </a>
+      <span class="link" style="color:var(--muted);">
+        <svg class="link-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        <span>Jakarta, Indonesia</span>
+      </span>
     </div>
   </div>
 </section>
@@ -1222,6 +1387,29 @@
 </div>
 
 <script>
+  /* ---------- Mobile burger menu ---------- */
+  (function(){
+    const burger = document.getElementById('burger');
+    const menu = document.getElementById('nav-menu');
+    if (!burger || !menu) return;
+    const close = () => {
+      burger.setAttribute('aria-expanded', 'false');
+      menu.classList.remove('open');
+    };
+    burger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = burger.getAttribute('aria-expanded') === 'true';
+      burger.setAttribute('aria-expanded', String(!open));
+      menu.classList.toggle('open', !open);
+    });
+    menu.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') close();
+    });
+    document.addEventListener('click', (e) => {
+      if (!menu.contains(e.target) && !burger.contains(e.target)) close();
+    });
+  })();
+
   /* ---------- Tweak defaults (persisted) ---------- */
   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     "accent": "#C9A46B",
