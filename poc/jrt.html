@@ -1,0 +1,1085 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!-- Layout: real 3D warehouse scene (three.js, meters to scale) on top, bin chip list as accessible index,
+     then arrival flow (search options -> choose -> confirm), lane-level detail with true side elevation,
+     and the standalone capacity calculator -->
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Simulator Bin JRT</title>
+<style>
+  :root{
+    --bg:#e9e6df; --surface:#ffffff; --surface-2:#f3f1ea; --ink:#23211d; --ink-dim:#6b665c;
+    --line:#cfc9ba; --accent:#c8731f; --accent-ink:#ffffff;
+    --besar:#2f6f6b; --sedang:#8a6d1f; --kecil:#a0432e; --mix:#5a4a8a;
+    --ok:#2f7a3d; --warn:#b5831a; --crit:#b0392f; --info:#2f62a8;
+    --floor:#d9d5cb; --paint:#d9a21b; --pillar:#9c968a;
+    --roll:#ece4d2; --roll-hi:#faf6ec; --roll-shade:#c9bea6; --core:#8a6a45;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --display: "Oswald", var(--body);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1a1915; --surface:#242320; --surface-2:#2c2b26; --ink:#eae6db; --ink-dim:#a8a397;
+      --line:#45423a; --accent:#e08a3c; --accent-ink:#1a1915;
+      --besar:#5aa39e; --sedang:#cda63f; --kecil:#d4745c; --mix:#9a8ad0;
+      --ok:#5bbf6c; --warn:#dba93a; --crit:#e2625a; --info:#6f9be0;
+      --floor:#34322c; --paint:#c99a2a; --pillar:#5d5950;
+      --roll:#d8cfbb; --roll-hi:#ece5d4; --roll-shade:#a89d86; --core:#7a5d3c;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1a1915; --surface:#242320; --surface-2:#2c2b26; --ink:#eae6db; --ink-dim:#a8a397;
+    --line:#45423a; --accent:#e08a3c; --accent-ink:#1a1915;
+    --besar:#5aa39e; --sedang:#cda63f; --kecil:#d4745c; --mix:#9a8ad0;
+    --ok:#5bbf6c; --warn:#dba93a; --crit:#e2625a; --info:#6f9be0;
+    --floor:#34322c; --paint:#c99a2a; --pillar:#5d5950;
+    --roll:#d8cfbb; --roll-hi:#ece5d4; --roll-shade:#a89d86; --core:#7a5d3c;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--ink); font-family:var(--body); margin:0; line-height:1.5}
+  body{padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px))}
+  .wrap{max-width:1120px; margin:0 auto; padding-block:28px 60px}
+  h1,h2,h3{font-family:var(--display); font-weight:600; text-transform:uppercase; letter-spacing:.02em; text-wrap:balance; margin:0}
+  h1{font-size:1.5rem}
+  h2{font-size:1.05rem; color:var(--ink-dim); letter-spacing:.08em; margin-bottom:4px}
+  h3{font-size:.95rem; letter-spacing:.04em}
+  p{margin:0}
+  .eyebrow{font-family:var(--mono); font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+  .lede{color:var(--ink-dim); font-size:.92rem; max-width:66ch}
+  header.top{display:flex; flex-direction:column; gap:6px; margin-bottom:18px}
+
+  .banner{background:var(--surface-2); border:1px solid var(--line); border-left:4px solid var(--warn); border-radius:6px; padding:12px 14px; font-size:.86rem; margin-block:16px 24px; display:flex; gap:10px}
+  .banner b{color:var(--warn)}
+
+  section{margin-top:34px}
+  .section-head{display:flex; flex-direction:column; gap:3px; margin-bottom:14px}
+  .layout{display:grid; grid-template-columns: 1.25fr 1fr; gap:18px; align-items:start}
+  @media (max-width: 820px){ .layout{grid-template-columns:1fr} }
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px; min-width:0}
+
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:.76rem; color:var(--ink-dim); margin-bottom:12px}
+  .legend span{display:inline-flex; align-items:center; gap:6px}
+  .sw{width:10px; height:10px; border-radius:2px; display:inline-block; flex:none}
+
+  /* 3D scene */
+  .scene-wrap{position:relative; border-radius:10px; overflow:hidden; border:1px solid var(--line); background:var(--bg)}
+  .scene3d{height:520px; width:100%; touch-action:none}
+  .scene3d canvas{display:block}
+  @media (max-width:640px){ .scene3d{height:380px} }
+  .scene-ctrl{position:absolute; top:10px; left:10px; display:flex; gap:6px; flex-wrap:wrap; right:10px}
+  .scene-ctrl button{background:color-mix(in srgb, var(--surface) 90%, transparent)}
+  .scene-hint{position:absolute; bottom:8px; left:10px; right:10px; font-size:.7rem; color:var(--ink-dim); pointer-events:none}
+  .scene-fallback{padding:40px 20px; text-align:center; color:var(--ink-dim); font-size:.86rem}
+
+  /* bin chips */
+  .chips{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px}
+  @media (max-width:820px){ .chips{grid-template-columns:repeat(2,1fr)} }
+  .chip-line{background:var(--surface-2); border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:5px; min-width:0}
+  .chip-line .ln{font-family:var(--mono); font-size:.66rem; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.06em}
+  .chip{display:flex; justify-content:space-between; align-items:center; gap:6px; text-align:left; font-family:var(--mono); font-size:.7rem; font-weight:500; padding:5px 7px; border-radius:6px; min-width:0}
+  .chip .l{display:inline-flex; align-items:center; gap:6px; font-weight:600; flex:none}
+  .chip .r{color:var(--ink-dim); display:flex; flex-direction:column; align-items:flex-end; min-width:0; text-align:right}
+  .chip .r span{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%}
+  .chip .r b{color:var(--ink); font-weight:600}
+  .chip.selected{outline:2px solid var(--accent); outline-offset:1px}
+  .chip.allocated{box-shadow:0 0 0 2px var(--ok) inset}
+  .chip.cand{box-shadow:0 0 0 2px color-mix(in srgb, var(--info) 45%, transparent) inset}
+  .chip.chosen{box-shadow:0 0 0 2px var(--info) inset}
+
+  /* detail */
+  .detail-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap}
+  .pill{font-family:var(--mono); font-size:.7rem; letter-spacing:.03em; padding:3px 8px; border-radius:20px; color:#fff; white-space:nowrap}
+  .pill.code{background:var(--surface); color:var(--ink); border:1px solid var(--line); display:inline-flex; align-items:center; gap:6px}
+  .lane-card{background:var(--surface-2); border-radius:8px; padding:10px 12px; margin-top:12px}
+  .lane-head{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap}
+  .lane-head b{font-family:var(--mono); font-size:.8rem}
+  .lane-head .pct{font-family:var(--mono); font-size:1.15rem; font-weight:600; font-variant-numeric:tabular-nums}
+  .spec-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-block:6px; font-family:var(--mono); font-size:.76rem}
+  .spec-grid div{background:var(--surface); border-radius:6px; padding:6px 9px; border:1px solid var(--line)}
+  .spec-grid .k{color:var(--ink-dim); font-size:.62rem; text-transform:uppercase; letter-spacing:.05em; display:block; margin-bottom:2px}
+  .spec-grid .v{font-size:.88rem; font-variant-numeric:tabular-nums}
+
+  .split-bar{display:flex; height:22px; border-radius:6px; overflow:hidden; border:1px solid var(--line); margin-top:10px; font-family:var(--mono); font-size:.66rem}
+  .split-bar > div{flex:1; position:relative; background:var(--surface-2); display:flex; align-items:center; justify-content:center}
+  .split-bar > div + div{border-left:2px dashed var(--paint)}
+  .split-bar i{position:absolute; left:0; top:0; bottom:0; opacity:.55}
+  .split-bar span{position:relative}
+
+  .sv-title{font-family:var(--mono); font-size:.64rem; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.05em; margin-top:10px; display:flex; justify-content:space-between; gap:6px}
+  .side-view{position:relative; height:140px; display:flex; align-items:flex-end; gap:3px; padding:0 6px 18px; border-bottom:2px solid var(--pillar); overflow-x:auto; overflow-y:hidden}
+  .limit-line{position:absolute; left:0; right:0; border-top:1px dashed var(--crit); font-family:var(--mono); font-size:.56rem; color:var(--crit); text-align:right; padding-right:4px; line-height:1.4}
+  .sv-col{display:flex; flex-direction:column-reverse; gap:1px; align-items:center; position:relative; flex:none}
+  .sv-roll{border-radius:3px; position:relative; border:1px solid color-mix(in srgb, var(--ink) 22%, transparent); overflow:hidden}
+  .sv-roll .band{position:absolute; left:0; right:0; top:16%; height:13%}
+  .sv-roll .new-dot{position:absolute; top:3px; right:3px; width:6px; height:6px; border-radius:50%; background:var(--accent)}
+  .sv-roll.off{border:1px dashed var(--line); background:transparent}
+  .sv-idx{position:absolute; bottom:-17px; font-family:var(--mono); font-size:.58rem; color:var(--ink-dim)}
+
+  .btn-row{display:flex; gap:7px; margin-top:10px; flex-wrap:wrap}
+  button{font-family:var(--body); font-size:.8rem; font-weight:600; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:7px; padding:7px 11px; cursor:pointer}
+  button.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  button:disabled{opacity:.45; cursor:not-allowed}
+  button:focus-visible, input:focus-visible, select:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  button.linkish{border:none; background:none; padding:0; font-family:var(--mono); font-weight:600; color:var(--info); text-decoration:underline; text-underline-offset:2px; font-size:.82rem}
+
+  .msg{font-size:.8rem; border-radius:6px; padding:8px 10px; margin-top:10px; display:none}
+  .msg.show{display:block}
+  .msg.ok{background:color-mix(in srgb, var(--ok) 16%, transparent); color:var(--ok)}
+  .msg.warn{background:color-mix(in srgb, var(--warn) 18%, transparent); color:var(--warn)}
+  .msg.crit{background:color-mix(in srgb, var(--crit) 16%, transparent); color:var(--crit)}
+  .msg.info{background:color-mix(in srgb, var(--info) 14%, transparent); color:var(--info)}
+
+  /* arrival options */
+  .opt-head{font-size:.88rem; margin-top:14px}
+  .opt-table th, .opt-table td{white-space:nowrap}
+  .opt-table td.note-cell{white-space:normal; min-width:180px; font-size:.76rem; color:var(--ink-dim)}
+  .opt-table input[type=number]{width:72px; font-family:var(--mono); font-size:.84rem; padding:5px 6px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink)}
+  .opt-table input[type=checkbox]{width:16px; height:16px; accent-color:var(--info)}
+  .opt-table tr.on td{background:color-mix(in srgb, var(--info) 8%, transparent)}
+  .kind{font-family:var(--mono); font-size:.66rem; padding:2px 7px; border-radius:20px; border:1px solid currentColor}
+  .kind.same{color:var(--ok)} .kind.empty{color:var(--ink-dim)} .kind.split{color:var(--warn)} .kind.demote{color:var(--crit)}
+  .opt-foot{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px; padding-top:10px; border-top:1px solid var(--line)}
+  .opt-total{font-family:var(--mono); font-size:.84rem}
+
+  .calc-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
+  @media (max-width:820px){ .calc-grid{grid-template-columns:repeat(2,1fr)} }
+  .field{display:flex; flex-direction:column; gap:4px; min-width:0}
+  .field label{font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-dim)}
+  .field input, .field select{font-family:var(--mono); font-size:.88rem; padding:7px 8px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); min-width:0}
+  table{width:100%; border-collapse:collapse; font-size:.82rem; margin-top:14px}
+  thead th{text-align:left; font-family:var(--mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-dim); border-bottom:1px solid var(--line); padding:6px 8px}
+  tbody td{padding:7px 8px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  .tbl-wrap{overflow-x:auto}
+  .note{font-size:.78rem; color:var(--ink-dim); margin-top:10px}
+  code{font-family:var(--mono); background:var(--surface-2); padding:1px 5px; border-radius:4px; font-size:.85em}
+  ol.steps{margin:0; padding-left:18px; font-size:.86rem; display:flex; flex-direction:column; gap:3px}
+  footer{margin-top:40px; font-size:.74rem; color:var(--ink-dim)}
+  @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<div class="wrap">
+
+  <header class="top">
+    <span class="eyebrow">PPIC &middot; Raw Material Warehouse</span>
+    <h1>Simulator Bin Jumbo Roll Tissue</h1>
+    <p class="lede">Gudang Line A&ndash;H dalam 3D, skala meter asli. Roll berdiri tegak, ditumpuk ke atas, berjajar ke belakang sedalam 8,10m. Bin hanya pecah jadi A/B kalau ada 2 no material berbeda di bin yang sama.</p>
+  </header>
+
+  <div class="banner">
+    <span>&#9888;</span>
+    <span><b>Working assumption, belum final.</b> Lebar bin efektif 2,4m (2&times;1,2m setelah koridor), tumpuk 2 untuk besar/sedang dan 3 untuk kecil, tinggi roll ilustratif (besar 2,8m &middot; sedang 2,6m &middot; kecil 1,9m) supaya tumpukan tidak lewat batas 6m.</span>
+  </div>
+
+  <section id="warehouse">
+    <div class="section-head">
+      <h2>Layout gudang 3D &mdash; Line A&ndash;H</h2>
+      <h3>A = mix &middot; B&ndash;D = besar &middot; E&ndash;F = sedang &middot; G&ndash;H = kecil</h3>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--besar)"></i>Pita warna di roll = no material</span>
+      <span><i class="sw" style="background:var(--accent)"></i>Lantai oranye = bin terpilih</span>
+      <span><i class="sw" style="background:var(--info)"></i>Lantai biru = opsi slot (biru tua = dipilih)</span>
+      <span><i class="sw" style="background:var(--ok)"></i>Lantai hijau = baru diisi</span>
+      <span><i class="sw" style="background:var(--paint)"></i>Garis putus di tengah = bin pecah A/B</span>
+    </div>
+    <div class="scene-wrap">
+      <div id="scene3d" class="scene3d" role="img" aria-label="Tampilan 3D gudang jumbo roll Line A sampai H"></div>
+      <div class="scene-ctrl" id="scene-ctrl">
+        <button id="view-overview" type="button">Overview</button>
+        <button id="view-front" type="button">Tampak depan</button>
+        <button id="view-focus" type="button">Fokus bin terpilih</button>
+      </div>
+      <div class="scene-hint" id="scene-hint">Drag untuk putar &middot; scroll / pinch untuk zoom &middot; klik roll atau lantai bin untuk lihat detail</div>
+      <div class="scene-fallback" id="scene-fallback" hidden>Tampilan 3D tidak bisa dimuat di perangkat ini. Pilih bin dari daftar di bawah &mdash; semua simulasi tetap jalan.</div>
+    </div>
+    <div class="chips" id="bin-chips"></div>
+  </section>
+
+  <section id="arrival">
+    <div class="section-head">
+      <h2>Kedatangan jumbo roll baru</h2>
+      <h3>1. Cari slot &rarr; 2. Pilih bin (boleh lebih dari satu) &rarr; 3. Konfirmasi masuk</h3>
+    </div>
+    <div class="panel">
+      <div class="calc-grid">
+        <div class="field">
+          <label for="arr-diameter">Diameter roll datang</label>
+          <select id="arr-diameter">
+            <option value="besar">2000mm &mdash; besar</option>
+            <option value="sedang">1350mm &mdash; sedang</option>
+            <option value="kecil" selected>1150mm &mdash; kecil</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="arr-material">No material</label>
+          <select id="arr-material"></select>
+        </div>
+        <div class="field">
+          <label for="arr-qty">Jumlah roll datang</label>
+          <input id="arr-qty" type="number" value="30" min="1" max="500" step="1">
+        </div>
+        <div class="field" style="justify-content:flex-end; flex-direction:row; gap:6px; align-items:flex-end">
+          <button id="btn-search" class="primary" type="button">Cari slot</button>
+          <button id="btn-reset-all" type="button">Reset gudang</button>
+        </div>
+      </div>
+      <div id="arrival-options"></div>
+      <div id="arrival-result"></div>
+    </div>
+  </section>
+
+  <section id="detail-calc">
+    <div class="layout">
+      <div class="panel" id="detail-panel"></div>
+
+      <div class="panel">
+        <h3 style="margin-bottom:10px">Kalkulator kapasitas</h3>
+        <div class="calc-grid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="field">
+            <label for="calc-diameter">Diameter (mm)</label>
+            <select id="calc-diameter">
+              <option value="2000">2000 &mdash; besar</option>
+              <option value="1350">1350 &mdash; sedang</option>
+              <option value="1150" selected>1150 &mdash; kecil</option>
+              <option value="custom">custom&hellip;</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="calc-diameter-custom">Diameter custom (mm)</label>
+            <input id="calc-diameter-custom" type="number" value="1150" min="300" max="2500" step="10">
+          </div>
+          <div class="field">
+            <label for="calc-width">Lebar bin efektif (m)</label>
+            <input id="calc-width" type="number" value="2.4" min="0.5" max="6" step="0.1">
+          </div>
+          <div class="field">
+            <label for="calc-depth">Kedalaman bin (m)</label>
+            <input id="calc-depth" type="number" value="8.10" min="1" max="20" step="0.05">
+          </div>
+          <div class="field">
+            <label for="calc-layers">Jumlah tumpuk</label>
+            <input id="calc-layers" type="number" value="3" min="1" max="4" step="1">
+          </div>
+        </div>
+        <div class="spec-grid" style="grid-template-columns:repeat(3,1fr); margin-top:14px">
+          <div><span class="k">Lane (berdampingan)</span><span class="v" id="out-across">&mdash;</span></div>
+          <div><span class="k">Ke belakang</span><span class="v" id="out-deep">&mdash;</span></div>
+          <div><span class="k">Kapasitas/bin</span><span class="v" id="out-cap">&mdash;</span></div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Diameter</th><th>Lane</th><th>Belakang</th><th>Tumpuk</th><th>Kapasitas</th></tr></thead>
+            <tbody id="compare-body"></tbody>
+          </table>
+        </div>
+        <p class="note">Kapasitas = lane &times; ke belakang &times; tumpuk. Contoh besar: 1 &times; 4 &times; 2 = 8 roll. Kalau bin kecil pecah A/B, tiap sub-bin dapat setengahnya (1 lane).</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="fifo-explainer">
+    <div class="section-head"><h2>Rule &ldquo;ambil dari depan&rdquo;</h2></div>
+    <div class="panel" style="font-size:.88rem; display:flex; flex-direction:column; gap:8px">
+      <p>Roll tidak bergeser sendiri. Begitu roll paling depan diambil, posisi depan jadi kosong (<b>gap depan</b>) dan sisa roll lama tetap diam di belakang.</p>
+      <p>Kalau no material yang sama datang lagi, stok lama <b>harus dimajukan dulu</b> menutup gap, baru stok baru disusun di belakangnya. Di daftar opsi slot, ini muncul sebagai catatan &ldquo;majukan N posisi dulu&rdquo; &mdash; effort forklift yang tidak tercatat di SAP.</p>
+    </div>
+  </section>
+
+  <footer>Line, no material, tinggi roll dan dimensi bin adalah data ilustratif untuk simulasi &mdash; lihat Section 9.11 dokumen proses untuk status konfirmasi lapangan.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ================= model ================= */
+  var MATERIALS = {
+    besar:  { label:"Besar",  diameter:2.0,  height:2.8, tumpuk:2, color:"var(--besar)",  token:"--besar"  },
+    sedang: { label:"Sedang", diameter:1.35, height:2.6, tumpuk:2, color:"var(--sedang)", token:"--sedang" },
+    kecil:  { label:"Kecil",  diameter:1.15, height:1.9, tumpuk:3, color:"var(--kecil)",  token:"--kecil"  }
+  };
+  var NO_MATERIAL = { besar:["BES-01","BES-02"], sedang:["SED-01","SED-02"], kecil:["KEC-01","KEC-02","KEC-03"] };
+  var MAT_SHADE = { "BES-01":1, "BES-02":0.6, "SED-01":1, "SED-02":0.6, "KEC-01":1, "KEC-02":0.7, "KEC-03":0.45 };
+  var BIN_WIDTH = 2.4, DEPTH = 8.10, LINE_GAP = 1.6;
+  // all bins share the same 2.4m x 8.10m footprint, so any empty bin from another line can be force-used;
+  // order = which other line to sacrifice first (closest size first, keep big-roll lines for big rolls)
+  var DEMOTE_ORDER = { kecil:["sedang","besar"], sedang:["kecil","besar"], besar:["sedang","kecil"] };
+  var LINES = [
+    { line:"A", allowed:["besar","kecil"], mix:true },
+    { line:"B", allowed:["besar"] }, { line:"C", allowed:["besar"] }, { line:"D", allowed:["besar"] },
+    { line:"E", allowed:["sedang"] }, { line:"F", allowed:["sedang"] },
+    { line:"G", allowed:["kecil"] }, { line:"H", allowed:["kecil"] }
+  ];
+  var POS_PER_LINE = 2;
+  var LINE_W = POS_PER_LINE*BIN_WIDTH;
+  var TOTAL_W = LINES.length*LINE_W + (LINES.length-1)*LINE_GAP;
+  var KIND_LABEL = { same:"Stok sama", empty:"Bin kosong", split:"Pecah A/B", demote:"Dipakai paksa" };
+
+  function clampCap(d){ return Math.max(1, Math.floor(d + 1e-9)); }
+  function capacityOf(k, width, depth){
+    width = width || BIN_WIDTH; depth = depth || DEPTH;
+    var m = MATERIALS[k];
+    var lanes = clampCap(width / m.diameter), deep = clampCap(depth / m.diameter);
+    return { lanes:lanes, deep:deep, tumpuk:m.tumpuk, cap:lanes*deep*m.tumpuk };
+  }
+  function materialOf(code){ for(var k in NO_MATERIAL){ if(NO_MATERIAL[k].indexOf(code)>-1) return k; } return null; }
+
+  var bins = {}, allBinIds = [], selected = "H1", lastAllocated = {}, pending = null;
+
+  // lane: { noMaterial, deep (positions back), filled (occupied positions), gap (empty positions at front), last (rolls in the back-most occupied position) }
+  function commitDiameter(bin, k){
+    bin.diameter = k;
+    var c = capacityOf(k);
+    bin.lanes = [];
+    for(var i=0;i<c.lanes;i++) bin.lanes.push({ noMaterial:null, deep:c.deep, filled:0, gap:0, last:0 });
+  }
+  function tOf(l){ return MATERIALS[materialOf(l.noMaterial)].tumpuk; }
+  function laneRolls(l){ if(!l.noMaterial || !l.filled) return 0; var t = tOf(l); return (l.filled-1)*t + (l.last || t); }
+  function laneCap(bin, l){ return l.deep * MATERIALS[bin.diameter].tumpuk; }
+  function lanePct(bin, l){ return Math.round(laneRolls(l)/laneCap(bin,l)*100); }
+  function setLaneRolls(l, rolls, t){ l.filled = Math.ceil(rolls/t); l.last = rolls - (l.filled-1)*t; }
+  function activeLanes(bin){ return bin.lanes.filter(function(l){ return !!l.noMaterial; }); }
+  function distinctCodes(bin){ var s=[]; activeLanes(bin).forEach(function(l){ if(s.indexOf(l.noMaterial)<0) s.push(l.noMaterial); }); return s; }
+  function isSplit(bin){ return distinctCodes(bin).length>1; }
+  function binIsVirgin(bin){ return bin.diameter===null || activeLanes(bin).length===0; }
+  function binRolls(bin){ var r=0; bin.lanes.forEach(function(l){ r+=laneRolls(l); }); return r; }
+  function binPct(bin){ return bin.diameter ? Math.round(binRolls(bin)/capacityOf(bin.diameter).cap*100) : 0; }
+  function subName(bin, idx){ return bin.id + (idx===0 ? "A" : "B"); }
+  function clearLane(l){ l.noMaterial=null; l.filled=0; l.gap=0; l.last=0; delete l.newFrom; }
+
+  function seed(id, laneIdx, code, rolls, gap){
+    var bin = bins[id];
+    if(bin.diameter===null) commitDiameter(bin, materialOf(code));
+    var l = bin.lanes[laneIdx];
+    l.noMaterial = code; l.gap = gap||0;
+    setLaneRolls(l, rolls, MATERIALS[materialOf(code)].tumpuk);
+  }
+  function resetWarehouse(){
+    bins = {}; allBinIds = []; lastAllocated = {}; pending = null;
+    LINES.forEach(function(ln, li){
+      for(var p=1;p<=POS_PER_LINE;p++){
+        var id = ln.line+p;
+        allBinIds.push(id);
+        bins[id] = { id:id, line:ln.line, lineIdx:li, p0:p-1, allowed:ln.allowed, mix:!!ln.mix, diameter:null, lanes:[] };
+        if(!ln.mix) commitDiameter(bins[id], ln.allowed[0]);
+      }
+    });
+    seed("A1",0,"BES-01",8);                         // 1 lane x 4 belakang x 2 tumpuk
+    seed("B1",0,"BES-01",8);
+    seed("C1",0,"BES-02",4);
+    seed("E1",0,"SED-01",12);
+    seed("E2",0,"SED-02",6,2);                       // 2 posisi depan sudah diambil
+    seed("G1",0,"KEC-01",21); seed("G1",1,"KEC-01",21);  // 2 lane no material sama -> tetap 1 bin
+    seed("G2",0,"KEC-02",10);
+    seed("H1",0,"KEC-02",12,1); seed("H1",1,"KEC-03",15); // pecah H1A / H1B
+  }
+  resetWarehouse();
+
+  function shadeColor(code){
+    var k = materialOf(code);
+    return "color-mix(in srgb, "+MATERIALS[k].color+" "+Math.round((MAT_SHADE[code]||1)*100)+"%, var(--surface))";
+  }
+  function binDisplayName(bin){ return isSplit(bin) ? bin.id+"A/B" : bin.id; }
+
+  /* ================= arrival: search -> choose -> confirm ================= */
+  function findOptions(k, code){
+    var t = MATERIALS[k].tumpuk, opts = [];
+    allBinIds.forEach(function(id){
+      var bin = bins[id];
+      if(binIsVirgin(bin)){
+        var c = capacityOf(k);
+        if(bin.allowed.indexOf(k)>-1){
+          opts.push({ binId:id, kind:"empty", lanes:"all", free:c.cap, cap:c.cap, have:0, gap:0, label:id,
+            note: bin.mix ? "Line A (mix) &mdash; bin ini jadi bin "+MATERIALS[k].label.toLowerCase() : "Bin "+MATERIALS[k].label.toLowerCase()+" kosong, sesuai kategori line" });
+        } else if(!bin.mix && (DEMOTE_ORDER[k]||[]).indexOf(bin.allowed[0])>-1){
+          opts.push({ binId:id, kind:"demote", lanes:"all", free:c.cap, cap:c.cap, have:0, gap:0, label:id, from:bin.allowed[0],
+            note:"Bin line "+bin.line+" aslinya untuk roll "+bin.allowed[0]+" &mdash; ukuran fisik bin sama, jadi bisa dipakai roll "+MATERIALS[k].label.toLowerCase()+" ("+c.cap+" roll). Pakai kalau bin yang sesuai habis." });
+        }
+        return;
+      }
+      if(bin.diameter!==k) return;
+      var codes = distinctCodes(bin);
+      if(codes.indexOf(code)>-1){
+        var lanes = [], cap = 0, have = 0, gap = 0;
+        bin.lanes.forEach(function(l, i){
+          if(l.noMaterial===code || (!l.noMaterial && codes.length===1)){ lanes.push(i); cap += l.deep*t; have += laneRolls(l); if(l.noMaterial===code) gap += l.gap; }
+        });
+        if(cap-have>0){
+          var label = (isSplit(bin) && lanes.length===1) ? subName(bin, lanes[0]) : id;
+          opts.push({ binId:id, kind:"same", lanes:lanes, free:cap-have, cap:cap, have:have, gap:gap, label:label,
+            note: "Sudah berisi "+code+(gap ? ". <b>Stok lama harus dimajukan "+gap+" posisi dulu</b>" : "") });
+        }
+      } else {
+        var empt = [];
+        bin.lanes.forEach(function(l, i){ if(!l.noMaterial) empt.push(i); });
+        if(empt.length){
+          var lane0 = empt[0], otherIdx = lane0===0 ? 1 : 0;
+          var cap2 = empt.length*bin.lanes[lane0].deep*t;
+          opts.push({ binId:id, kind:"split", lanes:empt, free:cap2, cap:cap2, have:0, gap:0, label:subName(bin, lane0),
+            note:"Bin "+id+" pecah: "+subName(bin, otherIdx)+" = "+codes.join("+")+", "+subName(bin, lane0)+" = "+code });
+        }
+      }
+    });
+    var rank = { same:0, empty:1, split:2, demote:3 };
+    opts.sort(function(a,b){
+      if(rank[a.kind]!==rank[b.kind]) return rank[a.kind]-rank[b.kind];
+      if(a.kind==="same") return a.free-b.free;                       // isi yang hampir penuh dulu
+      if(a.kind==="empty") return (bins[a.binId].mix?1:0)-(bins[b.binId].mix?1:0);
+      if(a.kind==="demote") return DEMOTE_ORDER[k].indexOf(a.from)-DEMOTE_ORDER[k].indexOf(b.from);
+      return 0;
+    });
+    return opts;
+  }
+
+  function recommend(){
+    var left = pending.qty;
+    pending.opts.forEach(function(o){ o.qty = Math.min(left, o.free); o.on = o.qty>0; left -= o.qty; });
+  }
+
+  function addToLane(l, code, qty, t){
+    var moved = 0;
+    if(!l.noMaterial){ l.noMaterial = code; l.filled = 0; l.gap = 0; l.last = 0; }
+    if(l.gap>0){ moved = l.gap; l.gap = 0; }
+    var have = laneRolls(l), add = Math.min(qty, l.deep*t - have);
+    if(add<=0){ if(!have) clearLane(l); return { added:0, moved:moved }; }
+    var oldFilled = l.filled;
+    setLaneRolls(l, have+add, t);
+    l.newFrom = oldFilled;
+    return { added:add, moved:moved };
+  }
+
+  function applyOption(o, k, code){
+    var bin = bins[o.binId], t = MATERIALS[k].tumpuk, left = o.qty, moved = 0;
+    if((o.kind==="empty" || o.kind==="demote") && bin.diameter!==k) commitDiameter(bin, k);
+    var idxs = o.lanes==="all" ? bin.lanes.map(function(_,i){ return i; }) : o.lanes.slice();
+    idxs.sort(function(a,b){
+      var la = bin.lanes[a], lb = bin.lanes[b];
+      var sa = la.noMaterial ? 0 : 1, sb = lb.noMaterial ? 0 : 1;
+      return sa!==sb ? sa-sb : laneRolls(lb)-laneRolls(la);
+    });
+    idxs.forEach(function(i){ if(left<=0) return; var r = addToLane(bin.lanes[i], code, left, t); left -= r.added; moved += r.moved; });
+    return { placed:o.qty-left, moved:moved };
+  }
+
+  function afterText(o){
+    var bin = bins[o.binId];
+    var q = o.qty||0;
+    var before = Math.round(o.have/o.cap*100), after = Math.round((o.have+q)/o.cap*100);
+    if(o.kind==="split") return o.label+": 0% &rarr; <b>"+after+"%</b>";
+    return o.label+": "+before+"% &rarr; <b>"+after+"%</b>";
+  }
+
+  function renderOptions(){
+    var el = document.getElementById("arrival-options");
+    if(!pending){ el.innerHTML = ""; return; }
+    var p = pending;
+    if(!p.opts.length){
+      el.innerHTML = '<div class="msg show crit">Tidak ada bin yang bisa menampung '+p.code+' &mdash; semua bin yang cocok penuh. Perlu relokasi atau area overstock.</div>';
+      return;
+    }
+    var totalFree = p.opts.reduce(function(s,o){ return s+o.free; }, 0);
+    var rows = p.opts.map(function(o, i){
+      return '<tr data-i="'+i+'" class="'+(o.on?"on":"")+'">' +
+        '<td><input type="checkbox" id="opt-c-'+i+'" data-i="'+i+'" aria-label="Pilih '+o.label+'"'+(o.on?" checked":"")+'></td>' +
+        '<td><button type="button" class="linkish" data-focus="'+o.binId+'">'+o.label+'</button></td>' +
+        '<td><span class="kind '+o.kind+'">'+KIND_LABEL[o.kind]+'</span></td>' +
+        '<td>'+o.free+' roll</td>' +
+        '<td><input type="number" id="opt-q-'+i+'" data-i="'+i+'" min="0" max="'+o.free+'" step="1" value="'+(o.qty||0)+'" aria-label="Jumlah roll ke '+o.label+'"></td>' +
+        '<td id="opt-after-'+i+'">'+afterText(o)+'</td>' +
+        '<td class="note-cell">'+o.note+'</td></tr>';
+    }).join("");
+    el.innerHTML =
+      '<p class="opt-head">Butuh slot untuk <b>'+p.qty+' roll '+p.code+'</b> ('+MATERIALS[p.k].label.toLowerCase()+'). Ditemukan <b>'+p.opts.length+' opsi bin</b>, total ruang <b>'+totalFree+' roll</b>. Centang sudah diisi sesuai rekomendasi &mdash; ubah sesuai keputusan.</p>' +
+      '<div class="tbl-wrap"><table class="opt-table"><thead><tr><th></th><th>Bin tujuan</th><th>Jenis</th><th>Ruang</th><th>Isi (roll)</th><th>Setelah diisi</th><th>Catatan</th></tr></thead><tbody>'+rows+'</tbody></table></div>' +
+      '<div class="opt-foot"><span class="opt-total" id="opt-total"></span><div class="btn-row" style="margin:0">' +
+      '<button type="button" id="opt-reco">Pakai rekomendasi</button><button type="button" id="opt-clear">Kosongkan</button>' +
+      '<button type="button" id="opt-cancel">Batal</button><button type="button" id="opt-confirm" class="primary">Masukkan ke bin terpilih</button></div></div>' +
+      '<div class="msg" id="opt-msg"></div>';
+    updateOptionTotals();
+  }
+
+  function updateOptionTotals(){
+    if(!pending) return;
+    var sum = pending.opts.reduce(function(s,o){ return s+(o.qty||0); }, 0);
+    var need = pending.qty, msg = document.getElementById("opt-msg"), btn = document.getElementById("opt-confirm");
+    document.getElementById("opt-total").innerHTML = 'Dipilih <b>'+sum+'</b> / '+need+' roll';
+    pending.opts.forEach(function(o, i){
+      var a = document.getElementById("opt-after-"+i); if(a) a.innerHTML = afterText(o);
+      var row = document.querySelector('#arrival-options tr[data-i="'+i+'"]'); if(row) row.className = o.on ? "on" : "";
+    });
+    var zeroOn = pending.opts.filter(function(o){ return o.on && !(o.qty>0); }).map(function(o){ return o.label; });
+    if(sum===0){ msg.className = "msg show info"; msg.textContent = "Pilih minimal satu bin dan isi jumlah rollnya."; btn.disabled = true; }
+    else if(sum>need){ msg.className = "msg show crit"; msg.textContent = "Lebih "+(sum-need)+" roll dari jumlah yang datang — kurangi isian."; btn.disabled = true; }
+    else if(sum<need){ msg.className = "msg show warn"; msg.textContent = "Kurang "+(need-sum)+" roll — sisanya tidak dapat bin (perlu relokasi / overstock). Tetap bisa dikonfirmasi."; btn.disabled = false; }
+    else if(zeroOn.length){ msg.className = "msg show info"; msg.textContent = "Semua roll sudah terbagi. Untuk pakai "+zeroOn.join(", ")+", kurangi isian bin lain lalu isi jumlahnya di sini."; btn.disabled = false; }
+    else { msg.className = "msg"; msg.textContent = ""; btn.disabled = false; }
+    renderChips(); update3D();
+  }
+
+  function startSearch(){
+    var k = document.getElementById("arr-diameter").value;
+    var code = document.getElementById("arr-material").value;
+    var qty = Math.max(0, parseInt(document.getElementById("arr-qty").value,10) || 0);
+    if(!qty) return;
+    lastAllocated = {};
+    document.getElementById("arrival-result").innerHTML = "";
+    pending = { k:k, code:code, qty:qty, opts:findOptions(k, code) };
+    recommend();
+    var first = pending.opts.filter(function(o){ return o.qty>0; })[0];
+    if(first) selected = first.binId;
+    renderOptions();
+    renderAll();
+    if(G) viewOverview();
+  }
+
+  function confirmPlan(){
+    if(!pending) return;
+    var p = pending, results = [];
+    lastAllocated = {};
+    p.opts.forEach(function(o){
+      if(!(o.qty>0)) return;
+      var r = applyOption(o, p.k, p.code);
+      if(r.placed>0){
+        lastAllocated[o.binId] = true;
+        results.push({ o:o, placed:r.placed, moved:r.moved });
+      }
+    });
+    var placed = results.reduce(function(s,r){ return s+r.placed; }, 0);
+    var shortfall = p.qty - placed;
+    if(results.length) selected = results[0].o.binId;
+    pending = null;
+    renderOptions();
+    var rows = results.map(function(r){
+      var bin = bins[r.o.binId];
+      var name = isSplit(bin) ? r.o.label : bin.id;
+      var notes = [];
+      if(r.moved) notes.push("stok lama dimajukan "+r.moved+" posisi");
+      if(r.o.kind==="split") notes.push("bin pecah jadi "+bin.id+"A/"+bin.id+"B");
+      if(r.o.kind==="demote") notes.push("bin "+r.o.from+" dipakai paksa");
+      return '<li><b>'+name+'</b> &larr; '+r.placed+' roll '+p.code+' &middot; sekarang '+(isSplit(bin)? subName(bin,0)+" "+lanePct(bin,bin.lanes[0])+"% / "+subName(bin,1)+" "+lanePct(bin,bin.lanes[1])+"%" : binPct(bin)+"%")+
+        (notes.length ? ' <span style="color:var(--warn)">('+notes.join("; ")+')</span>' : '')+'</li>';
+    }).join("");
+    document.getElementById("arrival-result").innerHTML =
+      '<div class="msg show '+(shortfall?"warn":"ok")+'" style="margin:12px 0 8px">'+(shortfall ? placed+' dari '+p.qty+' roll masuk. <b>'+shortfall+' roll belum dapat bin.</b>' : 'Semua '+p.qty+' roll '+p.code+' sudah masuk bin.')+'</div><ol class="steps">'+rows+'</ol>';
+    renderAll();
+    if(results.length) focusBin(selected);
+  }
+
+  function cancelPlan(){ pending = null; renderOptions(); renderAll(); }
+
+  // delegated events on the options table (no re-render while typing)
+  document.getElementById("arrival-options").addEventListener("input", function(e){
+    if(!pending) return;
+    var i = e.target.getAttribute("data-i"); if(i===null) return;
+    var o = pending.opts[+i];
+    if(e.target.type==="number"){
+      var v = Math.max(0, Math.min(o.free, parseInt(e.target.value,10) || 0));
+      o.qty = v; o.on = v>0;
+      document.getElementById("opt-c-"+i).checked = o.on;
+      updateOptionTotals();
+    }
+  });
+  document.getElementById("arrival-options").addEventListener("change", function(e){
+    if(!pending) return;
+    var i = e.target.getAttribute("data-i"); if(i===null) return;
+    var o = pending.opts[+i];
+    if(e.target.type==="checkbox"){
+      if(e.target.checked){
+        var used = pending.opts.reduce(function(s,x){ return s+(x.qty||0); }, 0);
+        o.qty = Math.max(0, Math.min(o.free, pending.qty-used));
+        o.on = true;
+      } else { o.qty = 0; o.on = false; }
+      document.getElementById("opt-q-"+i).value = o.qty;
+      updateOptionTotals();
+    } else if(e.target.type==="number"){
+      e.target.value = o.qty;
+    }
+  });
+  document.getElementById("arrival-options").addEventListener("click", function(e){
+    var t = e.target;
+    if(t.getAttribute && t.getAttribute("data-focus")){ selected = t.getAttribute("data-focus"); renderChips(); renderDetail(); update3D(); focusBin(selected); return; }
+    if(t.id==="opt-reco"){ recommend(); renderOptions(); update3D(); }
+    else if(t.id==="opt-clear"){ pending.opts.forEach(function(o){ o.qty = 0; o.on = false; }); renderOptions(); }
+    else if(t.id==="opt-cancel"){ cancelPlan(); }
+    else if(t.id==="opt-confirm"){ confirmPlan(); }
+  });
+
+  /* ================= 2D UI ================= */
+  function fillNoMaterialSelect(){
+    var k = document.getElementById("arr-diameter").value;
+    document.getElementById("arr-material").innerHTML = NO_MATERIAL[k].map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join("");
+  }
+
+  function candState(){
+    var s = {};
+    if(pending) pending.opts.forEach(function(o){ s[o.binId] = (o.on || o.qty>0) ? "chosen" : "cand"; });
+    return s;
+  }
+
+  function renderChips(){
+    var el = document.getElementById("bin-chips"), cs = candState();
+    el.innerHTML = LINES.map(function(ln){
+      var cat = ln.mix ? "mix" : MATERIALS[ln.allowed[0]].label.toLowerCase();
+      var chips = "";
+      for(var p=1;p<=POS_PER_LINE;p++){
+        var bin = bins[ln.line+p];
+        var codes = distinctCodes(bin);
+        var sw = codes.length ? shadeColor(codes[0]) : "transparent";
+        var right;
+        if(!bin.diameter) right = '<span>belum dipakai</span>';
+        else if(!codes.length) right = '<span>kosong</span>';
+        else if(isSplit(bin)) right = bin.lanes.map(function(l, i){
+            return '<span>'+subName(bin,i).slice(-1)+' '+(l.noMaterial||"kosong")+' <b>'+lanePct(bin,l)+'%</b></span>';
+          }).join("");
+        else right = '<span>'+codes[0]+' <b>'+binPct(bin)+'%</b></span>';
+        var cls = "chip"+(bin.id===selected?" selected":"")+(lastAllocated[bin.id]?" allocated":"")+(cs[bin.id]?" "+cs[bin.id]:"");
+        chips += '<button type="button" class="'+cls+'" data-bin="'+bin.id+'"><span class="l"><i class="sw" style="background:'+sw+'; border:1px solid var(--line)"></i>'+binDisplayName(bin)+'</span><span class="r">'+right+'</span></button>';
+      }
+      return '<div class="chip-line"><span class="ln">Line '+ln.line+' · '+cat+'</span>'+chips+'</div>';
+    }).join("");
+    el.querySelectorAll(".chip").forEach(function(b){
+      b.addEventListener("click", function(){ selected = b.getAttribute("data-bin"); renderAll(); focusBin(selected); });
+    });
+  }
+
+  var SV_S = 18;
+  function renderSideView(container, lane){
+    var k = materialOf(lane.noMaterial), M = MATERIALS[k];
+    container.innerHTML = '<div class="limit-line" style="bottom:'+(18+6*SV_S)+'px">batas 6m</div>';
+    var band = shadeColor(lane.noMaterial), backMost = lane.gap+lane.filled-1;
+    for(var c=0;c<lane.deep;c++){
+      var col = document.createElement("div"); col.className = "sv-col";
+      var occ = c>=lane.gap && c<=backMost;
+      var nHere = occ ? (c===backMost ? (lane.last||M.tumpuk) : M.tumpuk) : 0;
+      var isNew = occ && lane.newFrom!==undefined && c>=lane.newFrom;
+      for(var t=0;t<M.tumpuk;t++){
+        var r = document.createElement("div");
+        var on = t < nHere;
+        r.className = "sv-roll"+(on?"":" off");
+        r.style.width = Math.round(M.diameter*SV_S)+"px";
+        r.style.height = Math.round(M.height*SV_S - 1)+"px";
+        if(on){
+          r.style.background = "linear-gradient(90deg, var(--roll-shade), var(--roll) 28%, var(--roll-hi) 50%, var(--roll) 72%, var(--roll-shade))";
+          r.innerHTML = '<i class="band" style="background:'+band+'"></i>'+(isNew?'<i class="new-dot"></i>':'');
+        }
+        col.appendChild(r);
+      }
+      var ix = document.createElement("span"); ix.className = "sv-idx"; ix.textContent = c+1; col.appendChild(ix);
+      container.appendChild(col);
+    }
+  }
+
+  function setMsg(text, kind){
+    var m = document.getElementById("bin-msg"); if(!m) return;
+    m.className = text ? "msg show "+kind : "msg"; m.textContent = text || "";
+  }
+
+  function renderDetail(){
+    var bin = bins[selected];
+    var panel = document.getElementById("detail-panel");
+    var split = isSplit(bin);
+    var html = '<div class="detail-head"><h3>Bin '+binDisplayName(bin)+' <span style="color:var(--ink-dim); font-weight:400">&middot; Line '+bin.line+(bin.mix?" (mix)":"")+'</span></h3>';
+    if(bin.diameter){
+      var c = capacityOf(bin.diameter);
+      html += '<span class="pill" style="background:'+MATERIALS[bin.diameter].color+'">'+MATERIALS[bin.diameter].label+' &middot; '+Math.round(MATERIALS[bin.diameter].diameter*1000)+'mm</span></div>';
+      html += '<p class="note" style="margin:6px 0 0">Kapasitas bin: '+c.lanes+' lane &times; '+c.deep+' ke belakang &times; '+c.tumpuk+' tumpuk = <b>'+c.cap+' roll</b>'+(split ? ' &mdash; dipecah jadi 2 sub-bin @ '+(c.cap/2)+' roll.' : '.') +
+        (bin.allowed[0]!==bin.diameter && !bin.mix ? ' <span style="color:var(--warn)">Bin ini aslinya untuk '+bin.allowed[0]+', dipakai paksa.</span>' : '') + '</p>';
+      if(split){
+        html += '<div class="split-bar">' + bin.lanes.map(function(l, i){
+          var pct = lanePct(bin, l);
+          return '<div><i style="width:'+pct+'%; background:'+shadeColor(l.noMaterial)+'"></i><span>'+subName(bin,i)+' &middot; '+l.noMaterial+' &middot; <b>'+pct+'%</b></span></div>';
+        }).join("") + '</div>';
+      } else if(activeLanes(bin).length){
+        html += '<p class="note" style="margin:6px 0 0">Total terisi: <b>'+binRolls(bin)+' / '+c.cap+' roll ('+binPct(bin)+'%)</b></p>';
+      }
+    } else {
+      html += '<span class="pill" style="background:var(--mix)">belum dipakai</span></div>';
+      html += '<p class="note" style="margin:6px 0 0">Bin line A (mix) ini belum pernah diisi &mdash; ukurannya ditentukan oleh roll pertama yang masuk.</p>';
+    }
+
+    if(bin.diameter){
+      bin.lanes.forEach(function(lane, idx){
+        var label = split ? subName(bin, idx) : (bin.lanes.length>1 ? bin.id+" · lane "+(idx===0?"kiri":"kanan") : bin.id);
+        if(!lane.noMaterial){
+          html += '<div class="lane-card"><div class="lane-head"><b>'+label+'</b><span class="note" style="margin:0">kosong</span></div>' +
+            '<p class="note" style="margin:0">'+(activeLanes(bin).length ? 'Bisa diisi no material yang sama, atau no material lain diameter '+MATERIALS[bin.diameter].label.toLowerCase()+' (bin jadi pecah A/B).' : 'Siap diisi.')+'</p></div>';
+          return;
+        }
+        var pct = lanePct(bin, lane);
+        html += '<div class="lane-card">' +
+          '<div class="lane-head"><b>'+label+'</b><span style="display:inline-flex; gap:8px; align-items:center"><span class="pill code"><i class="sw" style="background:'+shadeColor(lane.noMaterial)+'"></i>'+lane.noMaterial+'</span><span class="pct">'+pct+'%</span></span></div>' +
+          '<div class="spec-grid"><div><span class="k">Terisi</span><span class="v">'+laneRolls(lane)+' / '+laneCap(bin,lane)+' roll</span></div>' +
+          '<div><span class="k">Gap depan</span><span class="v" style="color:'+(lane.gap?"var(--warn)":"inherit")+'">'+lane.gap+' posisi</span></div></div>' +
+          '<div class="sv-title"><span>&larr; depan (diambil duluan)</span><span>tampak samping</span><span>belakang &rarr;</span></div>' +
+          '<div class="side-view" id="sv-'+idx+'"></div>' +
+          '<div class="btn-row"><button type="button" data-act="pick" data-lane="'+idx+'">Ambil 1 posisi dari depan</button>' +
+          '<button type="button" data-act="restock" data-lane="'+idx+'" class="primary">Restock no material sama</button></div>' +
+          '</div>';
+      });
+    }
+    panel.innerHTML = html + '<div class="msg" id="bin-msg"></div>';
+
+    bin.lanes.forEach(function(lane, idx){
+      var sv = document.getElementById("sv-"+idx);
+      if(sv && lane.noMaterial) renderSideView(sv, lane);
+    });
+    panel.querySelectorAll('button[data-act="pick"]').forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var lane = bin.lanes[+btn.getAttribute("data-lane")];
+        var t = tOf(lane);
+        var removed = lane.filled===1 ? (lane.last||t) : t;
+        lane.gap += 1; lane.filled -= 1;
+        if(lane.newFrom!==undefined && lane.gap>=lane.newFrom) delete lane.newFrom;
+        var emptied = lane.filled<=0;
+        if(emptied) clearLane(lane);
+        pending = null; renderOptions();
+        renderAll();
+        setMsg(emptied ? "Lane habis — sekarang kosong." : removed+" roll di posisi depan diambil. Gap depan bertambah, roll lain tidak bergeser.", "ok");
+      });
+    });
+    panel.querySelectorAll('button[data-act="restock"]').forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var lane = bin.lanes[+btn.getAttribute("data-lane")];
+        var pct = lanePct(bin, lane);
+        if(pct>20){ setMsg("Stok lama masih "+pct+"% — belum waktunya restock lane ini (rule ≤20%).","warn"); return; }
+        var t = tOf(lane), moved = lane.gap, added = laneCap(bin,lane) - laneRolls(lane);
+        lane.gap = 0; lane.newFrom = lane.filled; lane.filled = lane.deep; lane.last = t;
+        pending = null; renderOptions();
+        renderAll();
+        setMsg((moved ? "Stok lama dimajukan "+moved+" posisi, lalu " : "")+added+" roll baru disusun di belakang. FIFO terjaga.","ok");
+      });
+    });
+  }
+
+  function renderCalc(){
+    var dSel = document.getElementById("calc-diameter"), dCustom = document.getElementById("calc-diameter-custom");
+    var width = parseFloat(document.getElementById("calc-width").value) || BIN_WIDTH;
+    var depth = parseFloat(document.getElementById("calc-depth").value) || DEPTH;
+    var layers = parseInt(document.getElementById("calc-layers").value,10) || 1;
+    dCustom.disabled = dSel.value!=="custom";
+    var mm = dSel.value==="custom" ? parseFloat(dCustom.value) : parseFloat(dSel.value);
+    if(dSel.value!=="custom") dCustom.value = mm;
+    var dm = (mm||1000)/1000;
+    var lanes = clampCap(width/dm), deep = clampCap(depth/dm);
+    document.getElementById("out-across").textContent = lanes;
+    document.getElementById("out-deep").textContent = deep;
+    document.getElementById("out-cap").textContent = (lanes*deep*layers)+" roll";
+    var rows = [ {label:"2000mm — besar", d:2.0, t:2}, {label:"1350mm — sedang", d:1.35, t:2}, {label:"1150mm — kecil", d:1.15, t:3} ];
+    document.getElementById("compare-body").innerHTML = rows.map(function(r){
+      var a = clampCap(width/r.d), dp = clampCap(depth/r.d);
+      return "<tr><td>"+r.label+"</td><td>"+a+"</td><td>"+dp+"</td><td>"+r.t+"&times;</td><td><b>"+(a*dp*r.t)+" roll</b></td></tr>";
+    }).join("");
+  }
+
+  /* ================= 3D scene ================= */
+  var G = null;
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888888"; }
+  function lineX0(li){ return -TOTAL_W/2 + li*(LINE_W+LINE_GAP); }
+  function binCX(bin){ return lineX0(bin.lineIdx) + bin.p0*BIN_WIDTH + BIN_WIDTH/2; }
+  function webglOK(){ try{ var c=document.createElement("canvas"); return !!(window.WebGLRenderingContext && (c.getContext("webgl")||c.getContext("experimental-webgl"))); }catch(e){ return false; } }
+  function col(hex){ return new G.T.Color(hex).convertSRGBToLinear(); }
+
+  function themeColors(){
+    return { bg:cssVar("--bg"), floor:cssVar("--floor"), paint:cssVar("--paint"), pillar:cssVar("--pillar"),
+      ink:cssVar("--ink"), dim:cssVar("--ink-dim"), accent:cssVar("--accent"), ok:cssVar("--ok"), info:cssVar("--info"),
+      roll:cssVar("--roll"), core:cssVar("--core"), surface:cssVar("--surface") };
+  }
+
+  function textPlane(text, w, h, color, px, weight){
+    var T = G.T, res = 160;
+    var cv = document.createElement("canvas"); cv.width = Math.round(w*res); cv.height = Math.round(h*res);
+    var x = cv.getContext("2d");
+    var lines = Array.isArray(text) ? text : [text];
+    x.textAlign = "center"; x.textBaseline = "middle"; x.fillStyle = color;
+    lines.forEach(function(line, i){
+      var size = i===0 ? px : Math.round(px*0.78);
+      var wt = i===0 ? weight : "500";
+      x.font = wt+" "+size+'px "IBM Plex Mono", ui-monospace, monospace';
+      var maxW = cv.width*0.96, w0 = x.measureText(line).width;
+      if(w0>maxW){ size = Math.floor(size*maxW/w0); x.font = wt+" "+size+'px "IBM Plex Mono", ui-monospace, monospace'; }
+      x.fillText(line, cv.width/2, cv.height*(i+0.5)/lines.length);
+    });
+    var tex = new T.CanvasTexture(cv); tex.encoding = T.sRGBEncoding; tex.anisotropy = 4;
+    var m = new T.Mesh(new T.PlaneGeometry(w,h), new T.MeshBasicMaterial({ map:tex, transparent:true, depthWrite:false }));
+    m.rotation.x = -Math.PI/2;
+    return m;
+  }
+  function disposeGroup(g){
+    while(g.children.length){
+      var o = g.children[0]; g.remove(o);
+      if(o.geometry) o.geometry.dispose();
+      if(o.material){ if(o.material.map) o.material.map.dispose(); o.material.dispose(); }
+    }
+  }
+
+  function topTexture(isNew){
+    var T = G.T, c = G.colors;
+    var cv = document.createElement("canvas"); cv.width = cv.height = 256;
+    var x = cv.getContext("2d");
+    x.fillStyle = c.roll; x.fillRect(0,0,256,256);
+    for(var r=126, i=0; r>26; r-=3, i++){
+      x.beginPath(); x.arc(128,128,r,0,Math.PI*2);
+      x.strokeStyle = "rgba(110,90,60,"+(i%3===0 ? 0.16 : 0.07)+")"; x.lineWidth = 1; x.stroke();
+    }
+    x.beginPath(); x.arc(128,128,24,0,Math.PI*2); x.fillStyle = c.core; x.fill();
+    x.beginPath(); x.arc(128,128,13,0,Math.PI*2); x.fillStyle = "#2a2118"; x.fill();
+    if(isNew){ x.beginPath(); x.arc(128,62,15,0,Math.PI*2); x.fillStyle = c.accent; x.fill(); }
+    var tex = new T.CanvasTexture(cv); tex.encoding = T.sRGBEncoding;
+    return tex;
+  }
+  function bandColor(code){
+    var k = materialOf(code);
+    return col(cssVar(MATERIALS[k].token)).lerp(col(G.colors.surface), 1-(MAT_SHADE[code]||1));
+  }
+  function makeRoll(k, code, isNew){
+    var T = G.T, M = MATERIALS[k];
+    var geo = G.geo[k];
+    if(!geo){
+      var r = M.diameter/2 - 0.025, h = M.height - 0.03;
+      geo = G.geo[k] = { body:new T.CylinderGeometry(r,r,h,48,1,false), band:new T.CylinderGeometry(r+0.008,r+0.008,h*0.13,48,1,true), h:h };
+    }
+    var side = G.mat.side || (G.mat.side = new T.MeshStandardMaterial({ color:col(G.colors.roll), roughness:0.88, metalness:0 }));
+    var tk = isNew ? "topNew" : "top";
+    var top = G.mat[tk] || (G.mat[tk] = new T.MeshStandardMaterial({ map:topTexture(isNew), roughness:0.92 }));
+    var bk = "band-"+code;
+    var band = G.mat[bk] || (G.mat[bk] = new T.MeshStandardMaterial({ color:bandColor(code), roughness:0.55, side:T.DoubleSide }));
+    var grp = new T.Group();
+    var body = new T.Mesh(geo.body, [side, top, top]); body.castShadow = true; body.receiveShadow = true;
+    var b = new T.Mesh(geo.band, band); b.position.y = geo.h*0.3;
+    grp.add(body); grp.add(b);
+    return grp;
+  }
+
+  function buildStatic(){
+    var T = G.T, c = G.colors, g = G.staticGroup;
+    while(g.children.length) g.remove(g.children[0]);
+    G.hitPlanes = {}; G.splitMarkers = {};
+    var floor = new T.Mesh(new T.PlaneGeometry(TOTAL_W+60, 70), new T.MeshStandardMaterial({ color:col(c.floor), roughness:0.96 }));
+    floor.rotation.x = -Math.PI/2; floor.position.set(0,0,-4); floor.receiveShadow = true; g.add(floor);
+    var paint = new T.MeshBasicMaterial({ color:col(c.paint) });
+    function strip(x,z,w,d){ var m = new T.Mesh(new T.PlaneGeometry(w,d), paint); m.rotation.x = -Math.PI/2; m.position.set(x, 0.012, z); g.add(m); }
+    allBinIds.forEach(function(id){
+      var bin = bins[id], cx = binCX(bin), zc = -DEPTH/2;
+      strip(cx-BIN_WIDTH/2, zc, 0.08, DEPTH); strip(cx+BIN_WIDTH/2, zc, 0.08, DEPTH);
+      strip(cx, 0, BIN_WIDTH+0.08, 0.08); strip(cx, -DEPTH, BIN_WIDTH+0.08, 0.08);
+      var hp = new T.Mesh(new T.PlaneGeometry(BIN_WIDTH-0.1, DEPTH-0.1), new T.MeshBasicMaterial({ color:col(c.accent), transparent:true, opacity:0, depthWrite:false }));
+      hp.rotation.x = -Math.PI/2; hp.position.set(cx, 0.008, zc); hp.userData.binId = id;
+      g.add(hp); G.hitPlanes[id] = hp;
+      var sm = new T.Group();
+      for(var i=0;i<9;i++){ var d = new T.Mesh(new T.PlaneGeometry(0.06,0.5), paint); d.rotation.x = -Math.PI/2; d.position.set(cx, 0.014, -0.45-i*0.9); sm.add(d); }
+      sm.visible = false; g.add(sm); G.splitMarkers[id] = sm;
+    });
+    LINES.forEach(function(ln, li){
+      var cat = ln.mix ? "MIX" : MATERIALS[ln.allowed[0]].label.toUpperCase();
+      var lbl = textPlane("LINE "+ln.line+" · "+cat, 4.6, 0.8, c.dim, 66, "600");
+      lbl.position.set(lineX0(li)+LINE_W/2, 0.02, 1.85); g.add(lbl);
+    });
+    var pm = new T.MeshStandardMaterial({ color:col(c.pillar), roughness:0.8 });
+    var pg = new T.BoxGeometry(0.45, 7.2, 0.45);
+    for(var i=0;i<=LINES.length;i++){
+      var px = -TOTAL_W/2 + i*(LINE_W+LINE_GAP) - LINE_GAP/2;
+      var p = new T.Mesh(pg, pm); p.position.set(px, 3.6, -DEPTH-0.4); p.castShadow = true; p.receiveShadow = true; g.add(p);
+    }
+    var beam = new T.Mesh(new T.BoxGeometry(TOTAL_W+LINE_GAP+0.45, 0.35, 0.35), pm); beam.position.set(0, 7.2, -DEPTH-0.4); g.add(beam);
+  }
+
+  function update3D(){
+    if(!G) return;
+    var g = G.rollsGroup, cs = candState();
+    while(g.children.length) g.remove(g.children[0]);
+    disposeGroup(G.labelsGroup);
+    allBinIds.forEach(function(id){
+      var bin = bins[id], cx = binCX(bin), hp = G.hitPlanes[id];
+      if(cs[id]==="chosen"){ hp.material.color.copy(col(G.colors.info)); hp.material.opacity = 0.45; }
+      else if(id===selected){ hp.material.color.copy(col(G.colors.accent)); hp.material.opacity = 0.32; }
+      else if(cs[id]==="cand"){ hp.material.color.copy(col(G.colors.info)); hp.material.opacity = 0.16; }
+      else if(lastAllocated[id]){ hp.material.color.copy(col(G.colors.ok)); hp.material.opacity = 0.28; }
+      else hp.material.opacity = 0;
+      var split = isSplit(bin);
+      G.splitMarkers[id].visible = split;
+
+      // floor labels with live fill %
+      if(split){
+        bin.lanes.forEach(function(l, i){
+          var lx = cx + (i===0 ? -1 : 1)*BIN_WIDTH/4;
+          var t = textPlane([subName(bin,i), (l.noMaterial ? lanePct(bin,l)+"%" : "kosong")], 1.15, 0.95, G.colors.ink, 62, "700");
+          t.position.set(lx, 0.02, 0.75); G.labelsGroup.add(t);
+        });
+      } else {
+        var sub = !bin.diameter ? "belum dipakai" : (activeLanes(bin).length ? binPct(bin)+"%" : "kosong");
+        var t2 = textPlane([bin.id, sub], 2.2, 0.95, G.colors.ink, 66, "700");
+        t2.position.set(cx, 0.02, 0.75); G.labelsGroup.add(t2);
+      }
+
+      if(!bin.diameter) return;
+      var n = bin.lanes.length;
+      bin.lanes.forEach(function(lane, li){
+        if(!lane.noMaterial) return;
+        var k = materialOf(lane.noMaterial), M = MATERIALS[k];
+        var lx = n===1 ? cx : cx + (li===0 ? -1 : 1)*BIN_WIDTH/4;
+        var backMost = lane.gap+lane.filled-1;
+        for(var c=lane.gap; c<=backMost; c++){
+          var z = -(c*M.diameter + M.diameter/2) - 0.04;
+          var isNew = lane.newFrom!==undefined && c>=lane.newFrom;
+          var nHere = c===backMost ? (lane.last||M.tumpuk) : M.tumpuk;
+          for(var t=0;t<nHere;t++){
+            var roll = makeRoll(k, lane.noMaterial, isNew);
+            roll.position.set(lx, t*M.height + M.height/2, z);
+            roll.userData.binId = id;
+            g.add(roll);
+          }
+        }
+      });
+    });
+  }
+
+  function viewFactor(){ var a = G.camera.aspect || 2; return Math.max(1, 1.9/a); }
+  function flyTo(pos, tgt, instant){
+    var T = G.T;
+    var p1 = new T.Vector3(pos[0],pos[1],pos[2]), t1 = new T.Vector3(tgt[0],tgt[1],tgt[2]);
+    if(instant || reduceMotion){ G.camera.position.copy(p1); G.controls.target.copy(t1); G.controls.update(); G.anim = null; return; }
+    var p0 = G.camera.position.clone(), t0 = G.controls.target.clone(), start = performance.now(), dur = 700;
+    G.anim = function(now){
+      var k = Math.min(1, (now-start)/dur), e = k<0.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2;
+      G.camera.position.lerpVectors(p0,p1,e); G.controls.target.lerpVectors(t0,t1,e);
+      if(k>=1) G.anim = null;
+    };
+  }
+  function viewOverview(instant){ var f = viewFactor(); flyTo([0, 1+30*f, -4+27*f], [0, 1.2, -4.5], instant); }
+  function viewFront(){ var f = viewFactor(); flyTo([0, 4.5, -4+30*f], [0, 3, -4]); }
+  function focusBin(id){ if(!G) return; var cx = binCX(bins[id]); flyTo([cx+6.5, 8.5, 8.5], [cx, 2.6, -4.2]); }
+
+  function pickBin(e){
+    var rect = G.renderer.domElement.getBoundingClientRect();
+    G.ndc.set(((e.clientX-rect.left)/rect.width)*2-1, -((e.clientY-rect.top)/rect.height)*2+1);
+    G.ray.setFromCamera(G.ndc, G.camera);
+    var objs = Object.keys(G.hitPlanes).map(function(k){ return G.hitPlanes[k]; }).concat([G.rollsGroup]);
+    var hits = G.ray.intersectObjects(objs, true);
+    for(var i=0;i<hits.length;i++){ var o = hits[i].object; while(o && !o.userData.binId) o = o.parent; if(o) return o.userData.binId; }
+    return null;
+  }
+
+  function init3D(){
+    var el = document.getElementById("scene3d");
+    var T = window.THREE;
+    function fallback(){
+      el.hidden = true; document.getElementById("scene-ctrl").hidden = true; document.getElementById("scene-hint").hidden = true;
+      document.getElementById("scene-fallback").hidden = false; G = null;
+    }
+    if(!T || !T.OrbitControls || !webglOK()){ fallback(); return; }
+    try{
+      var renderer = new T.WebGLRenderer({ antialias:true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+      renderer.setSize(el.clientWidth||800, el.clientHeight||500);
+      renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+      renderer.outputEncoding = T.sRGBEncoding;
+      el.appendChild(renderer.domElement);
+
+      var scene = new T.Scene();
+      var camera = new T.PerspectiveCamera(38, (el.clientWidth||800)/(el.clientHeight||500), 0.1, 400);
+      var controls = new T.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true; controls.dampingFactor = 0.08;
+      controls.maxPolarAngle = Math.PI*0.48; controls.minDistance = 5; controls.maxDistance = 130;
+
+      G = { T:T, renderer:renderer, scene:scene, camera:camera, controls:controls, el:el,
+            staticGroup:new T.Group(), rollsGroup:new T.Group(), labelsGroup:new T.Group(), hitPlanes:{}, splitMarkers:{}, geo:{}, mat:{},
+            ray:new T.Raycaster(), ndc:new T.Vector2(), anim:null, colors:themeColors() };
+      scene.add(G.staticGroup); scene.add(G.rollsGroup); scene.add(G.labelsGroup);
+      scene.background = col(G.colors.bg);
+      scene.fog = new T.Fog(col(G.colors.bg), 80, 170);
+
+      scene.add(new T.HemisphereLight(0xffffff, 0x6f6a60, 0.62));
+      var dir = new T.DirectionalLight(0xffffff, 0.95);
+      dir.position.set(16, 30, 18); dir.target.position.set(0,0,-4);
+      dir.castShadow = true; dir.shadow.mapSize.set(2048, 2048);
+      var sc = dir.shadow.camera; sc.left = -36; sc.right = 36; sc.top = 24; sc.bottom = -24; sc.near = 1; sc.far = 100;
+      dir.shadow.bias = -0.0006;
+      scene.add(dir); scene.add(dir.target);
+
+      buildStatic(); update3D(); viewOverview(true);
+
+      var down = null;
+      renderer.domElement.addEventListener("pointerdown", function(e){ down = { x:e.clientX, y:e.clientY }; });
+      renderer.domElement.addEventListener("pointerup", function(e){
+        if(!down) return;
+        var dx = e.clientX-down.x, dy = e.clientY-down.y; down = null;
+        if(dx*dx+dy*dy > 30) return;
+        var id = pickBin(e);
+        if(id){ selected = id; renderAll(); }
+      });
+      renderer.domElement.addEventListener("pointermove", function(e){
+        if(e.buttons) return;
+        renderer.domElement.style.cursor = pickBin(e) ? "pointer" : "grab";
+      });
+      if(window.ResizeObserver){
+        new ResizeObserver(function(){
+          var w = el.clientWidth, h = el.clientHeight; if(!w || !h) return;
+          renderer.setSize(w, h); camera.aspect = w/h; camera.updateProjectionMatrix();
+        }).observe(el);
+      }
+      (function loop(now){
+        requestAnimationFrame(loop);
+        if(G.anim) G.anim(now || performance.now());
+        controls.update();
+        renderer.render(scene, camera);
+      })();
+    }catch(err){ fallback(); }
+  }
+
+  function onTheme(){
+    if(!G) return;
+    G.colors = themeColors();
+    G.scene.background = col(G.colors.bg);
+    G.scene.fog.color.copy(col(G.colors.bg));
+    G.mat = {};
+    buildStatic(); update3D();
+  }
+
+  /* ================= wiring ================= */
+  function renderAll(){
+    renderChips();
+    renderDetail();
+    renderCalc();
+    update3D();
+  }
+  function invalidateSearch(){
+    if(!pending) return;
+    pending = null; renderOptions(); renderChips(); update3D();
+  }
+
+  document.getElementById("arr-diameter").addEventListener("change", function(){ fillNoMaterialSelect(); invalidateSearch(); });
+  document.getElementById("arr-material").addEventListener("change", invalidateSearch);
+  document.getElementById("arr-qty").addEventListener("input", invalidateSearch);
+  document.getElementById("btn-search").addEventListener("click", startSearch);
+  document.getElementById("btn-reset-all").addEventListener("click", function(){
+    resetWarehouse(); selected = "H1";
+    document.getElementById("arrival-result").innerHTML = "";
+    renderOptions(); renderAll();
+    if(G) viewOverview();
+  });
+  document.getElementById("view-overview").addEventListener("click", function(){ if(G) viewOverview(); });
+  document.getElementById("view-front").addEventListener("click", function(){ if(G) viewFront(); });
+  document.getElementById("view-focus").addEventListener("click", function(){ focusBin(selected); });
+  ["calc-diameter","calc-diameter-custom","calc-width","calc-depth","calc-layers"].forEach(function(id){
+    document.getElementById(id).addEventListener("input", renderCalc);
+    document.getElementById(id).addEventListener("change", renderCalc);
+  });
+  try{ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", onTheme); }catch(e){}
+  try{ new MutationObserver(onTheme).observe(document.documentElement, { attributes:true, attributeFilter:["data-theme"] }); }catch(e){}
+
+  fillNoMaterialSelect();
+  init3D();
+  renderAll();
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){ if(G){ buildStatic(); update3D(); } }); }
+})();
+</script>
+
+</body></html>
