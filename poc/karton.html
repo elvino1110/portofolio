@@ -1,0 +1,773 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Simulator Bin Karton</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --bg:#e9e6df; --surface:#ffffff; --surface-2:#f3f1ea; --ink:#23211d; --ink-dim:#6b665c;
+    --line:#cfc9ba; --accent:#c8731f; --accent-ink:#ffffff;
+    --ok:#2f7a3d; --warn:#b5831a; --crit:#b0392f; --info:#2f62a8;
+    --floor:#d9d5cb; --paint:#d9a21b; --top:#e6dcc4;
+    --m1:#c8731f; --m2:#c8588a; --m3:#2f6f6b; --m4:#5f9a3f; --m5:#5a4a8a; --m6:#c4a01c;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --display: "Oswald", var(--body);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1a1915; --surface:#242320; --surface-2:#2c2b26; --ink:#eae6db; --ink-dim:#a8a397;
+      --line:#45423a; --accent:#e08a3c; --accent-ink:#1a1915;
+      --ok:#5bbf6c; --warn:#dba93a; --crit:#e2625a; --info:#6f9be0;
+      --floor:#34322c; --paint:#c99a2a; --top:#cfc5ac;
+      --m1:#e08a3c; --m2:#e07aa8; --m3:#5aa39e; --m4:#86c25f; --m5:#9a8ad0; --m6:#dcbb3a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1a1915; --surface:#242320; --surface-2:#2c2b26; --ink:#eae6db; --ink-dim:#a8a397;
+    --line:#45423a; --accent:#e08a3c; --accent-ink:#1a1915;
+    --ok:#5bbf6c; --warn:#dba93a; --crit:#e2625a; --info:#6f9be0;
+    --floor:#34322c; --paint:#c99a2a; --top:#cfc5ac;
+    --m1:#e08a3c; --m2:#e07aa8; --m3:#5aa39e; --m4:#86c25f; --m5:#9a8ad0; --m6:#dcbb3a;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--ink); font-family:var(--body); margin:0; line-height:1.5}
+  body{padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px))}
+  .wrap{max-width:1120px; margin:0 auto; padding-block:28px 60px}
+  h1,h2,h3{font-family:var(--display); font-weight:600; text-transform:uppercase; letter-spacing:.02em; text-wrap:balance; margin:0}
+  h1{font-size:1.5rem}
+  h2{font-size:1.05rem; color:var(--ink-dim); letter-spacing:.08em; margin-bottom:4px}
+  h3{font-size:.95rem; letter-spacing:.04em}
+  p{margin:0}
+  .eyebrow{font-family:var(--mono); font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+  .lede{color:var(--ink-dim); font-size:.92rem; max-width:66ch}
+  header.top{display:flex; flex-direction:column; gap:6px; margin-bottom:18px}
+  .banner{background:var(--surface-2); border:1px solid var(--line); border-left:4px solid var(--warn); border-radius:6px; padding:12px 14px; font-size:.86rem; margin-block:16px 22px}
+  .banner b{color:var(--warn)}
+  section{margin-top:34px}
+  .section-head{display:flex; flex-direction:column; gap:3px; margin-bottom:14px}
+  .layout{display:grid; grid-template-columns: 1.1fr 1fr; gap:18px; align-items:start}
+  @media (max-width: 860px){ .layout{grid-template-columns:1fr} }
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px; min-width:0}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-bottom:14px}
+  .stat{background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:10px 12px}
+  .stat .n{font-family:var(--mono); font-weight:600; font-size:1.15rem}
+  .stat .l{color:var(--ink-dim); font-size:.74rem}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:.76rem; color:var(--ink-dim); margin-bottom:12px}
+  .legend span{display:inline-flex; align-items:center; gap:6px}
+  .sw{width:10px; height:10px; border-radius:2px; display:inline-block; flex:none}
+  .scene-wrap{position:relative; border-radius:10px; overflow:hidden; border:1px solid var(--line); background:var(--bg)}
+  .scene3d{height:520px; width:100%; touch-action:none}
+  .scene3d canvas{display:block}
+  @media (max-width:640px){ .scene3d{height:380px} }
+  .scene-ctrl{position:absolute; top:10px; left:10px; right:10px; display:flex; gap:6px; flex-wrap:wrap}
+  .scene-hint{position:absolute; bottom:8px; left:10px; font-size:.7rem; color:var(--ink-dim); background:color-mix(in srgb, var(--surface) 85%, transparent); padding:2px 8px; border-radius:4px}
+  button, select, input{font-family:var(--body); font-size:.85rem}
+  button{background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:500}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600}
+  button.primary:disabled{opacity:.4; cursor:not-allowed}
+  button:focus-visible, select:focus-visible, input:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+  .scene-ctrl button{background:color-mix(in srgb, var(--surface) 90%, transparent)}
+  select, input[type=number], input[type=date]{background:var(--surface-2); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 8px; min-width:0}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+  .chip{font-family:var(--mono); font-size:.74rem; padding:4px 9px}
+  .chip[aria-pressed=true]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:end; margin-bottom:10px}
+  .field{display:flex; flex-direction:column; gap:3px; min-width:0}
+  .field label{font-size:.7rem; color:var(--ink-dim); font-weight:600; text-transform:uppercase; letter-spacing:.05em}
+  table{width:100%; border-collapse:collapse; font-size:.82rem}
+  th{text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-dim); font-weight:600; padding:4px 6px; border-bottom:1px solid var(--line)}
+  td{padding:5px 6px; border-bottom:1px solid var(--line); vertical-align:middle}
+  .tablewrap{overflow-x:auto}
+  .mono{font-family:var(--mono)}
+  .muted{color:var(--ink-dim)}
+  .tag{font-family:var(--mono); font-size:.66rem; padding:1px 6px; border-radius:99px; border:1px solid var(--line); white-space:nowrap}
+  .tag.ok{color:var(--ok); border-color:var(--ok)} .tag.info{color:var(--info); border-color:var(--info)} .tag.warn{color:var(--warn); border-color:var(--warn)} .tag.crit{color:var(--crit); border-color:var(--crit)}
+  .optline{border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-top:10px; background:var(--surface-2)}
+  .optline-h{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:6px; font-size:.88rem}
+  .optline-h .tot{margin-left:auto; font-family:var(--mono); font-size:.76rem}
+  .optline input[type=number]{width:96px}
+  .msg{font-size:.82rem; padding:8px 10px; border-radius:6px; margin-top:10px; border:1px solid var(--line); background:var(--surface-2)}
+  .msg.ok{border-color:var(--ok)} .msg.warn{border-color:var(--warn)} .msg.crit{border-color:var(--crit); color:var(--crit); font-weight:600}
+  .labels{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:10px; margin-top:12px}
+  .label{background:#fff; color:#111; border:2px dashed #888; border-radius:6px; padding:8px; text-align:center; font-family:var(--mono); font-size:.68rem; line-height:1.3}
+  .label .qr{width:110px; margin:0 auto 4px}
+  .label .qr svg{width:100%; height:auto; display:block}
+  .label b{font-size:.8rem; display:block}
+  .cardbox{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px}
+  .cardbox .qrbox{width:112px; background:#fff; padding:4px; border-radius:4px; flex:none}
+  .cardbox .qrbox svg{width:100%; height:auto; display:block}
+  .cardbox .info{flex:1; min-width:180px; font-size:.84rem}
+  .cardbox .info .k{color:var(--ink-dim); font-size:.72rem}
+  .bar{height:8px; border-radius:4px; background:var(--line); overflow:hidden; margin-top:3px}
+  .bar i{display:block; height:100%; background:var(--accent)}
+  .qtyrow{display:flex; gap:8px; align-items:end; flex-wrap:wrap; margin-top:12px}
+  .qtyrow input{width:110px}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  @media (max-width:760px){ .grid2{grid-template-columns:1fr} }
+  ul.tight{margin:6px 0 0; padding-left:18px; font-size:.86rem} ul.tight li{margin-bottom:4px}
+  .fb{display:none; padding:30px; text-align:center; color:var(--ink-dim)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">WMS Virtual · Raw Material Karton</span>
+    <h1>Simulator Bin Karton (3D)</h1>
+    <p class="lede">Karton belum punya WMS, jadi lokasi, stok per tumpukan, dan bin card digital semuanya dipegang sistem virtual ini. Alurnya: DN datang → sistem cari posisi → petugas pilih → QR tumpukan dibuat → saat ambil, scan QR → cek material → qty berkurang.</p>
+  </header>
+
+  <div class="banner"><b>Angka masih asumsi kerja.</b> Ukuran lembar datar, tebal ikat, ukuran posisi (4,2 × 3,0 m), tinggi maks 2,5 m, no material, dan jendela gabung tumpukan belum dikonfirmasi lapangan. Kode no material di sini hanya contoh.</div>
+
+  <section>
+    <div class="section-head"><h2>1 · Peta gudang karton</h2><p class="lede">Satu balok = satu pile (ikatan lembar datar ditumpuk). Ukuran balok mengikuti ukuran lembar tiap no material, tingginya mengikuti jumlah ikat. Kotak putih kecil di sisi depan = label QR tumpukan.</p></div>
+    <div class="stats" id="stats"></div>
+    <div class="legend" id="legend"></div>
+    <div class="scene-wrap">
+      <div class="scene-ctrl" id="scene-ctrl">
+        <button id="view-overview">Overview</button><button id="view-front">Tampak depan</button><button id="view-focus">Fokus posisi terpilih</button>
+      </div>
+      <div class="scene3d" id="scene3d"></div>
+      <div class="scene-hint" id="scene-hint">Seret = putar · scroll = zoom · klik tumpukan = scan</div>
+      <div class="fb" id="scene-fallback">3D tidak tersedia di perangkat ini (WebGL). Gunakan daftar posisi di bawah.</div>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Daftar posisi"></div>
+  </section>
+
+  <section class="layout">
+    <div class="panel">
+      <div class="section-head"><h2>2 · Barang datang (per DN)</h2><p class="lede">Input DN dulu. Sistem tarik no material per DN, cari posisi, lalu petugas pilih atau pecah ke beberapa posisi.</p></div>
+      <div class="row">
+        <div class="field"><label for="dn-sel">No DN</label><select id="dn-sel"></select></div>
+        <div class="field"><label for="arr-date">Tanggal datang</label><input type="date" id="arr-date" value="2026-10-18"></div>
+        <div class="field"><label for="win">Gabung jika selisih ≤ (hari)</label><input type="number" id="win" value="2" min="0" max="14" style="width:90px"></div>
+      </div>
+      <div class="tablewrap"><table id="dn-lines"></table></div>
+      <div class="row" style="margin-top:10px">
+        <label style="display:inline-flex;gap:6px;align-items:center;font-size:.82rem"><input type="checkbox" id="allow-other"> Boleh pinjam posisi line lain bila line sendiri penuh</label>
+      </div>
+      <div class="row"><button class="primary" id="btn-search">Cari posisi</button><button id="btn-reset">Reset simulasi</button></div>
+      <div id="arr-result"></div>
+      <div id="arr-confirm-wrap" hidden><button class="primary" id="btn-confirm">Konfirmasi &amp; buat QR tumpukan</button></div>
+      <div id="arr-msg"></div>
+      <div id="arr-labels"></div>
+    </div>
+
+    <div class="panel">
+      <div class="section-head"><h2>3 · Scan &amp; ambil</h2><p class="lede">Scan QR tumpukan (atau klik tumpukan di 3D). Info muncul dulu, baru tentukan berapa yang diambil.</p></div>
+      <div class="row">
+        <div class="field" style="flex:1"><label for="scan-sel">QR tumpukan</label><select id="scan-sel" style="width:100%"></select></div>
+        <button id="btn-scan">Scan</button>
+      </div>
+      <div class="row" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+        <div class="field" style="flex:1;min-width:180px"><label for="wo-sel">Permintaan produksi (WO): material</label><select id="wo-sel" style="width:100%"></select></div>
+        <div class="field"><label for="wo-qty">Qty (pcs)</label><input type="number" id="wo-qty" value="1500" min="1" step="100" style="width:100px"></div>
+        <button id="btn-wo">Buat daftar ambil (FIFO)</button>
+      </div>
+      <div id="wo-list"></div>
+      <div id="detail"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>4 · Log aktivitas (pengganti coret-coret bin card)</h2><p class="lede">Setiap masuk dan keluar tercatat otomatis dengan saldo berjalan.</p></div>
+    <div class="panel"><div class="tablewrap"><table id="log"></table></div></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Dua jenis QR</h2></div>
+    <div class="panel grid2">
+      <div><h3>Label lokasi · permanen</h3><ul class="tight"><li>Ditempel sekali di tiap posisi (A1, A2, ...), dilaminasi.</li><li>Isinya hanya kode posisi. Dipakai untuk validasi saat taruh barang: "benar di posisi ini?".</li><li>Tidak pernah dicetak ulang.</li></ul></div>
+      <div><h3>Label tumpukan · sekali pakai</h3><ul class="tight"><li>Dibuat baru tiap no material mengisi tempat kosong (satu ID unik per tumpukan).</li><li>Isinya hanya ID. Data (material, lokasi, saldo, tanggal) ada di database.</li><li>Kalau tumpukan habis, ID ditutup dan tidak dipakai lagi. Datang lagi = ID baru.</li><li>Barang yang datang berdekatan hari (dalam jendela gabung) masuk ke tumpukan yang sama, label tetap.</li></ul></div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+(function(){
+  "use strict";
+  var $ = function(s){ return document.querySelector(s); };
+  var reduceMotion = false; try{ reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+
+  /* ---------- konstanta fisik (ASUMSI) ---------- */
+  var PW = 4.2, PD = 3.0, MARGIN = 0.15, FRONT_M = 0.1, LGAP = 2.0, PGAP = 1.3;
+  var USABLE_D = PD - 0.2;
+  var SAFE_H = 250;
+  var CATS = [ {id:"A", name:"Facial"}, {id:"B", name:"Toilet"}, {id:"C", name:"Napkin"} ];
+  var TOTAL_W = CATS.length*PW + (CATS.length-1)*LGAP;
+  var MATS = [
+    { id:"facial-200",   code:"KRT-FC-200", name:"Facial Tissue 200s",     cat:"A", token:"--m1", flat:[65,45], sheet:3.5, pcs:20 },
+    { id:"facial-mini",  code:"KRT-FC-MNI", name:"Facial Tissue Mini",     cat:"A", token:"--m2", flat:[48,34], sheet:3.0, pcs:20 },
+    { id:"toilet-12",    code:"KRT-TL-12",  name:"Toilet Roll Carton 12pk", cat:"B", token:"--m3", flat:[82,58], sheet:4.0, pcs:10 },
+    { id:"toilet-24",    code:"KRT-TL-24",  name:"Toilet Roll Carton 24pk", cat:"B", token:"--m4", flat:[98,68], sheet:4.5, pcs:10 },
+    { id:"napkin-besar", code:"KRT-NP-BSR", name:"Napkin Carton Besar",    cat:"C", token:"--m5", flat:[96,72], sheet:4.2, pcs:10 },
+    { id:"napkin-kecil", code:"KRT-NP-KCL", name:"Napkin Carton Kecil",    cat:"C", token:"--m6", flat:[62,50], sheet:3.2, pcs:20 }
+  ];
+  MATS.forEach(function(m){
+    m.L = m.flat[0]/100; m.Wd = m.flat[1]/100; m.rd = m.Wd;
+    m.ikatCm = m.sheet/10*m.pcs;
+    m.layers = Math.max(1, Math.floor(SAFE_H/m.ikatCm));
+    m.qpp = m.layers*m.pcs;
+    m.fullH = m.layers*m.ikatCm/100;
+    m.cols = Math.max(1, Math.floor((PW-2*MARGIN)/m.L));
+  });
+  function mat(id){ for(var i=0;i<MATS.length;i++) if(MATS[i].id===id) return MATS[i]; }
+  function cat(id){ for(var i=0;i<CATS.length;i++) if(CATS[i].id===id) return CATS[i]; }
+  var DNS = {
+    "DN-5001": [["facial-200",2400],["facial-mini",1200]],
+    "DN-5002": [["toilet-12",3000],["toilet-24",1500]],
+    "DN-5003": [["napkin-besar",9000],["napkin-kecil",800],["facial-200",600]],
+    "DN-5004": [["facial-mini",300]]
+  };
+  function fmt(n){ return Math.round(n).toLocaleString("id-ID"); }
+  function dayDiff(a,b){ return Math.abs((Date.parse(a)-Date.parse(b))/86400000); }
+  function ymd6(d){ return d.slice(2,4)+d.slice(5,7)+d.slice(8,10); }
+
+  /* ---------- state ---------- */
+  var S, seq, LOG, selPos, selCard, plan = null, lastAlloc = {}, G = null, wo = null;
+  function newPosisi(){
+    var list = [];
+    CATS.forEach(function(c, li){ for(var pi=0; pi<3; pi++) list.push({ id:c.id+(pi+1), cat:c.id, li:li, pi:pi, cards:[] }); });
+    return list;
+  }
+  function posisi(id, st){ var L = (st||S); for(var i=0;i<L.length;i++) if(L[i].id===id) return L[i]; }
+  function pad4(n){ return ("0000"+n).slice(-4); }
+  function mkCard(st, p, matId, date, dn, qty){
+    var c = { id:"BC-"+ymd6(date)+"-"+pad4(seq++), matId:matId, piles:[], lots:[], created:date };
+    addQty(c, mat(matId), qty); c.lots.push({ dn:dn, date:date, qty:qty });
+    p.cards.push(c); return c;
+  }
+  function seedAll(){
+    S = newPosisi(); seq = 1; LOG = []; selPos = "A1"; selCard = null; plan = null; lastAlloc = {}; wo = null;
+    function s(pid, matId, qty, date){
+      var p = posisi(pid), c = mkCard(S, p, matId, date, "DN-awal", qty);
+      LOG.push({ t:date, type:"IN", id:c.id, mat:mat(matId).name, pos:pid, qty:qty, saldo:qty, note:"stok awal" });
+    }
+    s("A1","facial-200",800,"2026-10-02"); s("A1","facial-mini",300,"2026-10-08");
+    s("A2","facial-200",600,"2026-10-10"); s("A1","facial-200",300,"2026-10-12"); s("A3","facial-200",400,"2026-10-15");
+    s("B1","toilet-12",450,"2026-10-05");
+    s("C1","napkin-besar",150,"2026-10-05"); s("C1","napkin-kecil",200,"2026-10-09");
+  }
+
+  /* ---------- model ruang & kapasitas ---------- */
+  function cardQty(c){ var t=0; c.piles.forEach(function(q){ t+=q; }); return t; }
+  function usedDepth(p){ return p.cards.reduce(function(s,c){ var m=mat(c.matId); return s + Math.ceil(c.piles.length/m.cols)*m.rd; },0); }
+  function freeDepth(p){ return Math.max(0, USABLE_D - usedDepth(p)); }
+  function posPct(p){ return Math.round(usedDepth(p)/USABLE_D*100); }
+  function newCap(p, m){ return Math.floor((freeDepth(p)+1e-9)/m.rd)*m.cols*m.qpp; }
+  function mergeCap(p, c){
+    var m = mat(c.matId), n = c.piles.length, last = n ? c.piles[n-1] : m.qpp;
+    return (m.qpp-last) + (Math.ceil(n/m.cols)*m.cols - n)*m.qpp + newCap(p, m);
+  }
+  function addQty(c, m, q){
+    var left = q;
+    if(c.piles.length){ var i = c.piles.length-1, t = Math.min(m.qpp-c.piles[i], left); c.piles[i] += t; left -= t; }
+    while(left>0){ var t2 = Math.min(m.qpp, left); c.piles.push(t2); left -= t2; }
+  }
+  function takeQty(c, q){
+    var left = q;
+    while(left>0 && c.piles.length){ var i=c.piles.length-1, t=Math.min(c.piles[i], left); c.piles[i]-=t; left-=t; if(c.piles[i]<=0) c.piles.pop(); }
+  }
+  function findCard(id){
+    for(var i=0;i<S.length;i++) for(var j=0;j<S[i].cards.length;j++) if(S[i].cards[j].id===id) return { p:S[i], c:S[i].cards[j] };
+    return null;
+  }
+  function allCards(){ var r=[]; S.forEach(function(p){ p.cards.forEach(function(c){ r.push({p:p, c:c}); }); }); return r; }
+  function lastDate(c){ return c.lots[c.lots.length-1].date; }
+
+  /* ---------- cari opsi ---------- */
+  function findOptions(st, m, date, win, allowOther){
+    var out = [];
+    st.forEach(function(p){
+      var own = p.cat===m.cat;
+      if(!own && !allowOther) return;
+      var merge = null;
+      p.cards.forEach(function(c){
+        if(c.matId===m.id && dayDiff(lastDate(c), date)<=win){ if(!merge || lastDate(c)>lastDate(merge)) merge = c; }
+      });
+      var tier, kind, cap, card = null;
+      if(merge){ kind="gabung"; card=merge; cap=mergeCap(p, merge); tier = own ? 0 : 3; }
+      else { kind="baru"; cap=newCap(p, m); tier = own ? (p.cards.length ? 1 : 2) : 3; }
+      if(cap<=0) return;
+      out.push({ pid:p.id, cardId: card ? card.id : null, kind:kind, tier:tier, cap:cap, other:!own, used:usedDepth(p) });
+    });
+    out.sort(function(a,b){ return a.tier-b.tier || b.used-a.used || (a.pid<b.pid?-1:1); });
+    return out;
+  }
+  function applyAlloc(st, m, pid, cardId, q, date, dn){
+    var p = posisi(pid, st), c = null;
+    if(cardId){ for(var i=0;i<p.cards.length;i++) if(p.cards[i].id===cardId) c = p.cards[i]; }
+    var isNew = false;
+    if(c){ addQty(c, m, q); c.lots.push({ dn:dn, date:date, qty:q }); }
+    else { c = mkCard(st, p, m.id, date, dn, q); isNew = true; }
+    return { p:p, c:c, isNew:isNew };
+  }
+
+  function dnLines(){
+    var key = $("#dn-sel").value, rows = [];
+    DNS[key].forEach(function(r, i){
+      var inp = document.getElementById("dnq-"+i);
+      rows.push({ matId:r[0], qty: inp ? Math.max(0, parseInt(inp.value||"0",10)) : r[1] });
+    });
+    return rows;
+  }
+  function startSearch(){
+    var date = $("#arr-date").value || "2026-10-18", win = Math.max(0, parseInt($("#win").value||"0",10));
+    var other = $("#allow-other").checked;
+    var sim = JSON.parse(JSON.stringify(S)), simSeq = seq, savedSeq = seq;
+    var lines = dnLines().filter(function(l){ return l.qty>0; });
+    plan = { date:date, dn:$("#dn-sel").value, lines:[] };
+    lines.forEach(function(l){
+      var m = mat(l.matId), opts = findOptions(sim, m, date, win, other), left = l.qty;
+      opts.forEach(function(o){ o.q = Math.min(o.cap, left); left -= o.q; if(o.q>0){ applyAlloc(sim, m, o.pid, o.cardId, o.q, date, plan.dn); } });
+      plan.lines.push({ matId:l.matId, need:l.qty, opts:opts });
+    });
+    seq = savedSeq;
+    $("#arr-msg").innerHTML = ""; $("#arr-labels").innerHTML = "";
+    renderOptions(); renderChips(); update3D();
+  }
+
+  function tagFor(o){
+    if(o.other) return '<span class="tag warn">pinjam line lain</span>';
+    if(o.kind==="gabung") return '<span class="tag ok">gabung ke '+o.cardId+'</span>';
+    return o.tier===1 ? '<span class="tag info">kartu baru · posisi terpakai</span>' : '<span class="tag info">kartu baru · posisi kosong</span>';
+  }
+  function renderOptions(){
+    var box = $("#arr-result");
+    if(!plan){ box.innerHTML=""; $("#arr-confirm-wrap").hidden = true; return; }
+    var h = "";
+    plan.lines.forEach(function(L, li){
+      var m = mat(L.matId);
+      h += '<div class="optline"><div class="optline-h"><span class="sw" style="background:var('+m.token+')"></span><b>'+m.name+'</b>'+
+           '<span class="muted">butuh '+fmt(L.need)+' pcs (≈'+Math.ceil(L.need/m.qpp)+' pile, '+fmt(m.qpp)+' pcs/pile)</span><span class="tot" id="tot-'+li+'"></span></div>';
+      if(!L.opts.length){ h += '<div class="muted" style="font-size:.82rem">Tidak ada posisi yang muat untuk material ini.</div>'; }
+      else {
+        h += '<div class="tablewrap"><table><tr><th>Posisi</th><th>Cara</th><th>Maks muat</th><th>Taruh (pcs)</th></tr>';
+        L.opts.forEach(function(o, oi){
+          h += '<tr><td class="mono"><b>'+o.pid+'</b></td><td>'+tagFor(o)+'</td><td class="mono">'+fmt(o.cap)+'</td>'+
+               '<td><input type="number" min="0" max="'+o.cap+'" step="1" value="'+o.q+'" data-l="'+li+'" data-o="'+oi+'" aria-label="Qty ke posisi '+o.pid+'"></td></tr>';
+        });
+        h += '</table></div>';
+      }
+      h += '</div>';
+    });
+    box.innerHTML = h;
+    Array.prototype.forEach.call(box.querySelectorAll("input[data-l]"), function(inp){
+      inp.addEventListener("input", function(){
+        var o = plan.lines[+inp.dataset.l].opts[+inp.dataset.o];
+        var v = Math.max(0, parseInt(inp.value||"0",10)); o.q = Math.min(v, o.cap);
+        updateTotals(); update3D(); renderChips();
+      });
+    });
+    updateTotals();
+  }
+  function updateTotals(){
+    if(!plan) return;
+    var anyQ = false, bad = false;
+    plan.lines.forEach(function(L, li){
+      var sum = 0; L.opts.forEach(function(o){ sum += o.q; });
+      if(sum>0) anyQ = true;
+      var el = document.getElementById("tot-"+li); if(!el) return;
+      if(sum>L.need){ bad = true; el.style.color="var(--crit)"; el.textContent = "melebihi kebutuhan ("+fmt(sum)+" / "+fmt(L.need)+")"; }
+      else if(sum<L.need){ el.style.color="var(--warn)"; el.textContent = fmt(sum)+" / "+fmt(L.need)+" · sisa "+fmt(L.need-sum)+" belum dapat tempat"; }
+      else { el.style.color="var(--ok)"; el.textContent = fmt(sum)+" / "+fmt(L.need)+" · semua dapat tempat"; }
+    });
+    $("#arr-confirm-wrap").hidden = false;
+    $("#btn-confirm").disabled = !anyQ || bad;
+  }
+
+  function qrSvg(text){
+    try{ var q = window.qrcode(0, "M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize:4, margin:0, scalable:true }); }
+    catch(e){ return '<div class="muted">QR</div>'; }
+  }
+  function confirmPlan(){
+    if(!plan) return;
+    var created = [], notes = [], touched = [];
+    lastAlloc = {};
+    plan.lines.forEach(function(L){
+      var m = mat(L.matId);
+      L.opts.forEach(function(o){
+        if(o.q<=0) return;
+        var p = posisi(o.pid), cap = 0;
+        var existing = null; if(o.cardId){ p.cards.forEach(function(c){ if(c.id===o.cardId) existing = c; }); }
+        cap = existing ? mergeCap(p, existing) : newCap(p, m);
+        var q = Math.min(o.q, cap);
+        if(q<o.q) notes.push(m.name+" di "+o.pid+": hanya "+fmt(q)+" dari "+fmt(o.q)+" pcs yang muat (ruang sudah dipakai baris DN sebelumnya).");
+        if(q<=0) return;
+        var r = applyAlloc(S, m, o.pid, o.cardId, q, plan.date, plan.dn);
+        lastAlloc[o.pid] = true;
+        LOG.push({ t:plan.date, type:"IN", id:r.c.id, mat:m.name, pos:o.pid, qty:q, saldo:cardQty(r.c), note:plan.dn+(r.isNew?" · QR baru":" · digabung, QR tetap") });
+        created.push({ r:r, q:q, m:m });
+      });
+    });
+    var html = "";
+    if(created.length){
+      html += '<div class="msg ok"><b>Tersimpan.</b> Cetak label QR, tempel di tumpukan, lalu scan QR lokasi posisi untuk validasi.</div><div class="labels">';
+      created.forEach(function(x){
+        if(x.r.isNew){
+          html += '<div class="label"><div class="qr">'+qrSvg(x.r.c.id)+'</div><b>'+x.r.c.id+'</b>'+x.m.name+'<br>'+x.m.code+'<br>Posisi '+x.r.p.id+' · '+fmt(x.q)+' pcs<br>'+plan.dn+' · '+plan.date+'</div>';
+        } else {
+          html += '<div class="label" style="border-style:solid"><b>'+x.r.c.id+'</b>label sudah ada, tidak cetak ulang<br>'+x.m.name+'<br>+'+fmt(x.q)+' pcs → saldo '+fmt(cardQty(x.r.c))+'</div>';
+        }
+      });
+      html += '</div>';
+    }
+    notes.forEach(function(n){ html += '<div class="msg warn">'+n+'</div>'; });
+    var unplaced = 0; plan.lines.forEach(function(L){ var s=0; L.opts.forEach(function(o){ s+=o.q; }); unplaced += Math.max(0, L.need-s); });
+    if(unplaced>0) html += '<div class="msg warn">'+fmt(unplaced)+' pcs belum dapat posisi. Cari ulang setelah ada ruang, atau aktifkan pinjam posisi line lain.</div>';
+    $("#arr-labels").innerHTML = html;
+    plan = null; renderOptions();
+    if(created.length){ selPos = created[0].r.p.id; selCard = created[0].r.c.id; }
+    renderAll();
+  }
+
+  /* ---------- panel ambil ---------- */
+  function fillSelects(){
+    var dn = $("#dn-sel"); if(!dn.options.length) dn.innerHTML = Object.keys(DNS).map(function(k){ return '<option>'+k+'</option>'; }).join("");
+    var wo = $("#wo-sel"), cur = wo.value;
+    wo.innerHTML = '<option value="">— pilih material —</option>' + MATS.map(function(m){ return '<option value="'+m.id+'">'+m.name+' ('+m.code+')</option>'; }).join("");
+    wo.value = cur;
+    var sc = $("#scan-sel"), cv = selCard;
+    var opts = allCards().map(function(x){ return '<option value="'+x.c.id+'">'+x.c.id+' · '+mat(x.c.matId).name+' · '+x.p.id+'</option>'; });
+    sc.innerHTML = opts.length ? opts.join("") : '<option value="">(belum ada tumpukan)</option>';
+    if(cv && findCard(cv)) sc.value = cv;
+  }
+  function renderDnLines(){
+    var key = $("#dn-sel").value, h = '<tr><th>No material</th><th>Nama</th><th>Qty (pcs)</th></tr>';
+    DNS[key].forEach(function(r, i){
+      var m = mat(r[0]);
+      h += '<tr><td class="mono">'+m.code+'</td><td><span class="sw" style="background:var('+m.token+')"></span> '+m.name+'</td><td><input type="number" id="dnq-'+i+'" value="'+r[1]+'" min="0" step="100" style="width:100px"></td></tr>';
+    });
+    $("#dn-lines").innerHTML = h;
+    Array.prototype.forEach.call(document.querySelectorAll("#dn-lines input"), function(i){ i.addEventListener("input", function(){ plan=null; renderOptions(); update3D(); renderChips(); }); });
+  }
+  function renderDetail(){
+    var box = $("#detail"), f = selCard ? findCard(selCard) : null;
+    if(!f){
+      var p = posisi(selPos), h = '<div class="muted" style="font-size:.85rem">Belum ada tumpukan dipindai. Posisi terpilih: <b class="mono">'+selPos+'</b> ('+posPct(p)+'% terpakai, sisa kedalaman '+freeDepth(p).toFixed(1)+' m).</div>';
+      if(p.cards.length){ h += '<div class="tablewrap" style="margin-top:8px"><table><tr><th>QR</th><th>Material</th><th>Saldo</th></tr>'+p.cards.map(function(c){ return '<tr><td class="mono">'+c.id+'</td><td>'+mat(c.matId).name+'</td><td class="mono">'+fmt(cardQty(c))+'</td></tr>'; }).join("")+'</table></div>'; }
+      box.innerHTML = h; return;
+    }
+    var c = f.c, p2 = f.p, m = mat(c.matId), q = cardQty(c), cap = m.qpp*c.piles.length;
+    var steps = wo ? woSteps() : [], wrong = false, offTurn = false, msg = "", defQty = Math.min(q, 500);
+    var older = allCards().filter(function(x){ return x.c.matId===c.matId && x.c.id!==c.id && x.c.lots[0].date < c.lots[0].date; });
+    if(wo){
+      if(wo.matId!==c.matId){ wrong = true; msg = '<div class="msg crit">SALAH MATERIAL. Produksi minta '+mat(wo.matId).name+', tumpukan ini '+m.name+'. Jangan diambil.</div>'; }
+      else if(!steps.length){ msg = '<div class="msg ok">Permintaan produksi sudah terpenuhi.</div>'; }
+      else if(steps[0].cardId===c.id){ msg = '<div class="msg ok">Giliran yang benar (FIFO). Ambil '+fmt(steps[0].q)+' pcs dari tumpukan ini.</div>'; defQty = Math.min(q, steps[0].q); }
+      else { offTurn = true; msg = '<div class="msg crit">BUKAN GILIRAN FIFO. Ambil dulu '+steps[0].cardId+' di posisi '+steps[0].posId+' (lot '+steps[0].date+').</div>'; }
+    } else if(older.length){
+      msg = '<div class="msg warn">FIFO: ada tumpukan '+m.name+' yang lebih lama ('+older.map(function(x){ return x.c.id+' di '+x.p.id; }).join(", ")+'). Buat permintaan produksi di atas untuk dapat urutan ambil.</div>';
+    }
+    var h = '<div class="cardbox"><div class="qrbox">'+qrSvg(c.id)+'</div><div class="info">'+
+      '<div class="mono"><b>'+c.id+'</b></div>'+
+      '<div><span class="sw" style="background:var('+m.token+')"></span> <b>'+m.name+'</b> <span class="muted mono">'+m.code+'</span></div>'+
+      '<div class="k">Lokasi</div><div>Line '+p2.cat+' ('+cat(p2.cat).name+') · posisi <b>'+p2.id+'</b></div>'+
+      '<div class="k">Saldo</div><div class="mono"><b>'+fmt(q)+' pcs</b> · '+c.piles.length+' pile · tinggi tumpukan '+(Math.max.apply(null,c.piles)/m.qpp*m.fullH).toFixed(2)+' m</div>'+
+      '<div class="bar"><i style="width:'+Math.round(q/cap*100)+'%"></i></div>'+
+      '<div class="k">Lot masuk (tanggal tertua di atas)</div>'+c.lots.map(function(l){ return '<div class="mono" style="font-size:.76rem">'+l.date+' · '+l.dn+' · '+fmt(l.qty)+'</div>'; }).join("")+
+      '</div></div>' + msg;
+    h += '<div class="qtyrow"><div class="field"><label for="pick-q">Ambil (pcs)</label><input type="number" id="pick-q" min="1" max="'+q+'" value="'+defQty+'"></div>'+
+         '<button class="primary" id="btn-pick"'+(wrong?' disabled':'')+'>'+(offTurn?'Tetap ambil (catat pelanggaran FIFO)':'Konfirmasi ambil')+'</button></div><div id="pick-msg"></div>';
+    box.innerHTML = h;
+    $("#btn-pick").addEventListener("click", function(){
+      var v = Math.max(1, Math.min(q, parseInt($("#pick-q").value||"0",10)));
+      var date = $("#arr-date").value || "2026-10-18";
+      takeQty(c, v);
+      var left = cardQty(c);
+      var viol = wo ? offTurn : older.length>0;
+      if(wo && wo.matId===c.matId) wo.picked += v;
+      LOG.push({ t:date, type:"OUT", id:c.id, mat:m.name, pos:p2.id, qty:v, saldo:left, note: (viol?"⚠ melanggar FIFO · ":"")+(wo?"sesuai WO · ":"")+"scan ambil" + (left===0?" · tumpukan habis, QR ditutup":"") });
+      if(left===0){ p2.cards = p2.cards.filter(function(x){ return x.id!==c.id; }); selCard = null; }
+      lastAlloc = {};
+      renderAll();
+    });
+  }
+  function woSteps(){
+    var out = [];
+    if(!wo){ out.short = 0; return out; }
+    var left = wo.qty - wo.picked;
+    var cards = allCards().filter(function(x){ return x.c.matId===wo.matId; }).sort(function(a,b){
+      var da = a.c.lots[0].date, db = b.c.lots[0].date; return da<db ? -1 : da>db ? 1 : (a.c.id<b.c.id ? -1 : 1);
+    });
+    cards.forEach(function(x){ if(left<=0) return; var t = Math.min(cardQty(x.c), left); out.push({ cardId:x.c.id, posId:x.p.id, q:t, date:x.c.lots[0].date }); left -= t; });
+    out.short = Math.max(0, left); return out;
+  }
+  function renderWo(){
+    var box = $("#wo-list");
+    if(!wo){ box.innerHTML = ""; return; }
+    var m = mat(wo.matId), steps = woSteps(), rem = wo.qty - wo.picked;
+    var h = '<div class="optline"><div class="optline-h"><span class="sw" style="background:var('+m.token+')"></span><b>'+m.name+'</b><span class="muted">diminta '+fmt(wo.qty)+' pcs · sudah diambil '+fmt(wo.picked)+'</span></div>';
+    if(rem<=0) h += '<div class="msg ok" style="margin-top:0">Permintaan terpenuhi.</div>';
+    else {
+      h += '<div class="muted" style="font-size:.78rem;margin-bottom:6px">Urutan ambil: lot tertua dulu, lintas posisi. Angka yang sama muncul di atas tumpukan di 3D.</div>';
+      if(steps.length){
+        h += '<div class="tablewrap"><table><tr><th>#</th><th>QR</th><th>Posisi</th><th>Lot tertua</th><th>Ambil</th><th></th></tr>';
+        steps.forEach(function(st, i){
+          h += '<tr><td class="mono"><b>'+(i+1)+'</b></td><td class="mono">'+st.cardId+'</td><td class="mono">'+st.posId+'</td><td class="mono">'+st.date+'</td><td class="mono">'+fmt(st.q)+'</td>'+
+               '<td>'+(i===0 ? '<span class="tag ok">giliran sekarang</span> ' : '<span class="tag">menunggu</span> ')+'<button class="chip" data-c="'+st.cardId+'">Scan</button></td></tr>';
+        });
+        h += '</table></div>';
+      }
+      if(steps.short>0) h += '<div class="msg warn">Stok tidak cukup. Kurang '+fmt(steps.short)+' pcs.</div>';
+    }
+    box.innerHTML = h + '</div>';
+    Array.prototype.forEach.call(box.querySelectorAll("button[data-c]"), function(b){
+      b.addEventListener("click", function(){ var f = findCard(b.dataset.c); selCard = b.dataset.c; selPos = f.p.id; renderAll(); if(G) focusPos(selPos); });
+    });
+  }
+  function renderLog(){
+    var rows = LOG.slice(-12).reverse();
+    $("#log").innerHTML = '<tr><th>Tanggal</th><th>Jenis</th><th>QR</th><th>Material</th><th>Posisi</th><th>Qty</th><th>Saldo</th><th>Ket.</th></tr>' +
+      rows.map(function(r){ return '<tr><td class="mono">'+r.t+'</td><td><span class="tag '+(r.type==="IN"?"ok":"info")+'">'+(r.type==="IN"?"MASUK":"KELUAR")+'</span></td><td class="mono">'+r.id+'</td><td>'+r.mat+'</td><td class="mono">'+r.pos+'</td><td class="mono">'+(r.type==="IN"?"+":"-")+fmt(r.qty)+'</td><td class="mono">'+fmt(r.saldo)+'</td><td class="muted">'+r.note+'</td></tr>'; }).join("");
+  }
+  function renderStats(){
+    var used = 0, n = 0, piles = 0;
+    S.forEach(function(p){ used += usedDepth(p); n += p.cards.length; p.cards.forEach(function(c){ piles += c.piles.length; }); });
+    $("#stats").innerHTML =
+      '<div class="stat"><div class="n">'+S.length+'</div><div class="l">Posisi (3 line)</div></div>'+
+      '<div class="stat"><div class="n">'+n+'</div><div class="l">Tumpukan aktif (QR)</div></div>'+
+      '<div class="stat"><div class="n">'+piles+'</div><div class="l">Pile terisi</div></div>'+
+      '<div class="stat"><div class="n">'+Math.round(used/(S.length*USABLE_D)*100)+'%</div><div class="l">Okupansi lantai</div></div>';
+    $("#legend").innerHTML = MATS.map(function(m){ return '<span><span class="sw" style="background:var('+m.token+')"></span>'+m.name+' · '+(m.flat[0])+'×'+m.flat[1]+' cm</span>'; }).join("");
+  }
+  function candState(){
+    var r = {};
+    if(plan) plan.lines.forEach(function(L){ L.opts.forEach(function(o){ if(o.q>0) r[o.pid]="chosen"; else if(!r[o.pid]) r[o.pid]="cand"; }); });
+    return r;
+  }
+  function renderChips(){
+    var cs = candState();
+    $("#chips").innerHTML = S.map(function(p){
+      var tag = cs[p.id]==="chosen" ? " ✔" : (cs[p.id]==="cand" ? " ·" : "");
+      return '<button class="chip" data-p="'+p.id+'" aria-pressed="'+(p.id===selPos)+'">'+p.id+' · '+posPct(p)+'%'+tag+'</button>';
+    }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll("#chips .chip"), function(b){
+      b.addEventListener("click", function(){ selPos = b.dataset.p; selCard = null; renderAll(); if(G) focusPos(selPos); });
+    });
+  }
+  function renderAll(){ fillSelects(); renderStats(); renderChips(); renderWo(); renderDetail(); renderLog(); update3D(); }
+
+  /* ---------- 3D ---------- */
+  function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888888"; }
+  function webglOK(){ try{ var c=document.createElement("canvas"); return !!(window.WebGLRenderingContext && (c.getContext("webgl")||c.getContext("experimental-webgl"))); }catch(e){ return false; } }
+  function col(hex){ return new G.T.Color(hex).convertSRGBToLinear(); }
+  function themeColors(){ return { bg:cssVar("--bg"), floor:cssVar("--floor"), paint:cssVar("--paint"), ink:cssVar("--ink"), dim:cssVar("--ink-dim"), accent:cssVar("--accent"), ok:cssVar("--ok"), info:cssVar("--info"), top:cssVar("--top") }; }
+  function origin(p){ return { x0: -TOTAL_W/2 + p.li*(PW+LGAP), z0: -p.pi*(PD+PGAP) }; }
+
+  function textPlane(text, w, h, color, px, weight){
+    var T = G.T, res = 160;
+    var cv = document.createElement("canvas"); cv.width = Math.round(w*res); cv.height = Math.round(h*res);
+    var x = cv.getContext("2d"); var lines = Array.isArray(text) ? text : [text];
+    x.textAlign="center"; x.textBaseline="middle"; x.fillStyle=color;
+    lines.forEach(function(line, i){
+      var size = i===0 ? px : Math.round(px*0.78), wt = i===0 ? weight : "500";
+      x.font = wt+" "+size+'px "IBM Plex Mono", ui-monospace, monospace';
+      var maxW = cv.width*0.96, w0 = x.measureText(line).width;
+      if(w0>maxW){ size = Math.floor(size*maxW/w0); x.font = wt+" "+size+'px "IBM Plex Mono", ui-monospace, monospace'; }
+      x.fillText(line, cv.width/2, cv.height*(i+0.5)/lines.length);
+    });
+    var tex = new T.CanvasTexture(cv); tex.encoding = T.sRGBEncoding; tex.anisotropy = 4;
+    var m = new T.Mesh(new T.PlaneGeometry(w,h), new T.MeshBasicMaterial({ map:tex, transparent:true, depthWrite:false }));
+    m.rotation.x = -Math.PI/2; return m;
+  }
+  function disposeGroup(g){
+    while(g.children.length){ var o = g.children[0]; g.remove(o); if(o.geometry && !o.userData.shared) o.geometry.dispose(); if(o.material){ if(o.material.map) o.material.map.dispose(); o.material.dispose(); } }
+  }
+  function sideTexture(m){
+    var T = G.T, cv = document.createElement("canvas"); cv.width = 32; cv.height = 256;
+    var x = cv.getContext("2d"), base = cssVar(m.token);
+    x.fillStyle = base; x.fillRect(0,0,32,256);
+    x.fillStyle = "rgba(255,255,255,.10)"; x.fillRect(0,0,32,256);
+    var step = 256/m.layers;
+    for(var i=0;i<=m.layers;i++){
+      var y = 256 - i*step;
+      x.fillStyle = "rgba(0,0,0,.30)"; x.fillRect(0, y-0.6, 32, 1.2);
+      x.fillStyle = "rgba(255,255,255,.12)"; x.fillRect(0, y+0.6, 32, 0.8);
+    }
+    x.fillStyle = "rgba(60,40,10,.35)"; x.fillRect(14,0,3,256); // tali ikat
+    var tex = new T.CanvasTexture(cv); tex.encoding = T.sRGBEncoding; return tex;
+  }
+  function pileGeo(m, h){
+    var key = m.id+"|"+Math.round(h*100);
+    if(G.geo[key]) return G.geo[key];
+    var T = G.T, g = new T.BoxGeometry(m.L-0.02, h, m.Wd-0.02), uv = g.attributes.uv, frac = h/m.fullH;
+    for(var f=0; f<6; f++){ if(f===2 || f===3) continue; for(var v=0; v<4; v++){ var i = f*4+v; uv.setY(i, uv.getY(i)*frac); } }
+    uv.needsUpdate = true; G.geo[key] = g; return g;
+  }
+  function pileMats(m){
+    var T = G.T, k = m.id;
+    if(!G.mat[k]){
+      var side = new T.MeshStandardMaterial({ map:sideTexture(m), roughness:0.9 });
+      var top = new T.MeshStandardMaterial({ color:col(G.colors.top), roughness:0.95 });
+      G.mat[k] = [side, side, top, top, side, side];
+    }
+    return G.mat[k];
+  }
+  function qrTexture(id){
+    var T = G.T;
+    if(G.qr[id]) return G.qr[id];
+    var cv = document.createElement("canvas"); cv.width = cv.height = 128;
+    var x = cv.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0,0,128,128);
+    try{
+      var q = window.qrcode(0,"M"); q.addData(id); q.make(); var n = q.getModuleCount(), s = 112/n;
+      x.fillStyle = "#111"; for(var r=0;r<n;r++) for(var c=0;c<n;c++) if(q.isDark(r,c)) x.fillRect(8+c*s, 8+r*s, Math.ceil(s), Math.ceil(s));
+    }catch(e){}
+    var tex = new T.CanvasTexture(cv); tex.encoding = T.sRGBEncoding; G.qr[id] = tex; return tex;
+  }
+
+  function buildStatic(){
+    var T = G.T, c = G.colors, g = G.staticGroup;
+    while(g.children.length) g.remove(g.children[0]);
+    G.hitPlanes = {};
+    var floor = new T.Mesh(new T.PlaneGeometry(TOTAL_W+30, 3*(PD+PGAP)+30), new T.MeshStandardMaterial({ color:col(c.floor), roughness:0.96 }));
+    floor.rotation.x = -Math.PI/2; floor.position.set(0,0,-6); floor.receiveShadow = true; g.add(floor);
+    var paint = new T.MeshBasicMaterial({ color:col(c.paint) });
+    function strip(x,z,w,d){ var m = new T.Mesh(new T.PlaneGeometry(w,d), paint); m.rotation.x = -Math.PI/2; m.position.set(x, 0.012, z); g.add(m); }
+    S.forEach(function(p){
+      var o = origin(p), cx = o.x0+PW/2, cz = o.z0-PD/2;
+      strip(o.x0, cz, 0.07, PD); strip(o.x0+PW, cz, 0.07, PD); strip(cx, o.z0, PW+0.07, 0.07); strip(cx, o.z0-PD, PW+0.07, 0.07);
+      var hp = new T.Mesh(new T.PlaneGeometry(PW-0.1, PD-0.1), new T.MeshBasicMaterial({ color:col(c.accent), transparent:true, opacity:0, depthWrite:false }));
+      hp.rotation.x = -Math.PI/2; hp.position.set(cx, 0.008, cz); hp.userData.posId = p.id; g.add(hp); G.hitPlanes[p.id] = hp;
+    });
+    CATS.forEach(function(ct, li){
+      var lbl = textPlane("LINE "+ct.id+" · "+ct.name.toUpperCase(), 4.2, 0.7, c.dim, 62, "600");
+      lbl.position.set(-TOTAL_W/2 + li*(PW+LGAP)+PW/2, 0.02, 2.0); g.add(lbl);
+    });
+  }
+
+  function update3D(){
+    if(!G) return;
+    var g = G.pilesGroup, cs = candState(), stepIdx = {};
+    if(wo) woSteps().forEach(function(st, i){ stepIdx[st.cardId] = i+1; });
+    while(g.children.length) g.remove(g.children[0]);
+    disposeGroup(G.labelsGroup);
+    S.forEach(function(p){
+      var o = origin(p), cx = o.x0+PW/2, hp = G.hitPlanes[p.id];
+      if(cs[p.id]==="chosen"){ hp.material.color.copy(col(G.colors.info)); hp.material.opacity = 0.42; }
+      else if(p.id===selPos){ hp.material.color.copy(col(G.colors.accent)); hp.material.opacity = 0.22; }
+      else if(cs[p.id]==="cand"){ hp.material.color.copy(col(G.colors.info)); hp.material.opacity = 0.14; }
+      else if(lastAlloc[p.id]){ hp.material.color.copy(col(G.colors.ok)); hp.material.opacity = 0.28; }
+      else hp.material.opacity = 0;
+      var t = textPlane([p.id, posPct(p)+"% terpakai"], 2.6, 0.9, G.colors.ink, 64, "700");
+      t.position.set(cx, 0.02, o.z0+0.62); G.labelsGroup.add(t);
+
+      var cursor = 0;
+      p.cards.forEach(function(card){
+        var m = mat(card.matId), rowsC = Math.ceil(card.piles.length/m.cols);
+        if(card.id===selCard || stepIdx[card.id]){
+          var hl = new G.T.Mesh(new G.T.PlaneGeometry(m.cols*m.L+0.1, rowsC*m.rd+0.1), new G.T.MeshBasicMaterial({ color:col(card.id===selCard ? G.colors.accent : G.colors.info), transparent:true, opacity:0.55, depthWrite:false }));
+          hl.rotation.x = -Math.PI/2; hl.position.set(o.x0+MARGIN+m.cols*m.L/2, 0.02, o.z0-FRONT_M-cursor-rowsC*m.rd/2); g.add(hl);
+        }
+        card.piles.forEach(function(q, i){
+          var r = Math.floor(i/m.cols), cc = i%m.cols, h = Math.max(0.06, q/m.qpp*m.fullH);
+          var mesh = new G.T.Mesh(pileGeo(m, h), pileMats(m));
+          mesh.userData.shared = true; mesh.userData.cardId = card.id; mesh.userData.posId = p.id;
+          var zc = o.z0 - FRONT_M - cursor - r*m.rd - m.rd/2, xc = o.x0 + MARGIN + cc*m.L + m.L/2;
+          mesh.position.set(xc, h/2, zc); mesh.castShadow = true; mesh.receiveShadow = true;
+          g.add(mesh);
+          if(r===0 && cc===0){
+            if(stepIdx[card.id]){ var nl = textPlane([String(stepIdx[card.id])], 0.6, 0.6, G.colors.accent, 100, "700"); nl.position.set(xc, h+0.03, zc); G.labelsGroup.add(nl); }
+            var tag = new G.T.Mesh(new G.T.PlaneGeometry(0.3,0.3), new G.T.MeshBasicMaterial({ map:qrTexture(card.id) }));
+            tag.position.set(xc, Math.min(1.0, h*0.55), zc + (m.Wd-0.02)/2 + 0.004);
+            tag.userData.cardId = card.id; tag.userData.posId = p.id; tag.userData.shared = true; g.add(tag);
+          }
+        });
+        cursor += rowsC*m.rd;
+      });
+    });
+  }
+
+  function viewFactor(){ var a = G.camera.aspect || 2; return Math.max(1, 1.9/a); }
+  function flyTo(pos, tgt, instant){
+    var T = G.T, p1 = new T.Vector3(pos[0],pos[1],pos[2]), t1 = new T.Vector3(tgt[0],tgt[1],tgt[2]);
+    if(instant || reduceMotion){ G.camera.position.copy(p1); G.controls.target.copy(t1); G.controls.update(); G.anim=null; return; }
+    var p0 = G.camera.position.clone(), t0 = G.controls.target.clone(), start = performance.now(), dur = 700;
+    G.anim = function(now){ var k = Math.min(1,(now-start)/dur), e = k<0.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2; G.camera.position.lerpVectors(p0,p1,e); G.controls.target.lerpVectors(t0,t1,e); if(k>=1) G.anim=null; };
+  }
+  function viewOverview(instant){ var f = viewFactor(); flyTo([0, 4+8*f, 9+8*f], [0, 0.4, -5.0], instant); }
+  function viewFront(){ var f = viewFactor(); flyTo([0, 3.2, 8+15*f], [0, 1.2, -4.5]); }
+  function focusPos(id){ var p = posisi(id), o = origin(p); flyTo([o.x0+PW/2+3.2, 5.2, o.z0+6.2], [o.x0+PW/2, 0.9, o.z0-PD/2]); }
+
+  function pick(e){
+    var rect = G.renderer.domElement.getBoundingClientRect();
+    G.ndc.set(((e.clientX-rect.left)/rect.width)*2-1, -((e.clientY-rect.top)/rect.height)*2+1);
+    G.ray.setFromCamera(G.ndc, G.camera);
+    var objs = Object.keys(G.hitPlanes).map(function(k){ return G.hitPlanes[k]; }).concat([G.pilesGroup]);
+    var hits = G.ray.intersectObjects(objs, true);
+    for(var i=0;i<hits.length;i++){ var o = hits[i].object; while(o && !o.userData.posId) o = o.parent; if(o) return o.userData; }
+    return null;
+  }
+
+  function init3D(){
+    var el = $("#scene3d"), T = window.THREE;
+    function fallback(){ el.hidden = true; $("#scene-ctrl").hidden = true; $("#scene-hint").hidden = true; $("#scene-fallback").style.display = "block"; G = null; }
+    if(!T || !T.OrbitControls || !webglOK()){ fallback(); return; }
+    try{
+      var renderer = new T.WebGLRenderer({ antialias:true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+      renderer.setSize(el.clientWidth||800, el.clientHeight||500);
+      renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.outputEncoding = T.sRGBEncoding;
+      el.appendChild(renderer.domElement);
+      var scene = new T.Scene();
+      var camera = new T.PerspectiveCamera(38, (el.clientWidth||800)/(el.clientHeight||500), 0.1, 400);
+      var controls = new T.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI*0.48; controls.minDistance = 4; controls.maxDistance = 90;
+      G = { T:T, renderer:renderer, scene:scene, camera:camera, controls:controls, el:el, staticGroup:new T.Group(), pilesGroup:new T.Group(), labelsGroup:new T.Group(),
+            hitPlanes:{}, geo:{}, mat:{}, qr:{}, ray:new T.Raycaster(), ndc:new T.Vector2(), anim:null, colors:themeColors() };
+      scene.add(G.staticGroup); scene.add(G.pilesGroup); scene.add(G.labelsGroup);
+      scene.background = col(G.colors.bg); scene.fog = new T.Fog(col(G.colors.bg), 60, 130);
+      scene.add(new T.HemisphereLight(0xffffff, 0x6f6a60, 0.7));
+      var dir = new T.DirectionalLight(0xffffff, 0.95);
+      dir.position.set(10, 22, 14); dir.target.position.set(0,0,-5); dir.castShadow = true; dir.shadow.mapSize.set(2048,2048);
+      var sc = dir.shadow.camera; sc.left=-20; sc.right=20; sc.top=16; sc.bottom=-16; sc.near=1; sc.far=70; dir.shadow.bias = -0.0006;
+      scene.add(dir); scene.add(dir.target);
+      buildStatic(); update3D(); viewOverview(true);
+      var down = null;
+      renderer.domElement.addEventListener("pointerdown", function(e){ down = { x:e.clientX, y:e.clientY }; });
+      renderer.domElement.addEventListener("pointerup", function(e){
+        if(!down) return; var dx=e.clientX-down.x, dy=e.clientY-down.y; down=null; if(dx*dx+dy*dy>30) return;
+        var u = pick(e); if(u){ selPos = u.posId; selCard = u.cardId || null; if(selCard) $("#scan-sel").value = selCard; renderAll(); }
+      });
+      renderer.domElement.addEventListener("pointermove", function(e){ if(e.buttons) return; renderer.domElement.style.cursor = pick(e) ? "pointer" : "grab"; });
+      if(window.ResizeObserver){ new ResizeObserver(function(){ var w=el.clientWidth, h=el.clientHeight; if(!w||!h) return; renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); }).observe(el); }
+      (function loop(now){ requestAnimationFrame(loop); if(G.anim) G.anim(now||performance.now()); controls.update(); renderer.render(scene, camera); })();
+    }catch(err){ fallback(); }
+  }
+  function onTheme(){
+    if(!G) return;
+    G.colors = themeColors(); G.scene.background = col(G.colors.bg); G.scene.fog.color.copy(col(G.colors.bg));
+    G.mat = {}; G.geo = G.geo; buildStatic(); update3D();
+  }
+
+  /* ---------- wiring ---------- */
+  $("#dn-sel").addEventListener("change", function(){ plan = null; renderDnLines(); renderOptions(); renderChips(); update3D(); });
+  $("#btn-search").addEventListener("click", startSearch);
+  $("#btn-confirm").addEventListener("click", confirmPlan);
+  $("#btn-reset").addEventListener("click", function(){ seedAll(); $("#arr-labels").innerHTML=""; $("#arr-msg").innerHTML=""; renderOptions(); renderAll(); if(G) viewOverview(); });
+  $("#btn-scan").addEventListener("click", function(){ var v = $("#scan-sel").value; if(!v) return; var f = findCard(v); selCard = v; selPos = f.p.id; renderAll(); if(G) focusPos(selPos); });
+  $("#btn-wo").addEventListener("click", function(){
+    var id = $("#wo-sel").value; if(!id) return;
+    wo = { matId:id, qty:Math.max(1, parseInt($("#wo-qty").value||"0",10)), picked:0 }; selCard = null; renderAll();
+  });
+  $("#wo-sel").addEventListener("change", function(){ wo = null; renderAll(); });
+  $("#view-overview").addEventListener("click", function(){ if(G) viewOverview(); });
+  $("#view-front").addEventListener("click", function(){ if(G) viewFront(); });
+  $("#view-focus").addEventListener("click", function(){ if(G) focusPos(selPos); });
+  try{ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", onTheme); }catch(e){}
+  try{ new MutationObserver(onTheme).observe(document.documentElement, { attributes:true, attributeFilter:["data-theme"] }); }catch(e){}
+
+  seedAll();
+  fillSelects(); $("#wo-sel").value = "facial-200"; renderDnLines();
+  init3D();
+  renderAll();
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){ if(G){ buildStatic(); update3D(); } }); }
+})();
+</script>
+
+</body></html>
