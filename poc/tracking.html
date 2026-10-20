@@ -1,0 +1,1050 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Simulator Agent Call Sopir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#ecebe6; --surface:#ffffff; --surface-2:#f4f3ee; --ink:#1f2328; --ink-dim:#626a73;
+    --line:#d3d1c8; --accent:#1f6f8b; --accent-ink:#ffffff; --accent-soft:#dcebf0;
+    --agent:#e3eef3; --driver:#fff4dc; --sys:#efeee9;
+    --ok:#2f7a3d; --warn:#a8741a; --crit:#b0392f; --info:#2f62a8; --pend:#a7adb3;
+    --ok-soft:#e2f0e4; --warn-soft:#f6ecd6; --crit-soft:#f6e0dd;
+    --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --body:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --display:"Oswald", var(--body);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#16191c; --surface:#1f2327; --surface-2:#262b30; --ink:#e7e9ea; --ink-dim:#9aa3ab;
+      --line:#3a4148; --accent:#5fb3cf; --accent-ink:#0e1418; --accent-soft:#1d333b;
+      --agent:#1d3038; --driver:#3a3020; --sys:#2a2e33;
+      --ok:#5bbf6c; --warn:#dba93a; --crit:#e2625a; --info:#6f9be0; --pend:#5c646c;
+      --ok-soft:#1f3324; --warn-soft:#3a3120; --crit-soft:#3e2423;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#16191c; --surface:#1f2327; --surface-2:#262b30; --ink:#e7e9ea; --ink-dim:#9aa3ab;
+    --line:#3a4148; --accent:#5fb3cf; --accent-ink:#0e1418; --accent-soft:#1d333b;
+    --agent:#1d3038; --driver:#3a3020; --sys:#2a2e33;
+    --ok:#5bbf6c; --warn:#dba93a; --crit:#e2625a; --info:#6f9be0; --pend:#5c646c;
+    --ok-soft:#1f3324; --warn-soft:#3a3120; --crit-soft:#3e2423;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--ink); font-family:var(--body); margin:0; line-height:1.5;
+       padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px))}
+  .wrap{max-width:1180px; margin:0 auto; padding-block:28px 64px}
+  h1,h2,h3{font-family:var(--display); font-weight:600; text-transform:uppercase; letter-spacing:.02em; margin:0; text-wrap:balance}
+  h1{font-size:1.55rem}
+  h2{font-size:1.02rem; letter-spacing:.08em; color:var(--ink-dim)}
+  h3{font-size:.9rem; letter-spacing:.05em}
+  p{margin:0}
+  .eyebrow{font-family:var(--mono); font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+  .lede{color:var(--ink-dim); font-size:.92rem; max-width:72ch}
+  header{display:flex; flex-direction:column; gap:6px}
+  .banner{background:var(--surface-2); border:1px solid var(--line); border-left:4px solid var(--warn); border-radius:6px; padding:11px 14px; font-size:.85rem; margin-top:16px}
+  section{margin-top:34px}
+  .shead{display:flex; flex-direction:column; gap:3px; margin-bottom:12px}
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px; min-width:0}
+  .tablewrap{overflow-x:auto}
+  table{width:100%; border-collapse:collapse; font-size:.8rem}
+  th{text-align:left; font-size:.64rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-dim); font-weight:600; padding:6px; border-bottom:1px solid var(--line); white-space:nowrap}
+  td{padding:7px 6px; border-bottom:1px solid var(--line); vertical-align:top}
+  .mono{font-family:var(--mono)}
+  .muted{color:var(--ink-dim)}
+  .tag{display:inline-block; font-family:var(--mono); font-size:.64rem; padding:1px 7px; border-radius:99px; border:1px solid var(--line); white-space:nowrap}
+  .tag.ok{color:var(--ok); border-color:var(--ok)} .tag.warn{color:var(--warn); border-color:var(--warn)}
+  .tag.crit{color:var(--crit); border-color:var(--crit)} .tag.info{color:var(--info); border-color:var(--info)}
+  .tag.pend{color:var(--ink-dim)}
+  button, select, input{font-family:var(--body); font-size:.84rem}
+  button{background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 11px; cursor:pointer; font-weight:500}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600}
+  button.small{font-size:.74rem; padding:3px 8px}
+  button:disabled{opacity:.45; cursor:not-allowed}
+  button:focus-visible, select:focus-visible, input:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+  select, input[type=text]{background:var(--surface-2); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 8px; min-width:0; max-width:100%}
+  .bar{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+
+  /* cara kerja */
+  .flow{display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:10px}
+  @media (max-width:980px){ .flow{grid-template-columns:repeat(3, minmax(0,1fr))} }
+  @media (max-width:560px){ .flow{grid-template-columns:1fr} }
+  .fstep{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px; position:relative; min-width:0}
+  .fstep .n{font-family:var(--display); font-size:1.4rem; color:var(--accent); line-height:1}
+  .fstep b{display:block; margin-top:6px; font-size:.9rem}
+  .fstep p{font-size:.8rem; color:var(--ink-dim); margin-top:4px}
+
+  /* telepon */
+  .callgrid{display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1.1fr); gap:14px; align-items:start}
+  @media (max-width:920px){ .callgrid{grid-template-columns:1fr} }
+  .phone{display:flex; flex-direction:column; height:600px}
+  .phone-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding-bottom:10px; border-bottom:1px solid var(--line); flex-wrap:wrap}
+  .phone-head .who{font-weight:600}
+  .live{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:.72rem; color:var(--ink-dim); min-height:20px; margin-top:6px}
+  .wave{display:inline-flex; gap:2px; align-items:center; height:14px; visibility:hidden}
+  .wave.on{visibility:visible}
+  .wave i{display:block; width:3px; height:4px; background:var(--accent); border-radius:2px}
+  .wave.on i{animation:wv .7s ease-in-out infinite}
+  .wave.driver i{background:var(--warn)}
+  .wave i:nth-child(2){animation-delay:.1s} .wave i:nth-child(3){animation-delay:.2s} .wave i:nth-child(4){animation-delay:.3s} .wave i:nth-child(5){animation-delay:.15s}
+  @keyframes wv{0%,100%{height:4px} 50%{height:14px}}
+  @media (prefers-reduced-motion: reduce){ .wave.on i{animation:none; height:10px} }
+  .chat{flex:1; overflow-y:auto; padding:12px 2px; display:flex; flex-direction:column; gap:8px}
+  .msg{max-width:86%; padding:8px 11px; border-radius:10px; font-size:.86rem}
+  .msg .lbl{font-family:var(--mono); font-size:.62rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-dim); display:block; margin-bottom:2px}
+  .msg.agent{background:var(--agent); align-self:flex-start; border-bottom-left-radius:3px}
+  .msg.driver{background:var(--driver); align-self:flex-end; border-bottom-right-radius:3px}
+  .msg.sys{background:var(--sys); align-self:center; font-family:var(--mono); font-size:.72rem; color:var(--ink-dim); max-width:100%; text-align:center}
+  .chips{display:flex; gap:6px; flex-wrap:wrap; padding:8px 0}
+  .chip{font-size:.76rem; padding:4px 9px; border-radius:99px}
+  .inputrow{display:flex; gap:6px}
+  .inputrow input{flex:1}
+  .steps{display:flex; flex-wrap:wrap; gap:4px; margin-top:6px}
+  .step{font-family:var(--mono); font-size:.68rem; padding:3px 8px; border-radius:4px; border:1px solid var(--line); color:var(--ink-dim)}
+  .step.done{color:var(--ok); border-color:var(--ok)}
+  .step.now{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  .step.end{color:var(--crit); border-color:var(--crit)}
+  .pipe{display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:6px; margin-top:8px}
+  @media (max-width:640px){ .pipe{grid-template-columns:1fr} }
+  .pcard{background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:8px; font-size:.76rem; min-width:0}
+  .pcard .t{font-family:var(--mono); font-size:.62rem; text-transform:uppercase; letter-spacing:.08em; color:var(--accent)}
+  .pcard .v{margin-top:4px; word-break:break-word}
+  .kv{width:100%; margin-top:8px; font-size:.8rem}
+  .kv td{padding:4px 6px}
+  .kv td:first-child{color:var(--ink-dim); width:42%}
+  .sub{font-family:var(--mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-dim); margin-top:14px}
+
+  /* dashboard */
+  .kpis{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:10px}
+  .kpi{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 12px; min-width:0}
+  .kpi .n{font-family:var(--display); font-size:1.7rem; line-height:1.1}
+  .kpi .l{font-size:.74rem; color:var(--ink-dim)}
+  .kpi.warn .n{color:var(--warn)} .kpi.crit .n{color:var(--crit)} .kpi.ok .n{color:var(--ok)}
+  .zones{display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:10px; margin-top:12px}
+  .zone{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 12px; text-align:left; display:flex; flex-direction:column; gap:6px; min-width:0}
+  .zone[aria-pressed=true]{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent)}
+  .zone .zh{display:flex; justify-content:space-between; gap:6px; align-items:baseline}
+  .zone .zc{font-family:var(--mono); font-size:.7rem; color:var(--accent); font-weight:600}
+  .zone .zn{font-weight:600; font-size:.86rem}
+  .zone .zm{font-size:.72rem; color:var(--ink-dim)}
+  .sbar{display:flex; height:8px; border-radius:4px; overflow:hidden; background:var(--line)}
+  .sbar i{display:block; height:100%}
+  .s-ok{background:var(--ok)} .s-warn{background:var(--warn)} .s-crit{background:var(--crit)} .s-pend{background:var(--pend)}
+  .zflags{display:flex; gap:4px; flex-wrap:wrap; min-height:18px}
+  .legend{display:flex; gap:12px; flex-wrap:wrap; font-size:.74rem; color:var(--ink-dim); margin-top:10px}
+  .legend span{display:inline-flex; gap:5px; align-items:center}
+  .sw{width:10px; height:10px; border-radius:2px; display:inline-block}
+  .dgrid{display:grid; grid-template-columns:1.6fr 1fr; gap:14px; margin-top:14px}
+  @media (max-width:920px){ .dgrid{grid-template-columns:1fr} }
+  .cap{display:flex; height:10px; border-radius:5px; overflow:hidden; background:var(--line); min-width:110px; position:relative}
+  .cap i{display:block; height:100%}
+  .cap .ours{background:var(--accent)} .cap .other{background:var(--pend)}
+  .cap .over{background:var(--crit)}
+  .notif{font-size:.8rem; padding:8px 10px; border-radius:6px; border:1px solid var(--line); border-left:4px solid var(--warn); background:var(--surface-2); margin-top:8px}
+  .notif.crit{border-left-color:var(--crit)}
+  .notifs{max-height:420px; overflow-y:auto}
+  table.cal{border-collapse:separate; border-spacing:3px; font-size:.78rem}
+  table.cal th{text-align:center; padding:4px 2px; border:none; white-space:nowrap; font-size:.62rem}
+  table.cal th.dep{text-align:left}
+  table.cal th.today{color:var(--accent)}
+  table.cal th.sun{color:var(--crit)}
+  table.cal td{border:none; padding:0}
+  table.cal td.dn{padding:6px 8px 6px 0; white-space:nowrap; vertical-align:middle}
+  table.cal td.dn .split{display:block}
+  td.c{width:66px; min-width:62px; text-align:center; padding:6px 4px !important; border-radius:6px; cursor:pointer; vertical-align:middle}
+  td.c:hover{filter:brightness(.97)}
+  td.c.sel{outline:2px solid var(--ink); outline-offset:-2px}
+  .c-ok{background:var(--ok-soft)} .c-warn{background:var(--warn-soft)} .c-crit{background:var(--crit-soft)}
+  .c-closed{background:repeating-linear-gradient(45deg,var(--surface-2),var(--surface-2) 4px,var(--line) 4px,var(--line) 5px)}
+  .cn{font-family:var(--mono); font-weight:600; font-size:.88rem; line-height:1.1}
+  .cn span{color:var(--ink-dim); font-weight:400; font-size:.68rem}
+  .c-crit .cn{color:var(--crit)}
+  .cb{display:flex; height:6px; border-radius:3px; overflow:hidden; background:var(--surface); margin-top:4px}
+  .cb i{display:block; height:100%}
+  .g-carry{background:var(--ink-dim)} .g-sure{background:var(--accent)}
+  .g-est{background:repeating-linear-gradient(90deg,var(--accent) 0 2px,transparent 2px 4px)}
+  .g-plan{box-shadow:inset 0 0 0 1.5px var(--accent)}
+  .g-lain{background:var(--pend)} .g-lainest{background:repeating-linear-gradient(90deg,var(--pend) 0 2px,transparent 2px 4px)}
+  .calleg{display:flex; gap:14px; flex-wrap:wrap; font-size:.72rem; color:var(--ink-dim); margin-top:10px}
+  .calleg span{display:inline-flex; gap:5px; align-items:center}
+  .calleg i{display:inline-block; width:18px; height:8px; border-radius:2px}
+  .calleg i.box{width:14px; height:14px; border-radius:3px}
+  .calgrid{display:grid; grid-template-columns:1.2fr 1fr; gap:14px; margin-top:14px}
+  @media (max-width:920px){ .calgrid{grid-template-columns:1fr} }
+  .inner{background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px; min-width:0}
+  .sumline{font-size:.88rem; margin-top:6px}
+  .saran{margin-top:10px; padding:8px 10px; border-left:4px solid var(--accent); background:var(--surface); border-radius:6px; font-size:.82rem}
+  .tabs{display:flex; gap:4px; flex-wrap:wrap}
+  .tabs button[aria-selected=true]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600}
+  .gloss{font-size:.76rem; color:var(--ink-dim); margin-top:8px; display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:4px 14px}
+  .gloss b{color:var(--ink)}
+  .kpis.small{margin-top:10px}
+  .kpis.small .kpi{padding:8px 10px} .kpis.small .n{font-size:1.3rem}
+  td .split{font-family:var(--mono); font-size:.64rem; color:var(--ink-dim); white-space:nowrap}
+  td b.big{font-family:var(--mono); font-size:.95rem}
+  tr.depo-row{cursor:pointer} tr.depo-row:hover{background:var(--surface-2)}
+  tr.depo-detail td{background:var(--surface-2)}
+  .need{display:flex; height:10px; border-radius:5px; overflow:hidden; background:var(--line); min-width:110px; position:relative}
+  .need i{display:block; height:100%}
+  .need .in{background:var(--accent)} .need .ov{background:var(--crit)}
+  .need .mk{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--ink)}
+  .rowsel{background:var(--accent-soft)}
+  .prog{font-family:var(--mono); font-size:.76rem; color:var(--ink-dim)}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Outbound FG · Order tracking · POC</span>
+    <h1>Simulator AI Agent Call Sopir</h1>
+    <p class="lede">AI menelepon sopir pada hari yang sudah dijadwalkan, menanyakan posisi, kendala, dan perkiraan tiba, lalu mencatat hasilnya otomatis ke dashboard per zona dan depo. Order tracking cukup menangani kasus yang ditandai perlu tindakan.</p>
+  </header>
+  <div class="banner"><b>Ini simulasi untuk menunjukkan mekanisme.</b> Data shipment, zona, depo, nama sopir, dan no polisi hanya contoh. Suara memakai suara bawaan browser, jadi logat dan kualitasnya belum seperti sistem nyata. Jawaban yang diketik sendiri dipahami dengan aturan sederhana; di sistem nyata AI bisa memahami kalimat yang lebih bebas.</div>
+
+  <section>
+    <div class="shead"><h2>1 · Cara kerjanya</h2></div>
+    <div class="flow">
+      <div class="fstep"><span class="n">1</span><b>Jadwal otomatis</b><p>Sistem (misalnya dengan n8n) mengecek setiap hari shipment mana yang perlu ditelepon. Target 5 hari: telepon hari ke-3 dan hari ke-5.</p></div>
+      <div class="fstep"><span class="n">2</span><b>AI menelepon</b><p>AI menelepon nomor sopir dari data pengiriman lewat telepon biasa. Kalau tidak diangkat, dicoba lagi sampai 3 kali.</p></div>
+      <div class="fstep"><span class="n">3</span><b>AI mendengar</b><p>Jawaban sopir diubah jadi tulisan, lalu AI memahami isinya: posisi, kendala, dan perkiraan tiba.</p></div>
+      <div class="fstep"><span class="n">4</span><b>Aturan tetap</b><p>Urutan pertanyaan sudah dikunci. Aturan yang memutuskan: tanya ulang, lanjut, atau serahkan ke tim.</p></div>
+      <div class="fstep"><span class="n">5</span><b>Konfirmasi</b><p>AI mengulang ringkasan jawaban ke sopir supaya data yang dicatat benar.</p></div>
+      <div class="fstep"><span class="n">6</span><b>Tercatat otomatis</b><p>Hasil masuk dashboard per zona dan depo. Kendala, terlambat, atau depo penuh dikirim sebagai notifikasi.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><h2>2 · Simulasi telepon</h2><p class="lede">Pilih shipment dan skenario, lalu mulai. Nyalakan suara untuk mendengar percakapannya. Panel kanan menunjukkan apa yang dikerjakan AI di tiap giliran.</p></div>
+    <div class="callgrid">
+      <div class="panel phone">
+        <div class="phone-head">
+          <div style="min-width:0">
+            <div class="who" id="c-who">Belum ada panggilan</div>
+            <div class="muted mono" style="font-size:.72rem" id="c-sub">Pilih shipment di bawah, atau klik Telepon di daftar dashboard</div>
+            <div class="live"><span class="wave" id="wave"><i></i><i></i><i></i><i></i><i></i></span><span id="live-txt"></span><span id="timer"></span></div>
+          </div>
+          <span class="tag" id="c-status">siap</span>
+        </div>
+        <div class="bar" style="padding-top:10px">
+          <select id="c-ship" aria-label="Shipment" style="flex:1;min-width:160px"></select>
+          <select id="c-scen" aria-label="Skenario">
+            <option value="normal">Normal, lancar</option>
+            <option value="kendala">Ban pecah di jalan</option>
+            <option value="menginap">Depo penuh, menginap</option>
+            <option value="bising">Sinyal buruk, tidak jelas</option>
+            <option value="menyetir">Sopir sedang menyetir</option>
+            <option value="manusia">Sopir minta bicara dengan orang</option>
+            <option value="serius">Kecelakaan di jalan</option>
+            <option value="noanswer">Telepon tidak diangkat</option>
+            <option value="manual">Jawab sendiri (ketik)</option>
+          </select>
+        </div>
+        <div class="bar" style="padding-top:8px">
+          <button class="primary" id="c-start">Mulai telepon</button>
+          <button id="c-stop" disabled>Akhiri</button>
+          <label style="display:inline-flex;gap:6px;align-items:center;font-size:.8rem"><input type="checkbox" id="c-voice" checked> Suara</label>
+          <label style="display:inline-flex;gap:6px;align-items:center;font-size:.8rem" class="muted"><input type="checkbox" id="c-noise"> Sinyal buruk</label>
+        </div>
+        <div class="muted" style="font-size:.72rem;margin-top:4px" id="voice-note"></div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="chips" id="chips"></div>
+        <div class="inputrow">
+          <input type="text" id="c-input" placeholder="Ketik jawaban sopir..." aria-label="Jawaban sopir" disabled>
+          <button id="c-send" disabled>Kirim</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Yang dikerjakan AI</h3>
+        <div class="sub">Urutan percakapan</div>
+        <div class="steps" id="steps"></div>
+        <div class="sub">Giliran terakhir</div>
+        <div class="pipe" id="pipe"></div>
+        <div class="sub">Catatan yang tersimpan dari telepon ini</div>
+        <table class="kv" id="kv"></table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><h2>3 · Dashboard order tracking</h2><p class="lede">Ringkasan semua shipment aktif per zona dan depo, diperbarui setiap kali telepon selesai. Klik zona untuk melihat depo dan shipment di zona itu.</p></div>
+    <div class="bar" style="margin-bottom:12px">
+      <button class="primary" id="b-batch">Jalankan semua telepon terjadwal hari ini</button>
+      <button id="b-reset">Reset data</button>
+      <span class="prog" id="b-prog"></span>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="legend">
+      <span><i class="sw s-ok"></i>Aman</span><span><i class="sw s-warn"></i>Perlu perhatian</span><span><i class="sw s-crit"></i>Perlu tindakan</span><span><i class="sw s-pend"></i>Belum ditelepon</span>
+    </div>
+    <div class="zones" id="zones" role="group" aria-label="Zona"></div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="bar" style="justify-content:space-between; align-items:flex-start">
+        <div style="min-width:0"><h3 id="depo-title">Kalender kedatangan depo</h3>
+          <p class="muted" style="font-size:.8rem; max-width:74ch; margin-top:4px">Setiap kotak menunjukkan jumlah truk yang perlu dibongkar di depo pada tanggal itu dibanding kapasitas bongkarnya per hari. Klik kotak untuk melihat truk siapa saja dan seberapa pasti kedatangannya.</p></div>
+        <label style="font-size:.78rem; display:inline-flex; gap:6px; align-items:center">Biaya inap per truk per malam Rp <input type="number" id="biaya" min="0" step="50000" placeholder="isi" style="width:110px; background:var(--surface-2); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:4px 6px"></label>
+      </div>
+      <div class="kpis small" id="depo-kpis"></div>
+      <div class="calleg">
+        <span><i class="box c-ok"></i>Masih longgar</span><span><i class="box c-warn"></i>Hampir penuh</span><span><i class="box c-crit"></i>Lewat kapasitas, truk akan menginap</span><span><i class="box c-closed"></i>Minggu, depo tutup</span>
+      </div>
+      <div class="calleg">
+        <span><i class="g-carry"></i>Antrian dari hari sebelumnya</span><span><i class="g-sure"></i>Mill ini: sudah di depo / pasti tiba</span><span><i class="g-est"></i>Mill ini: perkiraan tiba</span><span><i class="g-plan"></i>Mill ini: slot dipesan</span><span><i class="g-lain"></i>Mill lain: sudah direncanakan</span><span><i class="g-lainest"></i>Mill lain: perkiraan rata-rata</span>
+      </div>
+      <div class="tablewrap" style="margin-top:8px"><table class="cal" id="cal"></table></div>
+      <div style="margin-top:6px"><button class="small" id="depo-more"></button></div>
+      <div class="calgrid">
+        <div class="inner" id="cal-detail"></div>
+        <div class="inner">
+          <h3>Atur kiriman baru</h3>
+          <p class="muted" style="font-size:.8rem; margin-top:4px">Pilih depo dan jumlah truk. Sistem menghitung kapan truk tiba kalau berangkat hari ini atau beberapa hari lagi, dan apakah depo masih sanggup membongkar pada hari itu.</p>
+          <div class="bar" style="margin-top:10px">
+            <select id="pl-depo" aria-label="Depo tujuan" style="flex:1; min-width:160px"></select>
+            <label style="font-size:.8rem; display:inline-flex; gap:6px; align-items:center">Jumlah truk <input type="number" id="pl-n" value="3" min="1" max="10" style="width:60px; background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:4px 6px"></label>
+          </div>
+          <div id="pl-out" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <h3>Perlu tindakan order tracking</h3>
+      <div class="notifs" id="notifs"></div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="bar" style="justify-content:space-between"><h3 id="ship-title">Shipment aktif</h3>
+        <select id="f-status" aria-label="Filter status"><option value="">Semua status</option><option value="crit">Perlu tindakan</option><option value="warn">Perlu perhatian</option><option value="ok">Aman</option><option value="pend">Belum ditelepon</option><option value="today">Terjadwal hari ini</option></select>
+      </div>
+      <div class="tablewrap" style="margin-top:8px"><table id="ship-table"></table></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(s){ return document.querySelector(s); };
+  var esc = function(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); };
+  var reduce = false; try{ reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+  var DELAY = reduce ? 0 : 600;
+  var TODAY = "2026-10-20";
+
+  /* ---------- tanggal ---------- */
+  function addDays(d, n){ var t = new Date(d+"T00:00:00Z"); t.setUTCDate(t.getUTCDate()+n); return t.toISOString().slice(0,10); }
+  function diffDays(a, b){ return Math.round((Date.parse(a+"T00:00:00Z") - Date.parse(b+"T00:00:00Z"))/86400000); }
+  var HARI = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"], BLN = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  function fmtD(d){ var t = new Date(d+"T00:00:00Z"); return HARI[t.getUTCDay()]+" "+t.getUTCDate()+" "+BLN[t.getUTCMonth()]; }
+
+  /* ---------- zona & depo (contoh) ---------- */
+  var ZONES = [
+    ["Z01","Jabodetabek",1,"Tol Cikampek","Bekasi","B",[["Depo Cakung",10,9],["Depo Tangerang",8,4]]],
+    ["Z02","Jawa Barat",1,"Cikampek","Bandung","D",[["Depo Bandung",7,4],["Depo Cirebon",5,2]]],
+    ["Z03","Jawa Tengah",2,"Cipali","Semarang","H",[["Depo Semarang",7,4],["Depo Solo",5,2]]],
+    ["Z04","DI Yogyakarta",2,"Purwokerto","Yogyakarta","AB",[["Depo Yogyakarta",5,2]]],
+    ["Z05","Jawa Timur",3,"Ngawi","Surabaya","L",[["Depo Surabaya",9,5],["Depo Malang",5,2]]],
+    ["Z06","Bali & Nusa Tenggara",4,"Banyuwangi","Denpasar","DK",[["Depo Denpasar",5,3]]],
+    ["Z07","Sumsel & Lampung",3,"Bakauheni","Palembang","BG",[["Depo Lampung",6,2],["Depo Palembang",7,3]]],
+    ["Z08","Sumbar & Jambi",4,"Palembang","Jambi","BH",[["Depo Jambi",5,2],["Depo Padang",4,1]]],
+    ["Z09","Riau & Kepri",5,"Jambi","Pekanbaru","BM",[["Depo Pekanbaru",7,6]]],
+    ["Z10","Sumut & Aceh",6,"Pekanbaru","Medan","BK",[["Depo Medan",8,4]]],
+    ["Z11","Bengkulu & Babel",5,"Lubuk Linggau","Bengkulu","BD",[["Depo Bengkulu",4,1]]],
+    ["Z12","Kalimantan Barat",6,"Pelabuhan Tanjung Priok","Pontianak","KB",[["Depo Pontianak",5,2]]],
+    ["Z13","Kaltim & Kaltara",7,"Pelabuhan Surabaya","Balikpapan","KT",[["Depo Balikpapan",5,2],["Depo Samarinda",4,1]]],
+    ["Z14","Kalsel & Kalteng",6,"Pelabuhan Surabaya","Banjarmasin","DA",[["Depo Banjarmasin",5,2]]],
+    ["Z15","Sulawesi",8,"Pelabuhan Makassar","Makassar","DD",[["Depo Makassar",6,3],["Depo Manado",4,1]]],
+    ["Z16","Maluku & Papua",12,"Pelabuhan Makassar","Ambon","DE",[["Depo Ambon",3,1],["Depo Jayapura",3,1]]]
+  ].map(function(z){ return { id:z[0], name:z[1], target:z[2], via:z[3], kota:z[4], plat:z[5], depos:z[6].map(function(d,i){ return { id:z[0]+"-D"+(i+1), name:d[0], cap:d[1], other:d[2], zone:z[0] }; }) }; });
+  function zone(id){ for(var i=0;i<ZONES.length;i++) if(ZONES[i].id===id) return ZONES[i]; }
+  function depo(id){ for(var i=0;i<ZONES.length;i++) for(var j=0;j<ZONES[i].depos.length;j++) if(ZONES[i].depos[j].id===id) return ZONES[i].depos[j]; }
+  var MOBIL = ["Wingbox","Tronton","Fuso","Container 20 feet","Container 40 feet","CDD"];
+  var SOPIR = ["Darto","Slamet","Yanto","Rahmat","Budi","Agus","Joko","Hendra","Wawan","Sutrisno","Bambang","Dedi","Iwan","Asep","Ujang","Supri","Teguh","Rudi","Herman","Eko","Anton","Yusuf","Imam","Ridwan","Samsul","Darmawan","Fajar","Gunawan","Heri","Kusnadi","Mulyadi","Nanang","Paijo","Ruslan","Saiful","Tono","Udin","Warsito","Yayan","Zainal","Ahmad","Bayu","Cahyo","Dimas","Endang","Firman","Gilang","Haris"];
+
+  /* ---------- angka acak tetap (supaya data contoh sama setiap dibuka) ---------- */
+  var seed;
+  function rnd(){ seed = (seed*1103515245 + 12345) % 2147483648; return seed/2147483648; }
+  function pick(a){ return a[Math.floor(rnd()*a.length)]; }
+
+  var SHIPS, NOTIFS, filterZone = null, filterStatus = "", showAll = false, depoDay = 0, selDepo = null, depoAll = false, WIN = 10, PLANS = [], selCell = null, plMsg = "";
+  function callPoints(T){ var c1 = Math.max(1, Math.round(T*0.6)); return c1===T ? [T] : [c1, T]; }
+  function dayIdx(s){ return diffDays(TODAY, s.berangkat)+1; }
+  function targetDate(s){ return addDays(s.berangkat, s.target-1); }
+  function dueToday(s){ var d = dayIdx(s), cp = callPoints(s.target); return cp.indexOf(d)>-1 ? cp.indexOf(d)+1 : 0; }
+
+  function seedData(){
+    seed = 20261020; SHIPS = []; NOTIFS = []; var n = 0, fo = 6100012300;
+    ZONES.forEach(function(z){ z.depos.forEach(function(d){
+      var b = d.other;
+      d.lain = { q0: Math.floor(rnd()*2) + (b>=5 ? 1 : 0), arr:[Math.max(0, b-1+Math.floor(rnd()*2)), b+Math.floor(rnd()*2), b+Math.floor(rnd()*3)] };
+    }); });
+    ZONES.forEach(function(z){
+      var cnt = 2 + Math.floor(rnd()*3);
+      for(var i=0;i<cnt;i++){
+        n++; fo += 7;
+        var T = z.target, day = 1 + Math.floor(rnd()*Math.min(T+1, 12));
+        var s = { id:"SH"+("00"+n).slice(-3), fo:String(fo), zone:z.id, depo:pick(z.depos).id, mobil:pick(MOBIL),
+                  sopir:"Pak "+SOPIR[(n*7)%SOPIR.length], nopol:z.plat+" "+(1000+Math.floor(rnd()*8999))+" "+String.fromCharCode(65+Math.floor(rnd()*26))+String.fromCharCode(65+Math.floor(rnd()*26)),
+                  hp:"08"+(11+Math.floor(rnd()*8))+"-xxxx-"+(1000+Math.floor(rnd()*8999)),
+                  target:T, berangkat:addDays(TODAY, -(day-1)), status:"belum ditelepon", cls:"pend", posisi:null, eta:null, terlambat:false, last:null, calledToday:false, flags:[], arrDate:null, offDate:null };
+        var cp = callPoints(T), r = rnd(), td = targetDate(s);
+        if(day > T){
+          if(r < 0.45) setState(s, { arrDate:td, offDate:td, last:"Telepon sebelumnya: sudah bongkar" });
+          else if(r < 0.65){ setState(s, { arrDate:td, offDate:null, eta:TODAY+" sore", last:"Telepon sebelumnya: depo penuh, menunggu bongkar" }); s.flags.push("menginap di depo, menunggu bongkar"); }
+          else setState(s, { arrDate:td, offDate:addDays(td,1) > TODAY ? TODAY : addDays(td,1), last:"Telepon sebelumnya: menunggu bongkar" });
+        } else if(day === T && day > 1){
+          if(r < 0.3) setState(s, { arrDate:TODAY, offDate:null, last:"Sudah tiba pagi ini, antri bongkar" });
+          else if(r < 0.45) setState(s, { arrDate:TODAY, offDate:TODAY, last:"Sudah tiba dan dibongkar" });
+          else setState(s, { status:"dalam perjalanan", posisi:z.via, eta:TODAY+" siang", last:"Telepon sebelumnya: lancar" });
+        } else if(day > cp[0]){
+          if(r < 0.15){ setState(s, { status:"kendala", posisi:z.via, eta:addDays(td,1)+" sore", last:"Telepon sebelumnya: kendala mesin" }); s.flags.push("kendala kendaraan"); }
+          else setState(s, { status:"dalam perjalanan", posisi:z.via, eta:td+" sore", last:"Telepon sebelumnya: lancar" });
+        }
+        SHIPS.push(s);
+      }
+    });
+    SHIPS.forEach(function(s){ if(s.flags.length) NOTIFS.push({ ship:s.id, crit:s.cls==="crit", text:s.flags.join("; "), when:"kemarin" }); });
+    // truk mill ini yang menginap berarti kemarin depo memang lewat kapasitas: samakan angka mill lain
+    var H1 = addDays(TODAY,-1);
+    ZONES.forEach(function(z){ z.depos.forEach(function(d){
+      var L = SHIPS.filter(function(s){ return s.depo===d.id; });
+      var wI = L.filter(function(s){ return waitEnd(s,H1); }).length;
+      if(!wI) return;
+      var cI = L.filter(function(s){ return waitStart(s,H1); }).length, aI = L.filter(function(s){ return s.arrDate===H1; }).length;
+      d.lain.arr[0] = Math.max(d.lain.arr[0], d.cap + wI - cI - aI - d.lain.q0);
+    }); });
+  }
+  function etaDay(s){ return s.eta ? s.eta.slice(0,10) : targetDate(s); }
+  function nights(s){ return s.arrDate && !s.offDate ? diffDays(TODAY, s.arrDate) : 0; }
+  function setState(s, u){
+    ["posisi","eta","last","arrDate","offDate"].forEach(function(k){ if(u[k]!==undefined) s[k] = u[k]; });
+    if(u.status!==undefined) s.status = u.status;
+    else if(s.offDate) s.status = "sudah bongkar";
+    else if(s.arrDate) s.status = s.arrDate < TODAY ? "menginap" : "menunggu bongkar";
+    if(s.arrDate) s.posisi = depo(s.depo).name;
+    s.terlambat = s.arrDate ? s.arrDate > targetDate(s) : !!(s.eta && s.eta.slice(0,10) > targetDate(s));
+    s.cls = classOf(s);
+  }
+  function statusLabel(s){ return s.status==="menginap" ? "menginap "+nights(s)+" malam" : s.status; }
+  function classOf(s){
+    if(s.status==="belum ditelepon") return "pend";
+    if(/menginap|tidak diangkat|serius/.test(s.status)) return "crit";
+    if(/kendala|perlu dicek|dijadwal ulang/.test(s.status) || s.terlambat) return "warn";
+    return "ok";
+  }
+  var CLS_TAG = { ok:"ok", warn:"warn", crit:"crit", pend:"pend" };
+
+  /* ---------- dashboard ---------- */
+  function visibleShips(){ return SHIPS.filter(function(s){ return !filterZone || s.zone===filterZone; }); }
+  function renderKpis(){
+    var L = visibleShips(), today = L.filter(dueToday), done = today.filter(function(s){ return s.calledToday; });
+    var answered = L.filter(function(s){ return s.calledToday && s.status!=="tidak diangkat"; }).length, calledAll = L.filter(function(s){ return s.calledToday; }).length;
+    var c = function(f){ return L.filter(f).length; };
+    var items = [
+      ["", L.length, "Shipment aktif"+(filterZone?" di "+zone(filterZone).name:"")],
+      ["", done.length+" / "+today.length, "Telepon terjadwal hari ini selesai"],
+      ["ok", calledAll ? Math.round(answered/calledAll*100)+"%" : "-", "Telepon hari ini diangkat"],
+      ["warn", c(function(s){ return s.terlambat; }), "Perkiraan lewat target"],
+      ["warn", c(function(s){ return /kendala/.test(s.status); }), "Ada kendala di jalan"],
+      ["crit", c(function(s){ return s.status==="menginap"; }), "Menginap di depo"],
+      ["crit", c(function(s){ return s.cls==="crit"; }), "Perlu tindakan"]
+    ];
+    $("#kpis").innerHTML = items.map(function(k){ return '<div class="kpi '+k[0]+'"><div class="n">'+k[1]+'</div><div class="l">'+k[2]+'</div></div>'; }).join("");
+  }
+  function renderZones(){
+    $("#zones").innerHTML = '<button class="zone" data-z="" aria-pressed="'+(!filterZone)+'"><div class="zh"><span class="zn">Semua zona</span><span class="zc">'+ZONES.length+' zona</span></div><div class="zm">'+SHIPS.length+' shipment · '+ZONES.reduce(function(a,z){ return a+z.depos.length; },0)+' depo</div>'+sbar(SHIPS)+'<div class="zflags"></div></button>' +
+      ZONES.map(function(z){
+        var L = SHIPS.filter(function(s){ return s.zone===z.id; });
+        var crit = L.filter(function(s){ return s.cls==="crit"; }).length, warn = L.filter(function(s){ return s.cls==="warn"; }).length, due = L.filter(function(s){ return dueToday(s) && !s.calledToday; }).length;
+        var over = z.depos.filter(function(d){ return calendar(d, 7).some(function(x){ return x.lvl==="crit"; }); }).length;
+        var flags = (crit?'<span class="tag crit">'+crit+' tindakan</span>':'')+(warn?'<span class="tag warn">'+warn+' perhatian</span>':'')+(over?'<span class="tag crit">'+over+' depo bentrok 7 hari</span>':'')+(due?'<span class="tag info">'+due+' telepon hari ini</span>':'');
+        return '<button class="zone" data-z="'+z.id+'" aria-pressed="'+(filterZone===z.id)+'"><div class="zh"><span class="zn">'+esc(z.name)+'</span><span class="zc">'+z.id+'</span></div>'+
+               '<div class="zm">'+L.length+' shipment · '+z.depos.length+' depo · target '+z.target+' hari</div>'+sbar(L)+'<div class="zflags">'+flags+'</div></button>';
+      }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll("#zones .zone"), function(b){
+      b.addEventListener("click", function(){ filterZone = b.dataset.z || null; renderDash(); });
+    });
+  }
+  function sbar(L){
+    var n = L.length || 1, seg = ["ok","warn","crit","pend"].map(function(c){ var k = L.filter(function(s){ return s.cls===c; }).length; return k ? '<i class="s-'+c+'" style="width:'+(k/n*100)+'%"></i>' : ''; }).join("");
+    return '<div class="sbar">'+seg+'</div>';
+  }
+  function waitStart(s, day){ return !!s.arrDate && s.arrDate < day && (!s.offDate || s.offDate >= day); }
+  function waitEnd(s, day){ return !!s.arrDate && s.arrDate <= day && (!s.offDate || s.offDate > day); }
+  function depoDays(d){
+    var H1 = addDays(TODAY,-1), H = TODAY, P = addDays(TODAY,1);
+    var L = SHIPS.filter(function(s){ return s.depo===d.id; });
+    var cnt = function(f){ return L.filter(f).length; };
+    function fin(x){ x.carry = x.carryI+x.carryL; x.arr = x.arrI+x.arrL; x.off = x.offI+x.offL; x.wait = x.waitI+x.waitL; x.need = x.carry+x.arr; }
+    var a = { carryI:cnt(function(s){ return waitStart(s,H1); }), arrI:cnt(function(s){ return s.arrDate===H1; }), offI:cnt(function(s){ return s.offDate===H1; }), waitI:cnt(function(s){ return waitEnd(s,H1); }) };
+    a.carryL = d.lain.q0; a.arrL = d.lain.arr[0];
+    var nl = a.carryL + a.arrL; a.offL = Math.min(nl, Math.max(0, d.cap - a.offI)); a.waitL = nl - a.offL;
+    fin(a); a.risk = a.wait;
+    var b = { carryI:cnt(function(s){ return waitStart(s,H); }), arrI:cnt(function(s){ return s.arrDate===H; }), offI:cnt(function(s){ return s.offDate===H; }), waitI:cnt(function(s){ return waitEnd(s,H); }),
+              enroute:cnt(function(s){ return !s.arrDate && etaDay(s)===H; }) };
+    b.carryL = a.waitL; b.arrL = d.lain.arr[1];
+    nl = b.carryL + b.arrL; b.offL = Math.min(nl, Math.max(0, Math.round(d.cap*0.6) - b.offI)); b.waitL = nl - b.offL;
+    fin(b); b.need = b.carry + b.arr + b.enroute; b.risk = Math.max(0, b.need - d.cap);
+    var c = { arrI:cnt(function(s){ return !s.arrDate && etaDay(s)===P; }), arrL:d.lain.arr[2] };
+    c.arr = c.arrI + c.arrL; c.carry = b.risk; c.need = c.carry + c.arr; c.off = Math.min(c.need, d.cap); c.wait = c.need - c.off; c.risk = c.wait;
+    [a,b,c].forEach(function(x){ x.cap = d.cap; x.lvl = x.risk>0 ? "crit" : (x.need >= Math.ceil(d.cap*0.85) ? "warn" : "ok"); });
+    return { "-1":a, "0":b, "1":c };
+  }
+  function isSun(date){ return new Date(date+"T00:00:00Z").getUTCDay()===0; }
+  function capOn(d, date){ return isSun(date) ? 0 : d.cap; }
+  function lainOn(d, i, date){
+    if(isSun(date)) return { n:0, known:true };
+    if(i<=2) return { n: i===0 ? d.lain.arr[1] : (i===1 ? d.lain.arr[2] : Math.max(0, d.lain.arr[2]-1)), known:true };
+    return { n: Math.max(1, Math.round((d.lain.arr[1]+d.lain.arr[2])/2*0.55)), known:false };
+  }
+  function lainSplit(n){ var a = Math.ceil(n*0.6); return [["Mill B", a], ["Mill C", n-a]]; }
+  function certainty(s){
+    if(s.arrDate) return "sudah";
+    if(s.calledToday && /dalam perjalanan/.test(s.status)) return "pasti";
+    return "perk";
+  }
+  function calendar(d, win){
+    win = win || WIN;
+    var dd = depoDays(d)["0"], carry = dd.carryI + dd.carryL;
+    var L = SHIPS.filter(function(s){ return s.depo===d.id && !(s.arrDate && s.arrDate < TODAY); });
+    var out = [];
+    for(var i=0;i<win;i++){
+      var date = addDays(TODAY,i), cap = capOn(d,date);
+      var ours = L.filter(function(s){ if(s.arrDate) return i===0; var e = etaDay(s); if(e < TODAY) e = TODAY; return e===date; });
+      var sure = ours.filter(function(s){ return certainty(s)!=="perk"; }), est = ours.filter(function(s){ return certainty(s)==="perk"; });
+      var plan = PLANS.filter(function(p){ return p.depo===d.id && p.i===i; }).reduce(function(a,p){ return a+p.n; }, 0);
+      var lain = lainOn(d, i, date);
+      var arr = ours.length + plan + lain.n, need = carry + arr, served = Math.min(need, cap), left = need - served;
+      var lvl = cap===0 ? (need>0 ? "crit" : "closed") : (need > cap ? "crit" : (need >= Math.ceil(cap*0.85) ? "warn" : "ok"));
+      out.push({ i:i, date:date, cap:cap, carry:carry, ours:ours, sure:sure, est:est, plan:plan, lain:lain, arr:arr, need:need, served:served, left:left, lvl:lvl });
+      carry = left;
+    }
+    return out;
+  }
+  function visibleDepos(){ var l = []; ZONES.forEach(function(z){ if(!filterZone || z.id===filterZone) l = l.concat(z.depos); }); return l; }
+  function cellHtml(d, x){
+    var max = Math.max(x.need, x.cap, 1), w = function(n){ return (n/max*100)+"%"; };
+    var seg = '<i class="g-carry" style="width:'+w(x.carry)+'"></i><i class="g-sure" style="width:'+w(x.sure.length)+'"></i><i class="g-est" style="width:'+w(x.est.length)+'"></i><i class="g-plan" style="width:'+w(x.plan)+'"></i><i class="'+(x.lain.known?'g-lain':'g-lainest')+'" style="width:'+w(x.lain.n)+'"></i>';
+    var num = x.cap===0 ? '<div class="cn">'+(x.need ? x.need+'<span> tunggu</span>' : '<span>tutup</span>')+'</div>' : '<div class="cn">'+x.need+'<span>/'+x.cap+'</span></div>';
+    var tip = d.name+" "+fmtD(x.date)+": perlu bongkar "+x.need+", kapasitas "+x.cap;
+    var sel = selCell && selCell.d===d.id && selCell.i===x.i ? " sel" : "";
+    return '<td class="c c-'+x.lvl+sel+'" data-d="'+d.id+'" data-i="'+x.i+'" title="'+esc(tip)+'" tabindex="0">'+num+'<div class="cb">'+seg+'</div></td>';
+  }
+  function renderDepos(){
+    var list = visibleDepos(), rows = list.map(function(d){ return { d:d, c:calendar(d) }; });
+    rows.forEach(function(r){ var f = -1; r.c.some(function(x,i){ if(x.lvl==="crit" && x.cap>0){ f = i; return true; } }); r.first = f<0 ? 99 : f; r.peak = Math.max.apply(null, r.c.map(function(x){ return x.cap ? x.need/x.cap : 0; })); });
+    rows.sort(function(a,b){ return a.first-b.first || b.peak-a.peak; });
+    var total = rows.length; if(!filterZone && !depoAll) rows = rows.slice(0, 10);
+    if(selCell && !rows.some(function(r){ return r.d.id===selCell.d; })) selCell = null;
+    if(!selCell && rows.length){ var r0 = rows[0], fi = r0.first<99 ? r0.first : 0; selCell = { d:r0.d.id, i:fi }; }
+    $("#depo-title").textContent = "Kalender kedatangan depo · "+(filterZone ? zone(filterZone).name : "semua zona")+" · "+fmtD(TODAY)+" sampai "+fmtD(addDays(TODAY, WIN-1));
+
+    // KPI
+    var bentrok = rows.concat([]).length ? list.filter(function(d){ return calendar(d,7).some(function(x){ return x.lvl==="crit" && x.cap>0; }); }) : [];
+    var near = null; list.forEach(function(d){ calendar(d,7).some(function(x){ if(x.lvl==="crit" && x.cap>0){ if(!near || x.i < near.i) near = { d:d, i:x.i, x:x }; return true; } }); });
+    var vs = SHIPS.filter(function(s){ return !filterZone || s.zone===filterZone; });
+    var jalan = vs.filter(function(s){ return !s.arrDate; });
+    var perk = jalan.filter(function(s){ return certainty(s)==="perk"; }).length;
+    var inap = vs.filter(function(s){ return s.status==="menginap"; }), malam = inap.reduce(function(a,s){ return a+nights(s); }, 0);
+    var biaya = parseFloat($("#biaya").value||"0");
+    var k = [
+      ["crit", bentrok.length, "Depo bentrok dalam 7 hari"],
+      ["crit", near ? esc(near.d.name.replace("Depo ","")) : "-", near ? "Bentrok terdekat: "+fmtD(near.x.date)+" ("+near.x.need+"/"+near.x.cap+")" : "Tidak ada bentrok 7 hari ke depan"],
+      ["", jalan.length, "Truk mill ini di jalan"],
+      ["warn", perk, "Kedatangan masih perkiraan (belum dikonfirmasi hari ini)"],
+      ["crit", inap.length, "Truk mill ini menginap sekarang ("+malam+" malam)"],
+      ["", biaya>0 ? "Rp "+Math.round(biaya*malam).toLocaleString("id-ID") : "-", "Estimasi biaya inap"+(biaya>0 ? "" : " (isi biaya di atas)")]
+    ];
+    $("#depo-kpis").innerHTML = k.map(function(q){ return '<div class="kpi '+q[0]+'"><div class="n" style="font-size:'+(String(q[1]).length>6?'1rem':'')+'">'+q[1]+'</div><div class="l">'+q[2]+'</div></div>'; }).join("");
+
+    var head = '<tr><th class="dep">Depo · kapasitas</th>' + rows[0].c.map(function(x){
+      var cls = x.i===0 ? "today" : (isSun(x.date) ? "sun" : "");
+      return '<th class="'+cls+'">'+(x.i===0 ? "Hari ini" : HARI[new Date(x.date+"T00:00:00Z").getUTCDay()])+'<br>'+new Date(x.date+"T00:00:00Z").getUTCDate()+' '+BLN[new Date(x.date+"T00:00:00Z").getUTCMonth()]+(isSun(x.date)?'<br>tutup':'')+'</th>';
+    }).join("") + '</tr>';
+    $("#cal").innerHTML = head + rows.map(function(r){
+      var z = zone(r.d.zone);
+      return '<tr><td class="dn"><b>'+esc(r.d.name)+'</b><span class="split">'+r.d.zone+' · '+r.d.cap+' truk/hari · perjalanan '+z.target+' hari</span></td>'+r.c.map(function(x){ return cellHtml(r.d, x); }).join("")+'</tr>';
+    }).join("");
+    var more = $("#depo-more");
+    if(!filterZone && total>10){ more.hidden = false; more.textContent = depoAll ? "Tampilkan 10 depo teratas" : "Tampilkan semua depo ("+total+")"; } else more.hidden = true;
+    Array.prototype.forEach.call(document.querySelectorAll("#cal td.c"), function(td){
+      var go = function(){ selCell = { d:td.dataset.d, i:+td.dataset.i }; renderDepos(); };
+      td.addEventListener("click", go);
+      td.addEventListener("keydown", function(e){ if(e.key==="Enter" || e.key===" "){ e.preventDefault(); go(); } });
+    });
+    renderCalDetail(); renderPlanner();
+  }
+  function shipLine(s, tag){ return '<div style="display:flex; justify-content:space-between; gap:8px; align-items:center; padding:3px 0"><span><span class="mono">'+s.id+'</span> · '+esc(s.sopir)+' · <span class="mono">'+esc(s.nopol)+'</span> '+tag+'<br><span class="muted" style="font-size:.72rem">'+esc(s.last||"belum pernah ditelepon")+'</span></span><button class="small" data-call="'+s.id+'">Telepon</button></div>'; }
+  function renderCalDetail(){
+    var box = $("#cal-detail");
+    if(!selCell){ box.innerHTML = '<span class="muted">Klik salah satu kotak di kalender.</span>'; return; }
+    var d = depo(selCell.d), cal = calendar(d, Math.max(WIN, selCell.i+8)), x = cal[selCell.i];
+    var h = '<h3>'+esc(d.name)+' · '+fmtD(x.date)+(x.i===0?' (hari ini)':'')+'</h3>';
+    if(x.cap===0) h += '<p class="sumline">Hari Minggu depo tutup. '+(x.need ? '<b>'+x.need+' truk</b> menunggu sampai Senin dan sopirnya menginap.' : 'Tidak ada truk yang dijadwalkan tiba.')+'</p>';
+    else h += '<p class="sumline">Perlu dibongkar <b>'+x.need+' truk</b>, kapasitas <b>'+x.cap+' truk</b>. '+(x.left>0 ? '<span style="color:var(--crit)"><b>'+x.left+' truk tidak terbongkar dan menginap.</b></span>' : 'Masih ada ruang <b>'+(x.cap-x.need)+' truk</b>.')+'</p>';
+    var rows = [
+      ["Antrian dari hari sebelumnya", x.carry, "truk yang belum terbongkar sebelum tanggal ini"],
+      ["Mill ini · sudah di depo / pasti tiba", x.sure.length, "sudah tiba, atau dikonfirmasi sopir lewat telepon hari ini"],
+      ["Mill ini · perkiraan tiba", x.est.length, "dari telepon sebelumnya atau jadwal, belum dikonfirmasi hari ini"],
+      ["Mill ini · slot dipesan", x.plan, "kiriman baru yang sudah dipesan lewat Atur kiriman"]
+    ];
+    if(x.lain.n) lainSplit(x.lain.n).forEach(function(m){ if(m[1]) rows.push([m[0], m[1], x.lain.known ? "rencana kirim mill lain yang sudah ada" : "perkiraan rata-rata, rencana mill lain belum ada"]); });
+    h += '<table style="margin-top:8px">'+rows.map(function(r){ return '<tr><td>'+r[0]+'</td><td class="mono"><b>'+r[1]+'</b></td><td class="muted" style="font-size:.74rem">'+r[2]+'</td></tr>'; }).join("")+'</table>';
+    if(x.left>0 && x.cap>0){
+      var j = -1; cal.some(function(y){ if(y.i>x.i && y.cap>0 && y.need < y.cap){ j = y.i; return true; } });
+      var movable = x.est.length + x.plan;
+      h += '<div class="saran"><b>Saran:</b> '+(movable ? 'geser '+Math.min(movable, x.left)+' truk mill ini yang masih perkiraan atau slot dipesan' : 'koordinasikan dengan mill lain atau distributor untuk '+x.left+' truk')+(j>=0 ? ' ke '+fmtD(cal[j].date)+' (masih ada ruang '+(cal[j].cap-cal[j].need)+' truk)' : '')+'. Untuk truk yang sudah di jalan, minta sopir menahan atau mengatur waktu tiba.</div>';
+    }
+    if(x.ours.length){ h += '<div class="sub">Truk mill ini pada tanggal ini</div>' + x.sure.map(function(s){ return shipLine(s, s.arrDate ? '<span class="tag ok">sudah di depo</span>' : '<span class="tag info">pasti tiba</span>'); }).join("") + x.est.map(function(s){ return shipLine(s, '<span class="tag warn">perkiraan</span>'); }).join(""); }
+    box.innerHTML = h;
+    bindCallButtons("#cal-detail");
+  }
+  function renderPlanner(){
+    var sel = $("#pl-depo"), cur = sel.value, list = visibleDepos();
+    sel.innerHTML = list.map(function(d){ return '<option value="'+d.id+'">'+esc(d.name)+' · '+d.zone+' '+esc(zone(d.zone).name)+'</option>'; }).join("");
+    if(cur && list.some(function(d){ return d.id===cur; })) sel.value = cur; else if(selCell) sel.value = selCell.d;
+    var d = depo(sel.value); if(!d){ $("#pl-out").innerHTML = ""; return; }
+    var z = zone(d.zone), n = Math.max(1, Math.min(10, parseInt($("#pl-n").value||"1",10))), travel = z.target - 1;
+    var cal = calendar(d, 7 + travel + 3), best = -1, opts = [];
+    for(var k=0;k<7;k++){
+      var a = k + travel, arrive = addDays(TODAY, a), b = a, note = "";
+      while(isSun(addDays(TODAY,b))){ b++; note = "tiba Minggu, depo tutup"; }
+      var x = cal[b], load = x.need + n, ok = load <= x.cap;
+      opts.push({ k:k, a:a, b:b, arrive:arrive, x:x, load:load, ok:ok && !note, warn:ok && !!note, note:note });
+      if(best<0 && ok && !note) best = k;
+    }
+    var h = '<p style="font-size:.84rem">Lama perjalanan ke <b>'+esc(d.name)+'</b>: <b>'+z.target+' hari</b> (tiba hari ke-'+z.target+' sejak berangkat). Kapasitas bongkar '+d.cap+' truk per hari.</p>';
+    h += '<div class="tablewrap" style="margin-top:6px"><table><tr><th>Berangkat</th><th>Tiba</th><th>Beban hari itu</th><th>Status</th><th></th></tr>' + opts.map(function(o){
+      var st = o.ok ? '<span class="tag ok">aman</span>' : (o.warn ? '<span class="tag warn">'+o.note+'</span>' : '<span class="tag crit">penuh, '+(o.load-o.x.cap)+' menginap</span>');
+      return '<tr'+(o.k===best?' class="rowsel"':'')+'><td class="mono">'+(o.k===0?'hari ini':fmtD(addDays(TODAY,o.k)))+'</td><td class="mono">'+fmtD(o.arrive)+(o.b!==o.a?'<br><span class="muted">bongkar '+fmtD(addDays(TODAY,o.b))+'</span>':'')+'</td>'+
+             '<td class="mono">'+o.x.need+' + '+n+' = <b>'+o.load+'</b> / '+o.x.cap+'</td><td>'+st+(o.k===best?' <span class="tag info">disarankan</span>':'')+'</td><td><button class="small" data-plan="'+o.b+'">Pesan slot</button></td></tr>';
+    }).join("") + '</table></div>';
+    h += '<p class="muted" style="font-size:.74rem; margin-top:6px">'+(travel>=2 ? 'Mill lain yang lebih dekat biasanya merencanakan kiriman hanya 1-2 hari sebelumnya, sedangkan kita harus berangkat '+travel+' hari lebih awal. ' : 'Depo ini dekat, jadi jadwal masih mudah diatur mendadak. ')+'Kalau slot kita dipesan lebih dulu, dalam sistem bersama mill lain langsung melihatnya dan bisa menyesuaikan jadwal.</p>';
+    if(plMsg) h += '<div class="saran">'+plMsg+'</div>';
+    $("#pl-out").innerHTML = h;
+    Array.prototype.forEach.call(document.querySelectorAll("#pl-out [data-plan]"), function(b){
+      b.addEventListener("click", function(){
+        var bi = +b.dataset.plan; PLANS.push({ depo:d.id, i:bi, n:n });
+        plMsg = n+' truk ke '+esc(d.name)+' dipesan untuk dibongkar '+fmtD(addDays(TODAY,bi))+'. '+(bi<WIN ? 'Slot tampil di kalender dengan garis biru.' : 'Tanggal ini di luar kalender 10 hari.')+' Dalam sistem bersama, mill lain langsung melihat slot ini.';
+        selCell = bi<WIN ? { d:d.id, i:bi } : selCell; renderDash();
+      });
+    });
+  }
+  function renderNotifs(){
+    var L = NOTIFS.filter(function(n){ var s = shipById(n.ship); return !filterZone || (s && s.zone===filterZone); });
+    var dep = [];
+    visibleDepos().forEach(function(d){
+      var c = calendar(d, 7), f = null;
+      c.some(function(x){ if(x.lvl==="crit" && x.cap>0){ f = x; return true; } });
+      if(!f) return;
+      var ours = f.ours.length + f.plan;
+      dep.push({ crit: f.i===0, t: d.name+" ("+d.zone+") "+(f.i===0 ? "penuh hari ini" : "diperkirakan penuh "+fmtD(f.date))+": "+f.need+" truk perlu dibongkar, kapasitas "+f.cap+". "+(ours ? ours+" truk mill ini dijadwalkan tiba hari itu. " : "")+(f.i===0 ? f.left+" truk akan menginap." : "Pertimbangkan geser atau tahan kiriman.") });
+    });
+    dep.sort(function(a,b){ return (b.crit?1:0)-(a.crit?1:0); });
+    var h = dep.map(function(o){ return '<div class="notif'+(o.crit?" crit":"")+'"><div class="mono muted" style="font-size:.66rem">depo · ke order tracking dan transport planning</div>'+esc(o.t)+'</div>'; }).join("");
+    h += L.map(function(n){ var s = shipById(n.ship); return '<div class="notif'+(n.crit?" crit":"")+'"><div class="mono muted" style="font-size:.66rem">'+esc(n.when)+' · '+s.id+' · '+esc(s.sopir)+' · '+esc(s.nopol)+'</div>'+esc(n.text)+' <button class="small" data-call="'+s.id+'">Telepon</button></div>'; }).join("");
+    $("#notifs").innerHTML = h || '<p class="muted" style="font-size:.84rem;margin-top:8px">Tidak ada.</p>';
+    bindCallButtons("#notifs");
+  }
+  function shipById(id){ for(var i=0;i<SHIPS.length;i++) if(SHIPS[i].id===id) return SHIPS[i]; }
+  function renderShipTable(){
+    var L = visibleShips().filter(function(s){ return !filterStatus || (filterStatus==="today" ? dueToday(s) : s.cls===filterStatus); });
+    var order = { crit:0, warn:1, pend:2, ok:3 };
+    L.sort(function(a,b){ return order[a.cls]-order[b.cls] || (dueToday(b)?1:0)-(dueToday(a)?1:0); });
+    $("#ship-title").textContent = "Shipment aktif"+(filterZone ? " · "+zone(filterZone).name : "")+" ("+L.length+")";
+    var total = L.length; if(!showAll) L = L.slice(0, 12);
+    $("#ship-table").innerHTML = '<tr><th>Shipment</th><th>Sopir · No polisi</th><th>Zona · Depo</th><th>Hari ke-</th><th>Telepon hari ini</th><th>Status</th><th>Posisi terakhir</th><th>Perkiraan tiba</th><th></th></tr>' +
+      L.map(function(s){
+        var due = dueToday(s), d = dayIdx(s);
+        var dueTag = due ? (s.calledToday ? '<span class="tag ok">ke-'+due+' selesai</span>' : '<span class="tag info">ke-'+due+' terjadwal</span>') : '<span class="muted">-</span>';
+        return '<tr class="'+(call && call.s.id===s.id ? "rowsel" : "")+'"><td class="mono">'+s.id+'<br><span class="muted">FO '+s.fo+'</span></td><td>'+esc(s.sopir)+'<br><span class="mono muted">'+esc(s.nopol)+'</span></td>'+
+               '<td>'+s.zone+' · '+esc(zone(s.zone).name)+'<br><span class="muted">'+esc(depo(s.depo).name)+'</span></td><td class="mono">'+d+' / '+s.target+'</td><td>'+dueTag+'</td>'+
+               '<td><span class="tag '+CLS_TAG[s.cls]+'">'+esc(statusLabel(s))+'</span>'+(s.terlambat?'<br><span class="tag crit" style="margin-top:3px">lewat target</span>':'')+'</td>'+
+               '<td>'+esc(s.posisi||"-")+(s.last?'<br><span class="muted" style="font-size:.72rem">'+esc(s.last)+'</span>':'')+'</td><td class="mono">'+(s.eta?esc(fmtD(s.eta.slice(0,10))+s.eta.slice(10)):"-")+'<br><span class="muted">target '+fmtD(targetDate(s))+'</span></td>'+
+               '<td><button class="small" data-call="'+s.id+'">Telepon</button></td></tr>';
+      }).join("") + (total>12 ? '<tr><td colspan="9" style="text-align:center"><button id="b-more">'+(showAll ? 'Tampilkan 12 teratas' : 'Tampilkan semua ('+total+')')+'</button></td></tr>' : '');
+    bindCallButtons("#ship-table");
+    var bm = $("#b-more"); if(bm) bm.addEventListener("click", function(){ showAll = !showAll; renderShipTable(); });
+  }
+  function bindCallButtons(root){
+    Array.prototype.forEach.call(document.querySelectorAll(root+" [data-call]"), function(b){
+      b.addEventListener("click", function(){ $("#c-ship").value = b.dataset.call; startCall(); document.querySelector(".callgrid").scrollIntoView({ behavior: reduce?"auto":"smooth", block:"start" }); });
+    });
+  }
+  function fillShipSelect(){
+    var cur = $("#c-ship").value;
+    var L = SHIPS.slice().sort(function(a,b){ return (dueToday(b)?1:0)-(dueToday(a)?1:0); });
+    $("#c-ship").innerHTML = L.map(function(s){ return '<option value="'+s.id+'">'+s.id+' · '+esc(s.sopir)+' · '+esc(zone(s.zone).name)+(dueToday(s)?' · terjadwal hari ini':'')+'</option>'; }).join("");
+    if(cur && shipById(cur)) $("#c-ship").value = cur;
+    else { var d = SHIPS.filter(function(s){ return s.target>=4 && dueToday(s)===1; })[0]; if(d) $("#c-ship").value = d.id; }
+  }
+  function renderDash(){ renderKpis(); renderZones(); renderDepos(); renderNotifs(); renderShipTable(); }
+
+  /* ---------- suara ---------- */
+  var voices = [];
+  function loadVoices(){
+    try{ voices = window.speechSynthesis.getVoices().filter(function(v){ return /^id/i.test(v.lang); }); }catch(e){ voices = []; }
+    var note = !("speechSynthesis" in window) ? "Browser ini tidak mendukung suara; percakapan tampil sebagai teks." :
+      (voices.length ? "Suara bahasa Indonesia: "+voices[0].name+(voices.length>1?" dan "+voices.length+" lainnya":"") : "Suara bahasa Indonesia belum ditemukan di perangkat ini; dipakai suara bawaan.");
+    $("#voice-note").textContent = note;
+  }
+  if("speechSynthesis" in window){ try{ speechSynthesis.onvoiceschanged = loadVoices; }catch(e){} }
+  loadVoices();
+  function setLive(who){
+    var w = $("#wave");
+    w.className = "wave" + (who ? " on" : "") + (who==="driver" ? " driver" : "");
+    $("#live-txt").textContent = who==="agent" ? "AI berbicara" : (who==="driver" ? "Sopir berbicara" : "");
+  }
+  function speak(text, who){
+    return new Promise(function(res){
+      var on = $("#c-voice").checked && ("speechSynthesis" in window);
+      if(!on){ setLive(who); setTimeout(function(){ setLive(null); res(); }, DELAY); return; }
+      try{
+        var u = new SpeechSynthesisUtterance(text);
+        u.lang = "id-ID";
+        if(voices.length) u.voice = (who==="driver" && voices[1]) ? voices[1] : voices[0];
+        u.pitch = who==="driver" ? 0.7 : 1.1; u.rate = who==="driver" ? 1.08 : 1.0;
+        var done = false, fin = function(){ if(done) return; done = true; setLive(null); res(); };
+        u.onend = fin; u.onerror = fin;
+        setTimeout(fin, 2500 + text.length*95);
+        setLive(who); speechSynthesis.speak(u);
+      }catch(e){ setLive(null); setTimeout(res, DELAY); }
+    });
+  }
+  function stopSpeech(){ try{ speechSynthesis.cancel(); }catch(e){} setLive(null); }
+
+  /* ---------- pemahaman jawaban (simulasi) ---------- */
+  var low = function(t){ return " "+t.toLowerCase().replace(/[.,!?]/g," ")+" "; };
+  var has = function(t, re){ return re.test(low(t)); };
+  var RE_NO = /\s(tidak|nggak|gak|ga|enggak|ngga|tdk|jangan|nanti aja|nanti saja|sibuk|nyetir|menyetir|lagi jalan|salah|bukan)\s/;
+  var RE_YES = /\s(iya|ya|yaa|yup|aman|boleh|bisa|silakan|silahkan|benar|betul|oke|ok|siap|sip|lanjut|bener)\s/;
+  var RE_HUMAN = /(robot|ngomong sama orang|bicara sama orang|bicara dengan orang|sama admin|operator|orang aja|orang saja|manusia)/;
+  var RE_SERIOUS = /(kecelakaan|tabrak|keserempet|serempet|terguling|terbalik|dirampok|rampok|barang hilang|muatan hilang)/;
+  var RE_UNCLEAR = /^\s*(\.+|hah\??|apa\??|halo\??|ha\??)\s*$|kedengaran|gak denger|nggak denger|putus putus|tidak jelas/;
+  var PLACES = ["Rest area","Depo","Pelabuhan","Merak","Cipali","Tol","Lampung","Tegal","Cirebon","Kendal","Batang","Karawang"];
+  ZONES.forEach(function(z){ PLACES.push(z.via, z.kota); z.depos.forEach(function(d){ PLACES.push(d.name.replace("Depo ","")); }); });
+  PLACES.sort(function(a,b){ return b.length-a.length; });
+  function extractLoc(t){
+    if(/lewat|menuju|mau ke|arah/i.test(t)) { var c = t.replace(/^(sudah|udah|masih|ini|lagi)\s+/i,"").replace(/\s*(pak|bu)\s*$/i,"").trim(); if(c.length>3) return c; }
+    var L = t.toLowerCase();
+    for(var i=0;i<PLACES.length;i++){ if(L.indexOf(PLACES[i].toLowerCase())>-1){ var m = t.match(new RegExp("((?:depo|tol|rest area|pelabuhan)\\s+)?"+PLACES[i].replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i")); return m ? m[0] : PLACES[i]; } }
+    var m2 = t.match(/(?:di|lewat|sampai|dekat|daerah|masuk)\s+([A-Za-z][A-Za-z\s]{2,30})/i);
+    return m2 ? m2[1].trim() : null;
+  }
+  function statusOf(t){
+    if(has(t, /selesai bongkar|sudah bongkar|udah bongkar/)) return "sudah bongkar";
+    if(has(t, /(sudah|udah)\s+(sampai|tiba|nyampe)|sampai di depo|di depo/)) return "sudah tiba";
+    if(has(t, /bengkel|mogok/)) return "berhenti";
+    if(has(t, /istirahat|rest area|makan|tidur/)) return "istirahat";
+    return "dalam perjalanan";
+  }
+  function kendalaOf(t){
+    if(RE_SERIOUS.test(t.toLowerCase())) return "serius";
+    if(has(t, /nginap|nginep|menginap|depo penuh|penuh/)) return "menginap (depo penuh)";
+    if(has(t, /antri bongkar|antre bongkar/)) return "antri bongkar";
+    if(has(t, /\sban\s|mesin|mogok|rusak|bengkel|\soli\s|\srem\s/)) return "kerusakan kendaraan";
+    if(has(t, /macet|antri kapal|antre kapal|banjir|longsor|jalan rusak/)) return "macet / kondisi jalan";
+    if(has(t, /tidak ada|nggak ada|gak ada|ga ada|enggak ada|lancar|aman|\stidak\s|\snggak\s|\sgak\s|\senggak\s/)) return "tidak ada";
+    if(RE_UNCLEAR.test(t.toLowerCase()) || t.trim().length<3) return null;
+    return "lainnya";
+  }
+  var WD = {minggu:0, senin:1, selasa:2, rabu:3, kamis:4, jumat:5, sabtu:6};
+  function etaOf(t){
+    var L = low(t), add = null;
+    var m = L.match(/(\d+)\s*hari lagi/);
+    if(m) add = +m[1];
+    else if(/\slusa\s/.test(L)) add = 2;
+    else if(/\sbesok\s|\sbesuk\s/.test(L)) add = 1;
+    else if(/hari ini|nanti (pagi|siang|sore|malam)|sebentar lagi|\snanti\s|malam ini|sore ini/.test(L)) add = 0;
+    else { for(var k in WD){ if(L.indexOf(" "+k+" ")>-1){ var cur = new Date(TODAY+"T00:00:00Z").getUTCDay(); add = (WD[k]-cur+7)%7 || 7; break; } } }
+    if(add===null) return null;
+    var part = (L.match(/\s(pagi|siang|sore|malam)\s/)||[])[1] || "";
+    var jam = (L.match(/jam\s*(\d{1,2})/)||[])[1];
+    return { date: addDays(TODAY, add), part: jam ? "jam "+jam : part };
+  }
+
+  /* ---------- skenario ---------- */
+  function scenLines(scen, s){
+    var z = zone(s.zone), dn = depo(s.depo).name;
+    return {
+      normal:   ["Aman, Pak", "Sudah lewat "+z.via+", mau ke "+z.kota, "Tidak ada, lancar", "Besok sore", "Iya benar"],
+      kendala:  ["Boleh", "Masih di "+z.via+", lagi di bengkel", "Ban pecah tadi pagi, lagi diganti", "Lusa siang mungkin", "Iya"],
+      menginap: ["Aman", "Sudah sampai di "+dn, "Nginep Pak, depo penuh, antri bongkar sama mobil dari mill lain", "Besok pagi baru bisa bongkar", "Betul"],
+      bising:   ["iya", "...", "hah? nggak kedengaran", z.kota, "nggak ada", "nanti malam", "ya"],
+      menyetir: ["Lagi nyetir nih, nanti aja"],
+      manusia:  ["Aman", "Ini robot ya? Saya mau ngomong sama orang aja"],
+      serius:   ["Aman", "Di tol dekat "+z.via, "Ada kecelakaan Pak, mobil keserempet truk"],
+      noanswer: [], manual: []
+    }[scen];
+  }
+  var SUGG = { SAFE:["Aman, Pak","Lagi nyetir, nanti aja"], POSISI:["Sudah lewat pelabuhan","Masih di rest area","Sudah sampai di depo"],
+               KENDALA:["Tidak ada, lancar","Ban pecah, lagi di bengkel","Nginap, depo penuh","Macet antri kapal"], ETA:["Besok sore","Lusa pagi","Nanti malam"], KONFIRMASI:["Iya benar","Bukan, salah"] };
+  var STEPS = [["SAFE","Aman bicara?"],["POSISI","Posisi"],["KENDALA","Kendala"],["ETA","Perkiraan tiba"],["KONFIRMASI","Konfirmasi"],["SELESAI","Tersimpan"]];
+
+  /* ---------- panggilan ---------- */
+  var call = null, token = 0, timerId = null;
+  function addMsg(kind, text, lbl){
+    var d = document.createElement("div"); d.className = "msg "+kind;
+    d.innerHTML = (lbl ? '<span class="lbl">'+esc(lbl)+'</span>' : '') + esc(text);
+    $("#chat").appendChild(d); $("#chat").scrollTop = $("#chat").scrollHeight;
+  }
+  function setStatus(txt, cls){ var e = $("#c-status"); e.textContent = txt; e.className = "tag "+(cls||""); }
+  function setInput(on){ $("#c-input").disabled = !on; $("#c-send").disabled = !on; }
+  function wait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  function startTimer(){ var t0 = Date.now(); clearInterval(timerId); timerId = setInterval(function(){ var s = Math.floor((Date.now()-t0)/1000); $("#timer").textContent = "· "+("0"+Math.floor(s/60)).slice(-2)+":"+("0"+s%60).slice(-2); }, 500); }
+  function stopTimer(){ clearInterval(timerId); }
+
+  function renderSteps(){
+    var cur = call ? call.state : null, order = STEPS.map(function(s){ return s[0]; }), ci = order.indexOf(cur);
+    $("#steps").innerHTML = STEPS.map(function(s, i){
+      var cls = "step";
+      if(call && call.ended && call.endKind!=="SELESAI" && i===Math.max(0,ci)) cls += " end";
+      else if(cur===s[0]) cls += (call && call.ended ? " done" : " now");
+      else if(ci>-1 && i<ci) cls += " done";
+      return '<span class="'+cls+'">'+s[1]+'</span>';
+    }).join("") + (call && call.ended && call.endKind!=="SELESAI" ? '<span class="step end">'+esc(call.endLabel)+'</span>' : '');
+  }
+  function renderPipe(p){
+    if(!p){ $("#pipe").innerHTML = '<div class="pcard" style="grid-column:1/-1"><span class="muted">Mulai telepon untuk melihat apa yang dikerjakan AI di tiap giliran. Satu giliran di sistem nyata berlangsung sekitar 1-2 detik.</span></div>'; return; }
+    var und = Object.keys(p.extract).map(function(k){ return '<div><span class="muted">'+esc(LABEL[k]||k)+':</span> '+esc(fmtVal(p.extract[k]))+'</div>'; }).join("") || '<span class="muted">-</span>';
+    var cards = [
+      ["1 Sopir bicara", '"'+esc(p.heard)+'"'],
+      ["2 AI mendengar", 'Suara diubah jadi tulisan<br><span class="muted">kejelasan '+Math.round(p.conf*100)+'%</span>'],
+      ["3 AI memahami", und],
+      ["4 Aturan alur", esc(p.decision)],
+      ["5 AI menjawab", '"'+esc(p.reply)+'"']
+    ];
+    $("#pipe").innerHTML = cards.map(function(c){ return '<div class="pcard"><div class="t">'+c[0]+'</div><div class="v">'+c[1]+'</div></div>'; }).join("");
+  }
+  var LABEL = { aman_bicara:"Aman bicara", posisi:"Posisi", status:"Status", kendala:"Kendala", detail:"Detail", eta:"Perkiraan tiba", bagian_hari:"Waktu", terlambat:"Lewat target", dikonfirmasi:"Dibenarkan sopir", minta_manusia:"Minta bicara dengan orang" };
+  function fmtVal(v){ if(v===true) return "ya"; if(v===false) return "tidak"; if(v===null || v===undefined) return "belum tertangkap"; if(/^\d{4}-\d\d-\d\d/.test(v)) return fmtD(v.slice(0,10))+v.slice(10); return v; }
+  function renderKv(){
+    if(!call){ $("#kv").innerHTML = '<tr><td class="muted" colspan="2">Belum ada.</td></tr>'; return; }
+    var r = call.rec;
+    var rows = [["Shipment", r.shipment+" · "+r.no_polisi], ["Sopir", r.sopir], ["Telepon", r.telepon], ["Diangkat", r.diangkat===null?"-":(r.diangkat?"ya":"tidak")],
+      ["Posisi", r.posisi||"-"], ["Status", r.status||"-"], ["Kendala", r.kendala||"-"], ["Perkiraan tiba", r.eta ? fmtVal(r.eta) : "-"],
+      ["Lewat target", r.terlambat===null?"-":(r.terlambat?"ya, target "+fmtD(targetDate(call.s)):"tidak")], ["Dibenarkan sopir", r.dikonfirmasi?"ya":"-"],
+      ["Keyakinan", r.keyakinan===null?"-":Math.round(r.keyakinan*100)+"%"], ["Perlu tindakan", r.eskalasi.length ? r.eskalasi.join("; ") : "-"]];
+    $("#kv").innerHTML = rows.map(function(x){ return '<tr><td>'+x[0]+'</td><td>'+esc(x[1])+'</td></tr>'; }).join("");
+  }
+  function renderChips(){
+    var el = $("#chips");
+    if(!call || call.ended || call.scen!=="manual"){ el.innerHTML = ""; return; }
+    el.innerHTML = (SUGG[call.state]||[]).concat(["Mau bicara sama orang saja"]).map(function(t){ return '<button class="chip" data-t="'+esc(t)+'">'+esc(t)+'</button>'; }).join("");
+    Array.prototype.forEach.call(el.querySelectorAll("button"), function(b){ b.addEventListener("click", function(){ driverSay(b.dataset.t, false); }); });
+  }
+
+  function startCall(){
+    token++; var my = token; stopSpeech();
+    var s = shipById($("#c-ship").value), scen = $("#c-scen").value, due = dueToday(s);
+    var callNo = due ? "ke-"+due : "tambahan";
+    call = { s:s, scen:scen, state:"SAFE", ended:false, reprompt:0, corrected:false, turns:0, conf:1, sttMin:1, queue:scenLines(scen, s).slice(), token:my,
+             rec:{ shipment:s.id, no_polisi:s.nopol, sopir:s.sopir, telepon:callNo, diangkat:null, posisi:null, status:null, kendala:null, eta:null, terlambat:null, dikonfirmasi:false, keyakinan:null, eskalasi:[] } };
+    $("#chat").innerHTML = ""; $("#timer").textContent = "";
+    $("#c-who").textContent = s.sopir+" · "+s.nopol;
+    $("#c-sub").textContent = "Telepon "+callNo+" · "+zone(s.zone).name+" → "+depo(s.depo).name+" · hari "+dayIdx(s)+" dari "+s.target;
+    $("#c-stop").disabled = false; setInput(false);
+    renderPipe(null); renderSteps(); renderKv(); renderShipTable();
+    addMsg("sys", "Jadwal otomatis memicu telepon "+callNo+" · menelepon "+s.hp);
+    if(scen==="noanswer"){ noAnswer(my); return; }
+    setStatus("berdering", "info");
+    wait(DELAY*1.5).then(function(){
+      if(my!==token) return;
+      addMsg("sys", "Diangkat"); call.rec.diangkat = true; setStatus("tersambung", "ok"); startTimer();
+      agentSay("Selamat siang, "+s.sopir+". Saya asisten otomatis tim pengiriman. Saya mau konfirmasi pengiriman mobil "+s.nopol+" tujuan "+depo(s.depo).name+". Apakah Bapak aman untuk bicara sebentar?");
+    });
+  }
+  function agentSay(t){
+    var my = call.token;
+    addMsg("agent", t, "AI (suara)");
+    renderSteps(); renderKv();
+    speak(t, "agent").then(function(){
+      if(my!==token) return;
+      if(call.ended){ endCall(); return; }
+      if(call.scen==="manual"){ setInput(true); renderChips(); try{ $("#c-input").focus({preventScroll:true}); }catch(e){} }
+      else if(call.queue.length){ wait(DELAY*0.6).then(function(){ if(my===token) driverSay(call.queue.shift(), true); }); }
+      else { call.scen = "manual"; setInput(true); renderChips(); }
+    });
+  }
+  function noAnswer(my){
+    var n = 0; setStatus("berdering", "info");
+    (function tryCall(){
+      n++;
+      wait(DELAY*2).then(function(){
+        if(my!==token) return;
+        addMsg("sys", "Percobaan "+n+": tidak diangkat"+(n<3 ? " · dicoba lagi 1 jam kemudian" : ""));
+        if(n<3){ tryCall(); return; }
+        call.rec.diangkat = false; call.rec.keyakinan = 0; call.rec.eskalasi.push("tidak diangkat 3x, hubungi vendor atau sopir manual");
+        finish("TIDAK_DIANGKAT", "Tidak diangkat 3x", true); endCall();
+      });
+    })();
+  }
+  function driverSay(text, voiced){
+    if(!call || call.ended) return;
+    text = String(text).trim(); if(!text) return;
+    var my = call.token;
+    setInput(false); $("#chips").innerHTML = "";
+    addMsg("driver", text, "Sopir"+(voiced?" (suara)":""));
+    $("#c-input").value = "";
+    (voiced ? speak(text, "driver") : Promise.resolve()).then(function(){
+      if(my!==token) return;
+      call.turns++;
+      var conf = $("#c-noise").checked ? 0.62 + Math.random()*0.12 : 0.9 + Math.random()*0.08;
+      if(RE_UNCLEAR.test(text.toLowerCase())) conf = Math.min(conf, 0.45);
+      call.sttMin = Math.min(call.sttMin, conf);
+      var r = step(text);
+      renderPipe({ heard:text, conf:conf, extract:r.extract, decision:r.decision, reply:r.reply });
+      wait(DELAY*0.5).then(function(){ if(my===token) agentSay(r.reply); });
+    });
+  }
+  function reprompt(q, extract){ call.reprompt++; call.conf -= 0.12; return { extract:extract, decision:"Jawaban belum jelas → tanya ulang (percobaan "+(call.reprompt+1)+" dari 3)", reply:q }; }
+  function nextState(st){ call.state = st; call.reprompt = 0; }
+
+  function step(t){
+    var L = t.toLowerCase(), rec = call.rec, s = call.s;
+    if(RE_SERIOUS.test(L)){
+      rec.kendala = "serius: "+t; rec.status = "kendala serius"; rec.eskalasi.push("kendala serius, segera hubungi sopir");
+      finish("ESKALASI", "Eskalasi segera", true);
+      return { extract:{ kendala:"serius", detail:t }, decision:"Ada kendala serius → hentikan, kabari tim segera", reply:"Baik Pak, informasi ini langsung saya teruskan ke tim order tracking, mereka akan segera menghubungi Bapak. Utamakan keselamatan, Pak." };
+    }
+    if(RE_HUMAN.test(L)){
+      rec.eskalasi.push("sopir minta bicara dengan orang"); rec.status = "perlu dicek";
+      finish("ESKALASI", "Minta bicara dengan orang");
+      return { extract:{ minta_manusia:true }, decision:"Sopir minta orang → akhiri, serahkan ke order tracking", reply:"Baik Pak, nanti tim order tracking yang akan menghubungi Bapak langsung. Terima kasih." };
+    }
+    switch(call.state){
+      case "SAFE":
+        if(RE_NO.test(low(t))){ rec.status = "dijadwal ulang"; finish("JADWAL_ULANG", "Dijadwal ulang"); return { extract:{ aman_bicara:false }, decision:"Tidak aman bicara → telepon lagi 1 jam kemudian", reply:"Baik Pak, saya telepon lagi sekitar satu jam lagi. Hati-hati di jalan." }; }
+        if(RE_YES.test(low(t))){ nextState("POSISI"); return { extract:{ aman_bicara:true }, decision:"Aman → lanjut tanya posisi", reply:"Terima kasih, Pak. Sekarang posisi Bapak di mana?" }; }
+        if(call.reprompt>=2){ rec.status = "dijadwal ulang"; finish("JADWAL_ULANG","Dijadwal ulang"); return { extract:{ aman_bicara:null }, decision:"Tidak jelas 3 kali → telepon lagi nanti", reply:"Mohon maaf Pak, suaranya kurang jelas. Saya telepon lagi nanti. Terima kasih." }; }
+        return reprompt("Maaf Pak, apakah Bapak aman untuk bicara sebentar?", { aman_bicara:null });
+      case "POSISI":
+        var loc = RE_UNCLEAR.test(L) ? null : extractLoc(t);
+        if(loc){
+          rec.posisi = loc; rec.status = statusOf(t); nextState("KENDALA");
+          return { extract:{ posisi:loc, status:rec.status }, decision:"Posisi tercatat → lanjut tanya kendala", reply: rec.status==="sudah tiba" ? "Baik, sudah di "+loc+". Apakah sudah bisa bongkar, atau ada kendala?" : "Baik, posisi "+loc+". Apakah ada kendala di jalan?" };
+        }
+        if(call.reprompt>=2){ rec.eskalasi.push("posisi tidak tertangkap"); call.conf -= 0.1; nextState("KENDALA"); return { extract:{ posisi:null }, decision:"Tidak jelas 3 kali → posisi dikosongkan, tandai perlu dicek, lanjut", reply:"Baik Pak. Apakah ada kendala di jalan?" }; }
+        return reprompt(call.reprompt===0 ? "Maaf Pak, suaranya kurang jelas. Posisi Bapak sekarang di kota atau daerah mana?" : "Mohon maaf, bisa diulang Pak, sekarang di daerah mana?", { posisi:null });
+      case "KENDALA":
+        var k = kendalaOf(t);
+        if(k){
+          rec.kendala = k==="tidak ada" ? "tidak ada" : k;
+          if(k!=="tidak ada"){ rec.status = /sudah tiba/.test(rec.status||"") ? "sudah tiba, "+k : "kendala"; rec.eskalasi.push("kendala: "+k); }
+          nextState("ETA");
+          return { extract:{ kendala:k, detail: k==="tidak ada" ? null : t }, decision: k==="tidak ada" ? "Tidak ada kendala → lanjut tanya perkiraan tiba" : "Kendala dicatat ("+k+"), nanti dikirim ke tim → lanjut", reply: /sudah tiba/.test(rec.status||"") ? "Baik Pak. Perkiraan bisa bongkar kapan?" : "Baik Pak. Perkiraan Bapak tiba di tujuan kapan?" };
+        }
+        if(call.reprompt>=2){ call.conf -= 0.1; nextState("ETA"); return { extract:{ kendala:null }, decision:"Tidak jelas 3 kali → lanjut", reply:"Baik Pak. Perkiraan tiba kapan?" }; }
+        return reprompt("Maaf Pak, apakah ada kendala di perjalanan?", { kendala:null });
+      case "ETA":
+        var e = etaOf(t);
+        if(e){
+          rec.eta = e.date + (e.part ? " "+e.part : ""); rec.terlambat = e.date > targetDate(s);
+          if(rec.terlambat) rec.eskalasi.push("perkiraan "+fmtD(e.date)+" lewat target "+fmtD(targetDate(s)));
+          nextState("KONFIRMASI");
+          var sum = (rec.posisi ? "posisi "+rec.posisi+", " : "")+"perkiraan "+fmtD(e.date)+(e.part?" "+e.part:"")+", "+(rec.kendala && rec.kendala!=="tidak ada" ? "kendala "+rec.kendala : "tanpa kendala");
+          return { extract:{ eta:e.date+(e.part?" "+e.part:""), terlambat:rec.terlambat }, decision:"Perkiraan diubah jadi tanggal, dibandingkan target "+fmtD(targetDate(s))+" → minta konfirmasi", reply:"Baik Pak, saya ulangi: "+sum+". Apakah benar?" };
+        }
+        if(call.reprompt>=2){ rec.eskalasi.push("perkiraan tiba tidak tertangkap"); call.conf -= 0.1; nextState("KONFIRMASI"); return { extract:{ eta:null }, decision:"Tidak jelas 3 kali → perkiraan kosong, tandai perlu dicek", reply:"Baik Pak, saya catat posisinya dulu. Apakah informasi tadi sudah benar?" }; }
+        return reprompt("Maaf Pak, kira-kira tiba hari apa? Misalnya besok atau lusa?", { eta:null });
+      case "KONFIRMASI":
+        if(RE_NO.test(low(t)) && !call.corrected){
+          call.corrected = true; call.conf -= 0.05; nextState("POSISI");
+          rec.posisi = null; rec.status = null; rec.kendala = null; rec.eta = null; rec.terlambat = null;
+          rec.eskalasi = rec.eskalasi.filter(function(x){ return !/^(kendala:|perkiraan|posisi)/.test(x); });
+          return { extract:{ dikonfirmasi:false }, decision:"Sopir bilang salah → ulangi dari posisi (sekali)", reply:"Baik Pak, saya ulangi. Posisi Bapak sekarang di mana?" };
+        }
+        if(RE_YES.test(low(t)) || call.reprompt>=2 || call.corrected){
+          rec.dikonfirmasi = RE_YES.test(low(t));
+          if(!rec.dikonfirmasi) rec.eskalasi.push("sopir tidak membenarkan ringkasan");
+          nextState("SELESAI"); finish("SELESAI", "Selesai");
+          return { extract:{ dikonfirmasi:rec.dikonfirmasi }, decision:"Simpan ke dashboard"+(rec.eskalasi.length ? ", kirim notifikasi ke tim" : ""), reply:"Terima kasih Pak, sudah saya catat. Selamat melanjutkan perjalanan." };
+        }
+        return reprompt("Maaf Pak, apakah ringkasan tadi sudah benar?", { dikonfirmasi:null });
+    }
+    return { extract:{}, decision:"-", reply:"..." };
+  }
+
+  function finish(kind, label, critical){
+    var rec = call.rec;
+    call.ended = true; call.endKind = kind; call.endLabel = label; call.critical = !!critical;
+    var conf = rec.diangkat===false ? 0 : Math.max(0.2, Math.min(call.conf, 1) * (0.5 + call.sttMin/2));
+    rec.keyakinan = Math.round(conf*100)/100;
+    if(rec.diangkat && rec.keyakinan < 0.7 && kind==="SELESAI") rec.eskalasi.push("keyakinan rendah, dengarkan rekaman");
+  }
+  function endCall(){
+    stopTimer(); setInput(false); $("#chips").innerHTML = ""; $("#c-stop").disabled = true;
+    var c = call, rec = c.rec, s = c.s;
+    setStatus(c.endKind==="SELESAI" ? "selesai" : c.endLabel.toLowerCase(), c.endKind==="SELESAI" ? (rec.eskalasi.length?"warn":"ok") : (c.critical ? "crit" : "warn"));
+    addMsg("sys", "Telepon berakhir · hasil tersimpan otomatis ke dashboard");
+    applyResult(s, c.endKind, rec, "baru saja");
+    renderSteps(); renderKv(); renderDash(); fillShipSelect();
+  }
+  function applyResult(s, kind, rec, when){
+    var u = { posisi: rec.posisi || s.posisi, eta: rec.eta || s.eta };
+    var ken = rec.kendala && rec.kendala!=="tidak ada" ? rec.kendala : null;
+    if(kind==="TIDAK_DIANGKAT") u.status = "tidak diangkat";
+    else if(kind==="JADWAL_ULANG") u.status = "dijadwal ulang";
+    else if(kind==="ESKALASI") u.status = /serius/.test(rec.status||"") ? "kendala serius" : "perlu dicek";
+    else if(/sudah bongkar/.test(rec.status||"")){ u.arrDate = s.arrDate || TODAY; u.offDate = TODAY; }
+    else if(/menginap/.test(rec.kendala||"")){ u.arrDate = (s.arrDate && s.arrDate < TODAY) ? s.arrDate : addDays(TODAY,-1); u.offDate = null; }
+    else if(/sudah tiba|antri bongkar/.test((rec.status||"")+" "+(rec.kendala||""))){ u.arrDate = s.arrDate || TODAY; u.offDate = null; }
+    else if(ken) u.status = "kendala";
+    else if(rec.keyakinan!==null && rec.keyakinan < 0.7) u.status = "perlu dicek";
+    else u.status = "dalam perjalanan";
+    u.last = "Telepon "+rec.telepon+" ("+when+"): "+(ken || (kind==="SELESAI" ? (u.arrDate ? (u.offDate ? "sudah bongkar" : "di depo, menunggu bongkar") : "lancar") : (u.status||"")));
+    setState(s, u);
+    if(dueToday(s)) s.calledToday = true;
+    NOTIFS = NOTIFS.filter(function(n){ return n.ship!==s.id; });
+    if(rec.eskalasi.length) NOTIFS.unshift({ ship:s.id, crit:s.cls==="crit", text:rec.eskalasi.join("; ")+(s.status==="menginap"?" · diteruskan juga ke transport planning":""), when:when });
+  }
+
+  /* ---------- telepon massal hari ini ---------- */
+  function batch(){
+    var L = SHIPS.filter(function(s){ return dueToday(s) && !s.calledToday; });
+    if(!L.length){ $("#b-prog").textContent = "Semua telepon terjadwal hari ini sudah selesai."; return; }
+    $("#b-batch").disabled = true; var i = 0;
+    (function next(){
+      if(i>=L.length){ $("#b-batch").disabled = false; $("#b-prog").textContent = L.length+" telepon selesai dalam simulasi. Di sistem nyata ini berjalan sendiri sepanjang hari."; fillShipSelect(); return; }
+      var s = L[i++], z = zone(s.zone), r = Math.random(), late = dayIdx(s) >= s.target, dn = depo(s.depo).name;
+      var rec = { telepon:"ke-"+dueToday(s), diangkat:true, posisi:z.via, status:"dalam perjalanan", kendala:"tidak ada", eta:targetDate(s)+" sore", keyakinan:0.93, eskalasi:[] }, kind = "SELESAI";
+      if(r < 0.1){ kind = "TIDAK_DIANGKAT"; rec.diangkat = false; rec.posisi = null; rec.eta = null; rec.eskalasi.push("tidak diangkat 3x, hubungi vendor atau sopir manual"); }
+      else if(r < 0.16){ kind = "JADWAL_ULANG"; rec.posisi = null; rec.eta = null; }
+      else if(late && s.arrDate && !s.offDate){ if(r < 0.6){ rec.status = "sudah bongkar"; rec.posisi = dn; } else { rec.status = "sudah tiba"; rec.kendala = "antri bongkar"; rec.posisi = dn; rec.eskalasi.push("masih menunggu bongkar"); } }
+      else if(late && !s.arrDate){
+        if(r < 0.3 && dayIdx(s) > s.target){ rec.status = "sudah tiba"; rec.kendala = "menginap (depo penuh)"; rec.posisi = dn; rec.eta = TODAY+" sore"; rec.eskalasi.push("menginap, depo penuh"); }
+        else if(r < 0.55){ rec.status = "sudah tiba"; rec.posisi = dn; rec.eta = TODAY; }
+        else if(r < 0.7){ rec.status = "sudah bongkar"; rec.posisi = dn; }
+        else { rec.eta = TODAY+" sore"; }
+      }
+      else if(r < 0.3){ rec.kendala = pick(["kerusakan kendaraan","macet / kondisi jalan"]); rec.status = "kendala"; rec.eta = addDays(targetDate(s),1)+" siang"; rec.eskalasi.push("kendala: "+rec.kendala, "perkiraan lewat target"); }
+      else if(r < 0.36){ rec.keyakinan = 0.58; rec.eskalasi.push("keyakinan rendah, dengarkan rekaman"); }
+      else if(r < 0.5){ rec.eta = addDays(TODAY,1)+" pagi"; }
+      applyResult(s, kind, rec, "hari ini");
+      $("#b-prog").textContent = "Menelepon "+i+" dari "+L.length+" · "+s.sopir+" ("+z.name+")";
+      renderDash();
+      setTimeout(next, reduce ? 0 : 160);
+    })();
+  }
+
+  /* ---------- wiring ---------- */
+  $("#c-start").addEventListener("click", startCall);
+  $("#c-stop").addEventListener("click", function(){ if(!call || call.ended) return; token++; stopSpeech(); call.rec.eskalasi.push("telepon dihentikan"); finish("ESKALASI","Dihentikan"); call.token = token; endCall(); });
+  $("#c-send").addEventListener("click", function(){ driverSay($("#c-input").value, false); });
+  $("#c-input").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); driverSay($("#c-input").value, false); } });
+  $("#c-voice").addEventListener("change", function(){ if(!this.checked) stopSpeech(); });
+  $("#b-batch").addEventListener("click", batch);
+  $("#b-reset").addEventListener("click", function(){ token++; stopSpeech(); stopTimer(); call = null; filterZone = null; selDepo = null; depoDay = 0; PLANS = []; selCell = null; plMsg = ""; seedData(); fillShipSelect(); $("#chat").innerHTML = ""; setStatus("siap"); $("#c-who").textContent = "Belum ada panggilan"; renderSteps(); renderPipe(null); renderKv(); renderDash(); $("#b-prog").textContent = ""; });
+  $("#f-status").addEventListener("change", function(){ filterStatus = this.value; showAll = false; renderShipTable(); });
+  $("#depo-more").addEventListener("click", function(){ depoAll = !depoAll; renderDepos(); });
+  $("#biaya").addEventListener("input", renderDepos);
+  $("#pl-depo").addEventListener("change", function(){ plMsg = ""; renderPlanner(); });
+  $("#pl-n").addEventListener("input", function(){ plMsg = ""; renderPlanner(); });
+
+  seedData(); fillShipSelect(); renderSteps(); renderPipe(null); renderKv(); renderDash();
+})();
+</script>
+
+</body></html>
