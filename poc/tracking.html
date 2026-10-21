@@ -145,6 +145,9 @@
   .cap .over{background:var(--crit)}
   .notif{font-size:.8rem; padding:8px 10px; border-radius:6px; border:1px solid var(--line); border-left:4px solid var(--warn); background:var(--surface-2); margin-top:8px}
   .notif.crit{border-left-color:var(--crit)}
+  .notif.info{border-left-color:var(--info)}
+  .notif .pic{font-family:var(--mono); font-size:.66rem; color:var(--ink-dim); margin-top:4px; display:flex; justify-content:space-between; gap:6px; align-items:center; flex-wrap:wrap}
+  details.done{margin-top:10px; font-size:.78rem; color:var(--ink-dim)}
   .notifs{max-height:420px; overflow-y:auto}
   table.cal{border-collapse:separate; border-spacing:3px; font-size:.78rem}
   table.cal th{text-align:center; padding:4px 2px; border:none; white-space:nowrap; font-size:.62rem}
@@ -158,6 +161,12 @@
   td.c:hover{filter:brightness(.97)}
   td.c.sel{outline:2px solid var(--ink); outline-offset:-2px}
   .c-ok{background:var(--ok-soft)} .c-warn{background:var(--warn-soft)} .c-crit{background:var(--crit-soft)}
+  td.c.hold{outline:2px dashed var(--crit); outline-offset:-3px}
+  td.c.hold.sel{outline:2px solid var(--ink)}
+  .calleg i.box.hold{outline:2px dashed var(--crit); outline-offset:-2px; background:var(--surface)}
+  .holdbox{margin-top:14px; padding-top:10px; border-top:1px solid var(--line)}
+  .holdbox select, .holdbox input{font-size:.8rem; padding:4px 6px; background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:6px}
+  .holdbox .bar{margin-top:6px}
   .c-closed{background:repeating-linear-gradient(45deg,var(--surface-2),var(--surface-2) 4px,var(--line) 4px,var(--line) 5px)}
   .cn{font-family:var(--mono); font-weight:600; font-size:.88rem; line-height:1.1}
   .cn span{color:var(--ink-dim); font-weight:400; font-size:.68rem}
@@ -251,6 +260,7 @@
             <option value="manusia">Sopir minta bicara dengan orang</option>
             <option value="serius">Kecelakaan di jalan</option>
             <option value="noanswer">Telepon tidak diangkat</option>
+            <option value="barang">Barang rusak saat bongkar</option>
             <option value="manual">Jawab sendiri (ketik)</option>
           </select>
         </div>
@@ -302,7 +312,7 @@
       </div>
       <div class="kpis small" id="depo-kpis"></div>
       <div class="calleg">
-        <span><i class="box c-ok"></i>Masih longgar</span><span><i class="box c-warn"></i>Hampir penuh</span><span><i class="box c-crit"></i>Lewat kapasitas, truk akan menginap</span><span><i class="box c-closed"></i>Minggu, depo tutup</span>
+        <span><i class="box c-ok"></i>Masih longgar</span><span><i class="box c-warn"></i>Hampir penuh</span><span><i class="box c-crit"></i>Lewat kapasitas, truk akan menginap</span><span><i class="box c-closed"></i>Minggu atau hari libur depo, tutup</span><span><i class="box hold"></i>Hold / kapasitas diturunkan</span>
       </div>
       <div class="calleg">
         <span><i class="g-carry"></i>Sisa dari hari sebelumnya</span><span><i class="g-sure"></i>Mill ini: sudah di depo</span><span><i class="g-est"></i>Mill ini: perkiraan tiba</span><span><i class="g-lain"></i>Mill lain: sudah di depo</span><span><i class="g-lainest"></i>Mill lain: perkiraan tiba</span>
@@ -323,9 +333,16 @@
       </div>
     </div>
 
-    <div class="panel" style="margin-top:14px">
-      <h3>Perlu tindakan order tracking</h3>
-      <div class="notifs" id="notifs"></div>
+    <div class="calgrid">
+      <div class="panel">
+        <h3>Perlu tindakan</h3>
+        <div class="notifs" id="notifs"></div>
+      </div>
+      <div class="panel">
+        <h3>Kabar otomatis terkirim</h3>
+        <p class="muted mono" style="font-size:.7rem; margin-top:2px">WA ke distributor, SCM, dan tim terkait</p>
+        <div class="notifs" id="kabar"></div>
+      </div>
     </div>
 
     <div class="panel" style="margin-top:14px">
@@ -381,14 +398,14 @@
   function rnd(){ seed = (seed*1103515245 + 12345) % 2147483648; return seed/2147483648; }
   function pick(a){ return a[Math.floor(rnd()*a.length)]; }
 
-  var SHIPS, NOTIFS, filterZone = null, filterStatus = "", showAll = false, depoDay = 0, selDepo = null, depoAll = false, WIN = 10, PLANS = [], selCell = null, plMsg = "";
+  var SHIPS, NOTIFS, filterZone = null, filterStatus = "", showAll = false, depoDay = 0, selDepo = null, depoAll = false, WIN = 10, PLANS = [], selCell = null, plMsg = "", KABAR = [], HANDLED = {}, HOLDS = [], holdSeq = 0;
   function callPoints(T){ var c1 = Math.max(1, Math.round(T*0.6)); return c1===T ? [T] : [c1, T]; }
   function dayIdx(s){ return diffDays(TODAY, s.berangkat)+1; }
   function targetDate(s){ return addDays(s.berangkat, s.target-1); }
   function dueToday(s){ var d = dayIdx(s), cp = callPoints(s.target); return cp.indexOf(d)>-1 ? cp.indexOf(d)+1 : 0; }
 
   function seedData(){
-    seed = 20261020; SHIPS = []; NOTIFS = []; var n = 0, fo = 6100012300;
+    seed = 20261020; SHIPS = []; NOTIFS = []; KABAR = []; HANDLED = {}; var n = 0, fo = 6100012300;
     ZONES.forEach(function(z){ z.depos.forEach(function(d){
       var b = d.other;
       d.lain = { q0: Math.floor(rnd()*2) + (b>=5 ? 1 : 0), arr:[Math.max(0, b-1+Math.floor(rnd()*2)), b+Math.floor(rnd()*2), b+Math.floor(rnd()*3)] };
@@ -510,10 +527,15 @@
     return { "-1":a, "0":b, "1":c };
   }
   function isSun(date){ return new Date(date+"T00:00:00Z").getUTCDay()===0; }
-  function capOn(d, date){ return isSun(date) ? 0 : d.cap; }
+  // contoh hari libur per depo; di sistem nyata diambil dari kalender libur yang sudah ada
+  var HOLI = { "Z7-D1":["2026-10-26"], "Z1-D1":["2026-10-28"], "Z2A-D1":["2026-10-29"] };
+  function isHol(d, date){ return (HOLI[d.id]||[]).indexOf(date) > -1; }
+  function isClosed(d, date){ return isSun(date) || isHol(d, date); }
+  function holdOn(d, date){ var h = null; HOLDS.forEach(function(x){ if(x.depo===d.id && date>=x.from && date<=x.to) h = x; }); return h; }
+  function capOn(d, date){ if(isClosed(d, date)) return 0; var h = holdOn(d, date); return h ? Math.min(d.cap, h.cap) : d.cap; }
   // truk mill lain yang FO-nya sudah keluar: mill dekat biasanya baru berangkat 1-2 hari sebelum tiba
   function lainOn(d, i, date){
-    if(isSun(date)) return { depo:0, jalan:0 };
+    if(isClosed(d, date)) return { depo:0, jalan:0 };
     if(i===0){ var t = d.lain.arr[1], a = Math.ceil(t*0.6); return { depo:a, jalan:t-a }; }
     if(i===1) return { depo:0, jalan:d.lain.arr[2] };
     if(i===2) return { depo:0, jalan:Math.max(0, Math.round(d.lain.arr[2]*0.4)) };
@@ -532,7 +554,7 @@
       var lain = lainOn(d, i, date);
       var arr = atDepo.length + jalan.length + lain.depo + lain.jalan, need = carry + arr, served = Math.min(need, cap), left = need - served;
       var lvl = cap===0 ? (need>0 ? "crit" : "closed") : (need > cap ? "crit" : (need >= Math.ceil(cap*0.85) ? "warn" : "ok"));
-      out.push({ i:i, date:date, cap:cap, carry:carry, carryI: i===0 ? dd.carryI : null, carryL: i===0 ? dd.carryL : null,
+      out.push({ i:i, date:date, cap:cap, hold:holdOn(d,date), carry:carry, carryI: i===0 ? dd.carryI : null, carryL: i===0 ? dd.carryL : null,
                  atDepo:atDepo, jalan:jalan, ours:atDepo.concat(jalan), lain:lain, arr:arr, need:need, served:served, left:left, lvl:lvl });
       carry = left;
     }
@@ -543,9 +565,11 @@
   function cellHtml(d, x){
     var max = Math.max(x.need, x.cap, 1), w = function(n){ return (n/max*100)+"%"; };
     var seg = '<i class="g-carry" style="width:'+w(x.carry)+'"></i><i class="g-sure" style="width:'+w(x.atDepo.length)+'"></i><i class="g-est" style="width:'+w(x.jalan.length)+'"></i><i class="g-lain" style="width:'+w(x.lain.depo)+'"></i><i class="g-lainest" style="width:'+w(x.lain.jalan)+'"></i>';
-    var num = x.cap===0 ? '<div class="cn">'+(x.need ? x.need+'<span> tunggu</span>' : '<span>tutup</span>')+'</div>' : '<div class="cn">'+x.need+'<span>/'+x.cap+'</span></div>';
-    var tip = d.name+" · "+fmtD(x.date)+"\n"+(x.i===0 ? "Sudah di depo: "+(x.atDepo.length+x.lain.depo)+"\n" : "")+"Perkiraan tiba: "+(x.jalan.length+x.lain.jalan)+" ("+splitTxt(x.jalan.length, x.lain.jalan)+")"+(x.carry ? "\nSisa dari hari sebelumnya: "+x.carry : "")+"\nTotal "+x.need+" / kapasitas "+x.cap;
+    var closedLbl = isSun(x.date) ? 'tutup' : (isHol(d, x.date) ? 'libur' : 'hold');
+    var num = x.cap===0 ? '<div class="cn">'+(x.need ? x.need+'<span> tunggu</span>' : '<span>'+closedLbl+'</span>')+'</div>' : '<div class="cn">'+x.need+'<span>/'+x.cap+'</span></div>';
+    var tip = d.name+" · "+fmtD(x.date)+"\n"+(x.i===0 ? "Sudah di depo: "+(x.atDepo.length+x.lain.depo)+"\n" : "")+"Perkiraan tiba: "+(x.jalan.length+x.lain.jalan)+" ("+splitTxt(x.jalan.length, x.lain.jalan)+")"+(x.carry ? "\nSisa dari hari sebelumnya: "+x.carry : "")+"\nTotal "+x.need+" / kapasitas "+x.cap+(x.hold ? "\nHold: "+x.hold.why+" (normal "+d.cap+")" : "");
     var sel = selCell && selCell.d===d.id && selCell.i===x.i ? " sel" : "";
+    if(x.hold && !isClosed(d, x.date)) sel += " hold";
     return '<td class="c c-'+x.lvl+sel+'" data-d="'+d.id+'" data-i="'+x.i+'" title="'+esc(tip)+'" tabindex="0">'+num+'<div class="cb">'+seg+'</div></td>';
   }
   function renderDepos(){
@@ -598,13 +622,13 @@
     var d = depo(selCell.d), cal = calendar(d, Math.max(WIN, selCell.i+8)), x = cal[selCell.i];
     var dash = '<span class="muted">-</span>', v = function(n){ return n ? n : dash; };
     var row = function(lbl, ini, lainN, tot, cls){ var sp = lainN===null ? null : lainSplit(lainN); return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+lbl+'</td><td>'+(ini===null?'':v(ini))+'</td><td>'+(sp?v(sp.b):'')+'</td><td>'+(sp?v(sp.c):'')+'</td><td class="t">'+tot+'</td></tr>'; };
-    var h = '<h3>'+esc(d.name)+' · '+fmtD(x.date)+(x.i===0?' (hari ini)':'')+(x.cap===0?' · tutup':'')+'</h3>';
+    var h = '<h3>'+esc(d.name)+' · '+fmtD(x.date)+(x.i===0?' (hari ini)':'')+(isSun(x.date) ? ' · Minggu, tutup' : (isHol(d, x.date) ? ' · libur depo' : (x.hold ? ' · hold' : '')))+'</h3>';
     h += '<table class="num"><tr><th></th><th>Mill ini</th><th>Mill B</th><th>Mill C</th><th>Total</th></tr>';
     if(x.carry) h += x.i===0 ? row("Sisa hari sebelumnya", x.carryI, x.carryL, x.carry) : row("Sisa hari sebelumnya", null, null, x.carry);
     if(x.i===0) h += row("Sudah di depo", x.atDepo.length, x.lain.depo, x.atDepo.length + x.lain.depo);
     h += row("Perkiraan tiba", x.jalan.length, x.lain.jalan, x.jalan.length + x.lain.jalan);
     h += row("Total perlu dibongkar", null, null, x.need, "sum");
-    h += row("Kapasitas", null, null, x.cap);
+    h += row("Kapasitas", null, null, x.hold && !isClosed(d, x.date) ? x.cap+' <span class="muted" style="font-weight:400">(normal '+d.cap+')</span>' : x.cap);
     h += row(x.cap===0 ? "Menunggu (menginap)" : "Lebih kapasitas (menginap)", null, null, x.left, x.left>0 ? "over" : "");
     h += '</table>';
     if(x.ours.length){
@@ -614,8 +638,32 @@
           return '<tr><td>'+s.id+'<br><span class="muted">'+esc(s.sopir)+'</span></td><td class="mono" style="white-space:nowrap">'+esc(s.nopol)+'</td><td>'+st+'</td><td class="mono" style="white-space:nowrap">'+fmtD(s.berangkat)+'</td><td class="mono" style="white-space:nowrap'+(diffDays(s.arrDate||etaDay(s), targetDate(s))>0?';color:var(--crit)':'')+'">'+shiftTxt(s)+'</td><td><button class="small" data-call="'+s.id+'">Telepon</button></td></tr>';
         }).join("") + '</table></div>';
     }
+    var dates = []; for(var q=0;q<WIN;q++) dates.push(addDays(TODAY,q));
+    var opt = function(sel){ return dates.map(function(dt){ return '<option value="'+dt+'"'+(dt===sel?' selected':'')+'>'+fmtD(dt)+'</option>'; }).join(""); };
+    var hl = HOLDS.filter(function(z){ return z.depo===d.id; });
+    h += '<div class="holdbox"><div class="sub" style="margin-top:0">Hold / turunkan kapasitas '+esc(d.name)+'</div>'+
+      '<div class="bar"><label>Dari <select id="h-from">'+opt(x.date)+'</select></label><label>sampai <select id="h-to">'+opt(x.date)+'</select></label>'+
+      '<label>Kapasitas <input type="number" id="h-cap" value="0" min="0" max="'+d.cap+'" style="width:56px"> / '+d.cap+'</label></div>'+
+      '<div class="bar"><input type="text" id="h-why" placeholder="Alasan, misalnya stok distributor penuh" style="flex:1; min-width:170px">'+
+      '<select id="h-src"><option>Section head transport</option><option>Email distributor</option><option>WA distributor</option></select>'+
+      '<button class="primary small" id="h-save">Simpan hold</button></div>'+
+      (hl.length ? '<table style="margin-top:8px">'+hl.map(function(z){ return '<tr><td class="mono" style="white-space:nowrap">'+fmtD(z.from)+(z.to!==z.from ? ' – '+fmtD(z.to) : '')+'</td><td class="mono">'+z.cap+' / '+d.cap+'</td><td>'+esc(z.why)+'<br><span class="muted" style="font-size:.72rem">'+esc(z.src)+' · '+esc(z.at)+'</span></td><td><button class="small" data-unhold="'+z.id+'">Hapus</button></td></tr>'; }).join("")+'</table>' : '')+
+      '</div>';
     box.innerHTML = h;
     bindCallButtons("#cal-detail");
+    $("#h-save").addEventListener("click", function(){
+      var f = $("#h-from").value, t = $("#h-to").value; if(t < f){ var tmp = f; f = t; t = tmp; }
+      var c = Math.max(0, Math.min(d.cap, parseInt($("#h-cap").value||"0",10))), why = ($("#h-why").value||"").trim() || "tidak disebutkan", src = $("#h-src").value;
+      var now = new Date(), at = "dicatat jam "+("0"+now.getHours()).slice(-2)+":"+("0"+now.getMinutes()).slice(-2);
+      HOLDS.push({ id:++holdSeq, depo:d.id, from:f, to:t, cap:c, why:why, src:src, at:at });
+      addKabar("Order tracking semua mill · transport planning", "Hold "+d.name+" "+fmtD(f)+(t!==f ? " – "+fmtD(t) : "")+": kapasitas "+c+" dari "+d.cap+" truk/hari. Alasan: "+why+". Sumber: "+src+".", "warn", "baru saja");
+      renderDash();
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("#cal-detail [data-unhold]"), function(b){
+      b.addEventListener("click", function(){ var id = +b.dataset.unhold, z = HOLDS.filter(function(q){ return q.id===id; })[0]; HOLDS = HOLDS.filter(function(q){ return q.id!==id; });
+        if(z) addKabar("Order tracking semua mill · transport planning", "Hold "+d.name+" "+fmtD(z.from)+(z.to!==z.from ? " – "+fmtD(z.to) : "")+" dicabut. Kapasitas kembali "+d.cap+" truk/hari.", "", "baru saja");
+        renderDash(); });
+    });
   }
   var newSeq = 0;
   function addShipments(d, depDate, arrDate, n){
@@ -638,14 +686,15 @@
     var cal = calendar(d, 7 + travel + 3), best = -1, opts = [];
     for(var k=0;k<7;k++){
       var a = k + travel, b = a, sun = false;
-      while(isSun(addDays(TODAY,b))){ b++; sun = true; }
+      while(isClosed(d, addDays(TODAY,b))){ b++; sun = true; }
       var x = cal[a], load = x.need + n, ok = !sun && load <= x.cap;
       opts.push({ k:k, a:a, b:b, x:x, load:load, ok:ok, sun:sun });
       if(best<0 && ok) best = k;
     }
     var h = '<p class="mono" style="font-size:.8rem">Perjalanan '+z.target+' hari · kapasitas '+d.cap+' truk/hari</p>';
     h += '<div class="tablewrap" style="margin-top:6px"><table><tr><th>Berangkat</th><th>Tiba</th><th>Total di depo</th><th>Status</th><th></th></tr>' + opts.map(function(o){
-      var st = o.sun ? '<span class="tag warn">tiba Minggu, depo tutup</span>' : (o.ok ? '<span class="tag ok">aman</span>' : '<span class="tag crit">penuh, '+(o.load-o.x.cap)+' menginap</span>');
+      var st = o.sun ? '<span class="tag warn">tiba saat depo tutup</span>' : (o.ok ? '<span class="tag ok">aman</span>' : '<span class="tag crit">penuh, '+(o.load-o.x.cap)+' menginap</span>');
+      if(holdOn(d, addDays(TODAY,o.b)) && !o.sun) st += ' <span class="tag warn">hold</span>';
       return '<tr'+(o.k===best?' class="rowsel"':'')+'><td class="mono">'+(o.k===0?'hari ini':fmtD(addDays(TODAY,o.k)))+'</td><td class="mono">'+fmtD(addDays(TODAY,o.a))+(o.b!==o.a?'<br><span class="muted">bongkar '+fmtD(addDays(TODAY,o.b))+'</span>':'')+'</td>'+
              '<td class="mono">'+o.x.need+' + '+n+' = <b>'+o.load+'</b> / '+(o.sun ? 'tutup' : o.x.cap)+'</td><td>'+st+(o.k===best?' <span class="tag info">disarankan</span>':'')+'</td><td><button class="small" data-k="'+o.k+'" data-a="'+o.a+'" style="white-space:nowrap" aria-label="Set jadwal berangkat '+(o.k===0?'hari ini':fmtD(addDays(TODAY,o.k)))+'">Set jadwal</button></td></tr>';
     }).join("") + '</table></div>';
@@ -660,21 +709,44 @@
       });
     });
   }
+  function picFor(t){
+    if(/barang/.test(t)) return "Tim outbound + order tracking";
+    if(/serius/.test(t)) return "Order tracking + atasan";
+    if(/menginap|depo|penuh/.test(t)) return "Order tracking + transport planning";
+    return "Order tracking";
+  }
   function renderNotifs(){
     var L = NOTIFS.filter(function(n){ var s = shipById(n.ship); return !filterZone || (s && s.zone===filterZone); });
-    var dep = [];
+    var items = [];
     visibleDepos().forEach(function(d){
       var c = calendar(d, 7), f = null;
       c.some(function(x){ if(x.lvl==="crit" && x.cap>0){ f = x; return true; } });
       if(!f) return;
       var ours = f.ours.length;
-      dep.push({ crit: f.i===0, t: d.name+" ("+zone(d.zone).code+") "+(f.i===0 ? "penuh hari ini" : "diperkirakan penuh "+fmtD(f.date))+": "+f.need+" / kapasitas "+f.cap+". "+(ours ? "Mill ini "+ours+" truk. " : "")+"Lebih "+f.left+" truk."  });
+      items.push({ key:"depo:"+d.id+":"+f.date, crit: f.i===0, head:"depo · "+zone(d.zone).code, pic:"Order tracking + transport planning", ship:null,
+                   t: d.name+" "+(f.i===0 ? "penuh hari ini" : "diperkirakan penuh "+fmtD(f.date))+": "+f.need+" / kapasitas "+f.cap+". "+(ours ? "Mill ini "+ours+" truk. " : "")+"Lebih "+f.left+" truk." });
     });
-    dep.sort(function(a,b){ return (b.crit?1:0)-(a.crit?1:0); });
-    var h = dep.map(function(o){ return '<div class="notif'+(o.crit?" crit":"")+'"><div class="mono muted" style="font-size:.66rem">depo · ke order tracking dan transport planning</div>'+esc(o.t)+'</div>'; }).join("");
-    h += L.map(function(n){ var s = shipById(n.ship); return '<div class="notif'+(n.crit?" crit":"")+'"><div class="mono muted" style="font-size:.66rem">'+esc(n.when)+' · '+s.id+' · '+esc(s.sopir)+' · '+esc(s.nopol)+'</div>'+esc(n.text)+' <button class="small" data-call="'+s.id+'">Telepon</button></div>'; }).join("");
-    $("#notifs").innerHTML = h || '<p class="muted" style="font-size:.84rem;margin-top:8px">Tidak ada.</p>';
+    HOLDS.forEach(function(z){
+      var d = depo(z.id ? z.depo : z.depo); if(filterZone && d.zone!==filterZone) return;
+      var ours = SHIPS.filter(function(s){ return s.depo===d.id && !s.arrDate && etaDay(s)>=z.from && etaDay(s)<=z.to; });
+      var tot = calendar(d).filter(function(x){ return x.date>=z.from && x.date<=z.to; }).reduce(function(acc,x){ return acc + x.arr; }, 0);
+      items.push({ key:"hold:"+z.id, crit: ours.length>0 || tot>0, head:"hold · "+zone(d.zone).code, pic:"Order tracking + section head transport", ship:null,
+                   t: d.name+" hold "+fmtD(z.from)+(z.to!==z.from ? " – "+fmtD(z.to) : "")+": kapasitas "+z.cap+" / "+d.cap+". "+(ours.length ? "Mill ini "+ours.length+" truk dijadwalkan tiba di tanggal hold ("+ours.map(function(s){ return s.nopol; }).join(", ")+")." : "Tidak ada truk mill ini di tanggal hold.")+" Total semua mill yang dijadwalkan tiba: "+tot+" truk." });
+    });
+    items.sort(function(a,b){ return (b.crit?1:0)-(a.crit?1:0); });
+    L.forEach(function(n){ var s = shipById(n.ship); items.push({ key:"ship:"+n.ship+":"+n.text, crit:n.crit, head:n.when+" · "+s.id+" · "+s.sopir+" · "+s.nopol, pic:picFor(n.text), ship:s.id, t:n.text }); });
+    var open = items.filter(function(o){ return !HANDLED[o.key]; }), done = items.filter(function(o){ return HANDLED[o.key]; });
+    var card = function(o, isDone){ return '<div class="notif'+(o.crit?" crit":"")+'"><div class="mono muted" style="font-size:.66rem">'+esc(o.head)+'</div>'+esc(o.t)+
+      '<div class="pic"><span>PIC: '+esc(o.pic)+(isDone ? ' · ditangani '+esc(HANDLED[o.key]) : '')+'</span><span>'+(o.ship ? '<button class="small" data-call="'+o.ship+'">Telepon</button> ' : '')+(isDone ? '' : '<button class="small" data-done="'+esc(o.key)+'">Tandai ditangani</button>')+'</span></div></div>'; };
+    var h = open.map(function(o){ return card(o, false); }).join("") || '<p class="muted" style="font-size:.84rem;margin-top:8px">Tidak ada.</p>';
+    if(done.length) h += '<details class="done"><summary>Sudah ditangani ('+done.length+')</summary>'+done.map(function(o){ return card(o, true); }).join("")+'</details>';
+    $("#notifs").innerHTML = h;
     bindCallButtons("#notifs");
+    Array.prototype.forEach.call(document.querySelectorAll("#notifs [data-done]"), function(b){
+      b.addEventListener("click", function(){ var t = new Date(); HANDLED[b.dataset.done] = "jam "+("0"+t.getHours()).slice(-2)+":"+("0"+t.getMinutes()).slice(-2); renderNotifs(); });
+    });
+    var K = KABAR.filter(function(k){ return true; });
+    $("#kabar").innerHTML = K.length ? K.slice(0, 15).map(function(k){ return '<div class="notif '+(k.kind||"info")+'"><div class="mono muted" style="font-size:.66rem">'+esc(k.when)+' · ke: '+esc(k.to)+'</div>'+esc(k.text)+'</div>'; }).join("") : '<p class="muted" style="font-size:.84rem;margin-top:8px">Belum ada. Kabar terkirim otomatis saat truk tiba, selesai bongkar, perkiraan tiba mundur, atau ada masalah barang.</p>';
   }
   function shipById(id){ for(var i=0;i<SHIPS.length;i++) if(SHIPS[i].id===id) return SHIPS[i]; }
   function renderShipTable(){
@@ -808,17 +880,19 @@
         serius:["Aman", "Di tol dekat "+z.via, "Ada kecelakaan Pak, mobil keserempet truk"]
       },
       hari: {
-        normal:["Aman, Pak", "Sudah sampai, Pak", "Sudah selesai dibongkar", "Iya"],
+        normal:["Aman, Pak", "Sudah sampai, Pak", "Sudah selesai dibongkar", "Aman, lengkap", "Iya"],
+        barang:["Aman", "Sudah sampai, Pak", "Sudah selesai dibongkar", "Ada 2 karton rusak, basah kena hujan", "Iya"],
         kendala:["Boleh", "Belum, masih di "+z.via, "Ban pecah, lagi diganti", "Besok pagi", "Iya"],
         menginap:["Aman", "Sudah sampai dari kemarin", "Belum, masih antri, depo penuh", "Iya"],
         bising:["iya", "...", "hah? nggak kedengaran", "sudah sampai", "belum, masih antri", "ya"],
         serius:["Aman", "Belum, ada kecelakaan di jalan, mobil keserempet"]
       },
       bongkar: {
-        normal:["Aman, Pak", "Sudah selesai dibongkar tadi pagi", "Iya"],
+        normal:["Aman, Pak", "Sudah selesai dibongkar tadi pagi", "Aman, lengkap", "Iya"],
+        barang:["Aman", "Sudah selesai dibongkar", "Ada 2 karton rusak, basah kena hujan", "Iya"],
         kendala:["Aman", "Belum Pak, masih antri, depo penuh", "Iya"],
         menginap:["Aman", "Belum Pak, masih antri, depo penuh", "Iya"],
-        bising:["iya", "...", "hah?", "sudah selesai", "ya"]
+        bising:["iya", "...", "hah?", "sudah selesai", "lengkap", "ya"]
       }
     };
     var common = { menyetir:["Lagi nyetir nih, nanti aja"], manusia:["Aman", "Ini robot ya? Saya mau ngomong sama orang aja"], noanswer:[], manual:[] };
@@ -828,8 +902,8 @@
   var SUGG = { SAFE:["Aman, Pak","Lagi nyetir, nanti aja"], POSISI:["Sudah lewat pelabuhan","Masih di rest area"],
                KENDALA:["Tidak ada, lancar","Ban pecah, lagi di bengkel","Macet antri kapal"], TARGET:["Iya, masih sesuai","Mundur, kayaknya sehari telat"],
                ETA:["Besok sore","Lusa pagi","Nanti malam"], SAMPAI:["Sudah sampai","Sudah sampai dari kemarin","Belum, masih di jalan"],
-               BONGKAR:["Sudah selesai dibongkar","Belum, masih antri"], KONFIRMASI:["Iya benar","Bukan, salah"] };
-  var SLBL = { SAFE:"Aman bicara?", POSISI:"Posisi", KENDALA:"Kendala", TARGET:"Masih sesuai tanggal tiba?", ETA:"Tanggal tiba baru", SAMPAI:"Sudah sampai?", BONGKAR:"Sudah dibongkar?", KONFIRMASI:"Konfirmasi", SELESAI:"Tersimpan" };
+               BONGKAR:["Sudah selesai dibongkar","Belum, masih antri"], BARANG:["Aman, lengkap","Ada 2 karton rusak","Ada yang kurang"], KONFIRMASI:["Iya benar","Bukan, salah"] };
+  var SLBL = { BARANG:"Barang lengkap?", SAFE:"Aman bicara?", POSISI:"Posisi", KENDALA:"Kendala", TARGET:"Masih sesuai tanggal tiba?", ETA:"Tanggal tiba baru", SAMPAI:"Sudah sampai?", BONGKAR:"Sudah dibongkar?", KONFIRMASI:"Konfirmasi", SELESAI:"Tersimpan" };
   var PATHS = { tengah:["SAFE","POSISI","KENDALA","TARGET","KONFIRMASI","SELESAI"], hari:["SAFE","SAMPAI","KONFIRMASI","SELESAI"], bongkar:["SAFE","BONGKAR","KONFIRMASI","SELESAI"] };
 
   /* ---------- panggilan ---------- */
@@ -868,7 +942,7 @@
     ];
     $("#pipe").innerHTML = cards.map(function(c){ return '<div class="pcard"><div class="t">'+c[0]+'</div><div class="v">'+c[1]+'</div></div>'; }).join("");
   }
-  var LABEL = { sesuai_jadwal:"Sesuai tanggal tiba", sudah_sampai:"Sudah sampai", sudah_bongkar:"Sudah dibongkar", tiba_kemarin:"Tiba sejak kemarin", aman_bicara:"Aman bicara", posisi:"Posisi", status:"Status", kendala:"Kendala", detail:"Detail", eta:"Perkiraan tiba", bagian_hari:"Waktu", terlambat:"Lewat target", dikonfirmasi:"Dibenarkan sopir", minta_manusia:"Minta bicara dengan orang" };
+  var LABEL = { barang:"Kondisi barang", sesuai_jadwal:"Sesuai tanggal tiba", sudah_sampai:"Sudah sampai", sudah_bongkar:"Sudah dibongkar", tiba_kemarin:"Tiba sejak kemarin", aman_bicara:"Aman bicara", posisi:"Posisi", status:"Status", kendala:"Kendala", detail:"Detail", eta:"Perkiraan tiba", bagian_hari:"Waktu", terlambat:"Lewat target", dikonfirmasi:"Dibenarkan sopir", minta_manusia:"Minta bicara dengan orang" };
   function fmtVal(v){ if(v===true) return "ya"; if(v===false) return "tidak"; if(v===null || v===undefined) return "belum tertangkap"; if(/^\d{4}-\d\d-\d\d/.test(v)) return fmtD(v.slice(0,10))+v.slice(10); return v; }
   function renderKv(){
     if(!call){ $("#kv").innerHTML = '<tr><td class="muted" colspan="2">Belum ada.</td></tr>'; return; }
@@ -876,7 +950,7 @@
     var tg = targetDate(call.s), ek = r.eta ? diffDays(r.eta.slice(0,10), tg) : 0;
     var rows = [["Shipment", r.shipment+" · "+r.no_polisi], ["Sopir", r.sopir], ["Telepon", r.telepon+" · "+TYPE_LBL[call.type]], ["Diangkat", r.diangkat===null?"-":(r.diangkat?"ya":"tidak")],
       ["Posisi", r.posisi||"-"], ["Status", r.status||"-"], ["Kendala", r.kendala||"-"], ["Target tiba", fmtD(tg)], ["Perkiraan tiba", r.eta ? fmtVal(r.eta)+(ek ? " ("+(ek>0?"+":"")+ek+" hari)" : "") : "-"],
-      ["Lewat target", r.terlambat===null?"-":(r.terlambat?"ya, target "+fmtD(targetDate(call.s)):"tidak")], ["Dibenarkan sopir", r.dikonfirmasi?"ya":"-"],
+      ["Lewat target", r.terlambat===null?"-":(r.terlambat?"ya, target "+fmtD(targetDate(call.s)):"tidak")], ["Kondisi barang", r.barang ? (r.barang==="lengkap" ? "lengkap" : r.barang) : "-"], ["Dibenarkan sopir", r.dikonfirmasi?"ya":"-"],
       ["Keyakinan", r.keyakinan===null?"-":Math.round(r.keyakinan*100)+"%"], ["Perlu tindakan", r.eskalasi.length ? r.eskalasi.join("; ") : "-"]];
     $("#kv").innerHTML = rows.map(function(x){ return '<tr><td>'+x[0]+'</td><td>'+esc(x[1])+'</td></tr>'; }).join("");
   }
@@ -964,12 +1038,13 @@
       ETA: call.type==="hari" ? "Kira-kira tiba jam berapa atau hari apa, Pak?" : "Kira-kira tiba hari apa, Pak?",
       SAMPAI:"Apakah truk sudah sampai di "+dn+"?",
       BONGKAR:"Apakah muatannya sudah selesai dibongkar?",
+      BARANG:"Apakah ada barang yang kurang, rusak, atau salah saat bongkar?",
       KONFIRMASI: summary()
     }[st];
   }
   function summary(){
     var r = call.rec, p = [];
-    if(r.status==="sudah bongkar") p.push("sudah sampai dan sudah dibongkar");
+    if(r.status==="sudah bongkar") p.push("sudah sampai dan sudah dibongkar"+(r.barang ? (r.barang==="lengkap" ? ", barang lengkap" : ", ada masalah barang: "+r.barang) : ""));
     else if(/sudah tiba/.test(r.status||"")) p.push((r.tiba_kemarin ? "sudah sampai sejak kemarin" : "sudah sampai di depo")+", belum dibongkar");
     else {
       if(r.posisi) p.push("posisi "+r.posisi);
@@ -1043,7 +1118,7 @@
         if(RE_ARRIVED.test(L)){
           rec.status = "sudah tiba"; rec.posisi = depo(s.depo).name;
           if(/kemarin|semalam/.test(L)) rec.tiba_kemarin = true;
-          if(/selesai bongkar|sudah bongkar|udah bongkar|sudah dibongkar|selesai dibongkar/.test(L)){ rec.status = "sudah bongkar"; return adv({ sudah_sampai:true, sudah_bongkar:true }, "Sudah sampai dan sudah dibongkar → konfirmasi", ""); }
+          if(/selesai bongkar|sudah bongkar|udah bongkar|sudah dibongkar|selesai dibongkar/.test(L)){ rec.status = "sudah bongkar"; insertAfter(["BARANG"]); return adv({ sudah_sampai:true, sudah_bongkar:true }, "Sudah sampai dan sudah dibongkar → tanya kondisi barang", "Baik Pak."); }
           insertAfter(["BONGKAR"]);
           return adv({ sudah_sampai:true, tiba_kemarin:!!rec.tiba_kemarin }, "Sudah sampai → status jadi sudah di depo, tanya bongkar", "Baik Pak.");
         }
@@ -1056,9 +1131,17 @@
           rec.eskalasi.push("masih menunggu bongkar"+(/penuh/.test(L) ? ", depo penuh" : ""));
           return adv({ sudah_bongkar:false }, "Belum dibongkar → tetap di depo, ditandai menunggu", "Baik Pak.");
         }
-        if(/sudah|udah|selesai|beres/.test(L)){ rec.status = "sudah bongkar"; return adv({ sudah_bongkar:true }, "Sudah dibongkar → status selesai", "Baik Pak."); }
+        if(/sudah|udah|selesai|beres/.test(L)){ rec.status = "sudah bongkar"; insertAfter(["BARANG"]); return adv({ sudah_bongkar:true }, "Sudah dibongkar → tanya kondisi barang", "Baik Pak."); }
         if(call.reprompt>=2){ rec.eskalasi.push("status bongkar tidak tertangkap"); call.conf -= 0.1; return adv({ sudah_bongkar:null }, "Tidak jelas 3 kali → tandai perlu dicek", "Baik Pak."); }
         return reprompt("Maaf Pak, apakah muatan sudah dibongkar atau masih menunggu?", { sudah_bongkar:null });
+      case "BARANG":
+        if(/rusak|kurang|salah|basah|penyok|sobek|hilang|lebih|tidak lengkap|nggak lengkap|gak lengkap/.test(L)){
+          rec.barang = t; rec.eskalasi.push("barang bermasalah saat bongkar: "+t);
+          return adv({ barang:t }, "Barang bermasalah → dicatat, diteruskan ke tim outbound", "Baik Pak, dicatat.");
+        }
+        if(/tidak ada|nggak ada|gak ada|aman|lengkap|beres|sesuai|bagus|\btidak\b|\bnggak\b/.test(L)){ rec.barang = "lengkap"; return adv({ barang:"lengkap" }, "Barang lengkap → konfirmasi", "Baik Pak."); }
+        if(call.reprompt>=2){ rec.eskalasi.push("kondisi barang tidak tertangkap"); call.conf -= 0.1; return adv({ barang:null }, "Tidak jelas 3 kali → tandai perlu dicek", "Baik Pak."); }
+        return reprompt("Maaf Pak, apakah barangnya lengkap dan tidak ada yang rusak?", { barang:null });
       case "KONFIRMASI":
         if(RE_NO.test(low(t)) && !call.corrected){
           call.corrected = true; call.conf -= 0.05;
@@ -1093,7 +1176,9 @@
     applyResult(s, c.endKind, rec, "baru saja");
     renderSteps(); renderKv(); renderDash(); fillShipSelect();
   }
+  function addKabar(to, text, kind, when){ KABAR.unshift({ to:to, text:text, kind:kind||"", when:when }); if(KABAR.length>40) KABAR.length = 40; }
   function applyResult(s, kind, rec, when){
+    var wasArr = !!s.arrDate, wasOff = !!s.offDate, wasLate = s.terlambat, oldEta = etaDay(s);
     var u = { posisi: rec.posisi || s.posisi, eta: rec.eta || s.eta };
     var ken = rec.kendala && rec.kendala!=="tidak ada" ? rec.kendala : null;
     if(kind==="TIDAK_DIANGKAT") u.status = "tidak diangkat";
@@ -1109,7 +1194,12 @@
     setState(s, u);
     if(dueToday(s)) s.calledToday = true;
     NOTIFS = NOTIFS.filter(function(n){ return n.ship!==s.id; });
-    if(rec.eskalasi.length) NOTIFS.unshift({ ship:s.id, crit:s.cls==="crit", text:rec.eskalasi.join("; ")+(s.status==="menginap"?" · diteruskan juga ke transport planning":""), when:when });
+    if(rec.eskalasi.length) NOTIFS.unshift({ ship:s.id, crit:s.cls==="crit" || rec.eskalasi.some(function(x){ return /barang/.test(x); }), text:rec.eskalasi.join("; ")+(s.status==="menginap"?" · diteruskan juga ke transport planning":""), when:when });
+    var dn = depo(s.depo).name, to = "Distributor "+dn.replace("Depo ","");
+    if(!wasArr && s.arrDate) addKabar(to, s.nopol+" sudah tiba di "+dn+(s.arrDate<TODAY ? " (sejak "+fmtD(s.arrDate)+")" : "")+", menunggu bongkar.", "", when);
+    if(!wasOff && s.offDate) addKabar(to, s.nopol+" selesai dibongkar di "+dn+".", "", when);
+    if(!s.arrDate && s.terlambat && (!wasLate || etaDay(s)!==oldEta)) addKabar(to+" · SCM", s.nopol+" perkiraan tiba "+shiftTxt(s)+(rec.kendala && rec.kendala!=="tidak ada" ? ", kendala "+rec.kendala : "")+".", "warn", when);
+    if(rec.barang && rec.barang!=="lengkap") addKabar("Tim outbound · transport", s.nopol+" ("+s.id+", "+dn+"): "+rec.barang+".", "crit", when);
   }
 
   /* ---------- telepon massal hari ini ---------- */
@@ -1147,7 +1237,7 @@
   $("#c-input").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); driverSay($("#c-input").value, false); } });
   $("#c-voice").addEventListener("change", function(){ if(!this.checked) stopSpeech(); });
   $("#b-batch").addEventListener("click", batch);
-  $("#b-reset").addEventListener("click", function(){ token++; stopSpeech(); stopTimer(); call = null; filterZone = null; selDepo = null; depoDay = 0; PLANS = []; selCell = null; plMsg = ""; newSeq = 0; seedData(); fillShipSelect(); $("#chat").innerHTML = ""; setStatus("siap"); $("#c-who").textContent = "Belum ada panggilan"; renderSteps(); renderPipe(null); renderKv(); renderDash(); $("#b-prog").textContent = ""; });
+  $("#b-reset").addEventListener("click", function(){ token++; stopSpeech(); stopTimer(); call = null; filterZone = null; selDepo = null; depoDay = 0; PLANS = []; selCell = null; plMsg = ""; newSeq = 0; KABAR = []; HANDLED = {}; HOLDS = []; seedData(); fillShipSelect(); $("#chat").innerHTML = ""; setStatus("siap"); $("#c-who").textContent = "Belum ada panggilan"; renderSteps(); renderPipe(null); renderKv(); renderDash(); $("#b-prog").textContent = ""; });
   $("#f-status").addEventListener("change", function(){ filterStatus = this.value; showAll = false; renderShipTable(); });
   $("#depo-more").addEventListener("click", function(){ depoAll = !depoAll; renderDepos(); });
   $("#biaya").addEventListener("input", renderDepos);
