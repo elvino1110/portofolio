@@ -207,6 +207,9 @@
     .sheet{width:210mm; height:297mm; aspect-ratio:auto; box-shadow:none; padding:10mm; gap:6mm; break-after:page; page-break-after:always; -webkit-print-color-adjust:exact; print-color-adjust:exact}
     .sheet:last-child{break-after:auto; page-break-after:auto}
   }
+  .fbst{margin-left:auto; white-space:nowrap; font-family:var(--mono); font-size:.68rem; padding:3px 8px; border-radius:99px; border:1px solid var(--line); color:var(--ink-dim)}
+  .fbst::before{content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:currentColor; margin-right:5px; vertical-align:1px}
+  .fbst.ok{color:var(--ok); border-color:var(--ok)} .fbst.warn{color:var(--warn); border-color:var(--warn)} .fbst.crit{color:var(--crit); border-color:var(--crit)}
   .camov{position:fixed; inset:0; z-index:60; background:#0d0d0c; color:#f2f0ea; display:flex; flex-direction:column; gap:10px; padding:calc(12px + env(safe-area-inset-top,0px)) max(14px, env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(14px, env(safe-area-inset-left,0px))}
   .camtop{display:flex; justify-content:space-between; align-items:center}
   .camtop button{background:#2a2925; color:#f2f0ea; border-color:#45423a}
@@ -232,6 +235,7 @@
     <a href="#petugas" data-v="petugas">Petugas · simulasi</a>
     <a href="#kamera" data-v="kamera">Petugas · kamera</a>
     <a href="#label" data-v="label">Label &amp; master bin</a>
+    <span class="fbst" id="fb-state">Offline</span>
   </div>
 </nav>
 
@@ -243,6 +247,7 @@
     <p class="lede">Admin membuat permintaan produksi, memantau petugas mengambil barang, dan memposting ke SAP. Peta stok, pencarian no material, dan barang datang ada di halaman yang sama.</p>
   </header>
   <div class="banner"><b>Data contoh.</b> No material, nama material, ukuran lembar, ukuran posisi (4,2 × 3,0 m), dan tinggi maks 2,5 m masih asumsi kerja dan belum dikonfirmasi lapangan.</div>
+  <div id="fb-panel"></div>
 
   <section class="layout">
     <div class="panel">
@@ -400,6 +405,9 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js"></script>
 <script>
 (function(){
   "use strict";
@@ -846,11 +854,11 @@
     var o = ctx.order(), sc = ctx.sc;
     var h = barTop(ctx, o?o.date:null) + tabsHtml(ctx);
     if(!o){
-      if(ctx.mode==="cam"){
+      if(ctx.mode==="cam" && !FB.on){
         h += '<div class="stepbox"><div class="stephead"><span class="num">0</span>Menunggu order</div><p style="font-size:.84rem">Belum ada order masuk. Nanti order dari admin muncul otomatis di sini setelah tersambung ke database. Untuk sekarang, pakai order contoh.</p>'+
              '<button class="primary bigbtn" data-k="demo">Pakai order contoh</button>'+
              (camCtx.msg?'<div class="msg crit" style="margin-top:0">'+camCtx.msg+'</div>':'')+'</div>';
-      } else h += '<div class="muted" style="font-size:.88rem;margin:auto;text-align:center">Belum ada tugas.<br>Buat permintaan produksi di menu Admin.</div>';
+      } else h += '<div class="muted" style="font-size:.88rem;margin:auto;text-align:center">Belum ada tugas.<br>'+(FB.on?'Order dari admin akan muncul otomatis di sini.':'Buat permintaan produksi di menu Admin.')+'</div>';
       box.innerHTML = h; wirePicker(ctx, box, null); return;
     }
     var steps = [];
@@ -878,7 +886,7 @@
     if(orderDone(ctx)){
       var nf = o.done.filter(function(d){ return !d.fifo; }).length;
       h += '<div class="msg ok"><b>Order selesai.</b> '+o.done.length+' kali ambil · '+(o.done.length-nf)+' FIFO · '+nf+' NO FIFO.'+(ctx.mode==="cam"?' Di sistem nyata hasil ini langsung masuk ke admin dan siap posting SAP.':' Dikirim ke admin untuk posting SAP.')+'</div>';
-      if(ctx.mode==="cam") h += '<button class="bigbtn" data-k="new">Mulai order baru</button>';
+      if(ctx.mode==="cam" && !FB.on) h += '<button class="bigbtn" data-k="new">Mulai order baru</button>';
       box.innerHTML = h; wirePicker(ctx, box, null); return;
     }
 
@@ -923,7 +931,7 @@
     h += '</div>';
     if(sc.qr) h += '<button data-k="reset">Batal, scan tumpukan lain</button>';
     if(ctx.msg) h += '<div class="msg ok">'+ctx.msg+'</div>';
-    if(ctx.mode==="cam") h += '<button data-k="new" style="margin-top:6px">Ganti order</button>';
+    if(ctx.mode==="cam" && !FB.on) h += '<button data-k="new" style="margin-top:6px">Ganti order</button>';
     box.innerHTML = h;
     wirePicker(ctx, box, ev);
   }
@@ -1030,8 +1038,8 @@
     var tasks = ctx.inbound(), done = ctx.inDoneList(), sc = ctx.isc;
     var h = barTop(ctx) + tabsHtml(ctx);
     if(!tasks.length && !done.length){
-      if(ctx.mode==="cam") h += '<div class="stepbox"><div class="stephead"><span class="num">0</span>Menunggu barang datang</div><p style="font-size:.84rem">Belum ada barang yang perlu ditaruh. Nanti hasil booking admin muncul otomatis di sini setelah tersambung ke database. Untuk sekarang, pakai data contoh. Label QR-nya ada di menu Label (bagian contoh inbound).</p><button class="primary bigbtn" data-k="demoin">Pakai data inbound contoh</button></div>';
-      else h += '<div class="muted" style="font-size:.88rem;margin:auto;text-align:center">Belum ada barang yang perlu ditaruh.<br>Admin input DN lalu booking posisi di dashboard.</div>';
+      if(ctx.mode==="cam" && !FB.on) h += '<div class="stepbox"><div class="stephead"><span class="num">0</span>Menunggu barang datang</div><p style="font-size:.84rem">Belum ada barang yang perlu ditaruh. Nanti hasil booking admin muncul otomatis di sini setelah tersambung ke database. Untuk sekarang, pakai data contoh. Label QR-nya ada di menu Label (bagian contoh inbound).</p><button class="primary bigbtn" data-k="demoin">Pakai data inbound contoh</button></div>';
+      else h += '<div class="muted" style="font-size:.88rem;margin:auto;text-align:center">Belum ada barang yang perlu ditaruh.<br>'+(FB.on?'Hasil booking admin akan muncul otomatis di sini.':'Admin input DN lalu booking posisi di dashboard.')+'</div>';
       box.innerHTML = h; wireIn(ctx, box, null); return;
     }
     h += '<div class="ohead"><div><div class="k">Perlu ditaruh</div><span class="mono">'+tasks.length+'</span> tumpukan</div><div><div class="k">Sudah</div><span class="mono">'+done.length+'</span> tumpukan</div></div>';
@@ -1300,7 +1308,183 @@
       b.addEventListener("click", function(){ selPos = b.dataset.p; selCard = null; renderAll(); if(G) focusPos(selPos); });
     });
   }
-  function renderAll(){ fillSelects(); renderStats(); renderChips(); renderPickInfo(); renderSearch(); renderPutaway(); renderOrderForm(); renderOrderAdmin(); renderOrderList(); renderPicker(simCtx, $("#sim-scr")); renderLog(); update3D(); if(VIEW==="label") renderLabels(); }
+
+  /* =========================================================
+     FIREBASE FIRESTORE · sinkron admin (laptop) <-> petugas (HP)
+     Koleksi: material, bin, tumpukan, order, transaksi, meta
+     Tanpa koneksi (mis. di jendela Claude) halaman tetap jalan dengan data lokal.
+     ========================================================= */
+  var FB_CONFIG = {
+    apiKey: "AIzaSyBBRo7tTq25VAaES42pEbTlH1_9jvhAm4Y",
+    authDomain: "packaging-wms.firebaseapp.com",
+    projectId: "packaging-wms",
+    storageBucket: "packaging-wms.firebasestorage.app",
+    messagingSenderId: "808365853689",
+    appId: "1:808365853689:web:4171dfd98ce30776a40b28"
+  };
+  var FB = { on:false, state:"off", msg:"", db:null, empty:false, applying:false,
+             raw:{ tumpukan:{}, order:{}, transaksi:{} }, meta:null, ready:{}, synced:{ tumpukan:{}, order:{}, meta:"" } };
+
+  function seqOf(id){ var m = /(\d+)$/.exec(id||""); return m ? +m[1] : 0; }
+  function cardDoc(c, p){
+    var m = mat(c.matId);
+    return { idQr:c.id, noMaterial:m.code, nama:m.name, bin:p.id, qty:cardQty(c), status:c.status==="pending"?"BOOKING":"TERKONFIRMASI",
+             lots:c.lots.map(function(l){ return { noDn:l.dn, tanggal:l.date, qty:l.qty }; }), dibuat:c.created, urut:seqOf(c.id) };
+  }
+  function orderDoc(o){
+    var st = o.posted ? "TERPOSTING" : (o===ORDER && orderDone(simCtx) ? "SIAP_POSTING" : "DI_PETUGAS");
+    return { noOrder:o.no, tanggal:o.date, ts:o.ts||0, status:st, noDokSap:o.doc||null,
+             baris:o.lines.map(function(L){ var m = mat(L.matId); return { noMaterial:m.code, nama:m.name, qtyDiminta:L.qty, qtyDiambil:L.picked }; }),
+             ambil:o.done.map(function(d){ return { baris:d.li, idQr:d.id, bin:d.pos, qty:d.q, fifo:!!d.fifo }; }) };
+  }
+  function logDoc(r){
+    return { waktu:r.t, ts:r.ts||0, jenis:r.type, idQr:r.id, nama:r.mat, bin:r.pos, qty:r.qty||0, saldoSetelah:(r.saldo==null?null:r.saldo),
+             fifo:(r.fifo===undefined?null:!!r.fifo), catatan:r.note||"", oleh:r.oleh||"" };
+  }
+  function metaDoc(){ return { seq:seq, orderSeq:orderSeq }; }
+
+  /* ---------- data remote -> state lokal ---------- */
+  function rebuildFromRemote(){
+    FB.applying = true;
+    var keepSel = selCard;
+    S = newPosisi();
+    var docs = Object.keys(FB.raw.tumpukan).map(function(k){ return FB.raw.tumpukan[k]; });
+    docs.sort(function(a,b){ return (a.dibuat||"")<(b.dibuat||"") ? -1 : (a.dibuat||"")>(b.dibuat||"") ? 1 : (a.urut||0)-(b.urut||0); });
+    docs.forEach(function(d){
+      var m = matByCode(d.noMaterial), p = posisi(d.bin); if(!m || !p) return;
+      var c = { id:d.idQr, matId:m.id, piles:[], lots:(d.lots||[]).map(function(l){ return { dn:l.noDn, date:l.tanggal, qty:l.qty }; }), created:d.dibuat, status:d.status==="BOOKING"?"pending":"ok" };
+      if(!c.lots.length) c.lots.push({ dn:"-", date:d.dibuat||today(), qty:d.qty });
+      addQty(c, m, Math.max(0, d.qty||0)); if(cardQty(c)>0) p.cards.push(c);
+    });
+    ORDERS = Object.keys(FB.raw.order).map(function(k){ var d = FB.raw.order[k]; return {
+      no:d.noOrder, date:d.tanggal, ts:d.ts||0, posted:d.status==="TERPOSTING", doc:d.noDokSap||null,
+      lines:(d.baris||[]).map(function(b){ var m = matByCode(b.noMaterial); return m ? { matId:m.id, qty:b.qtyDiminta, picked:b.qtyDiambil||0 } : null; }).filter(Boolean),
+      done:(d.ambil||[]).map(function(a){ return { li:a.baris, id:a.idQr, pos:a.bin, q:a.qty, fifo:!!a.fifo }; }) }; });
+    ORDERS.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+    ORDER = ORDERS.length ? ORDERS[ORDERS.length-1] : null;
+    LOG = Object.keys(FB.raw.transaksi).map(function(k){ var d = FB.raw.transaksi[k]; return {
+      _id:k, ts:d.ts||0, t:d.waktu, type:d.jenis, id:d.idQr, mat:d.nama, pos:d.bin, qty:d.qty, saldo:d.saldoSetelah, fifo:(d.fifo===null||d.fifo===undefined)?undefined:d.fifo, note:d.catatan, oleh:d.oleh }; });
+    LOG.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+    if(FB.meta){ seq = Math.max(1, FB.meta.seq||1); orderSeq = Math.max(1, FB.meta.orderSeq||1); }
+    selCard = keepSel && findCard(keepSel) ? keepSel : null;
+    plan = null; lastAlloc = {};
+    snapSynced();
+    FB.applying = false;
+  }
+  function snapSynced(){
+    FB.synced.tumpukan = {}; FB.synced.order = {};
+    allCards().forEach(function(x){ FB.synced.tumpukan[x.c.id] = JSON.stringify(cardDoc(x.c, x.p)); });
+    ORDERS.forEach(function(o){ FB.synced.order[o.no] = JSON.stringify(orderDoc(o)); });
+    FB.synced.meta = JSON.stringify(metaDoc());
+  }
+
+  /* ---------- state lokal -> remote (hanya yang berubah) ---------- */
+  function commitOps(ops){
+    var chunks = [];
+    for(var i=0;i<ops.length;i+=400) chunks.push(ops.slice(i,i+400));
+    return chunks.reduce(function(pr, ch){
+      return pr.then(function(){ var b = FB.db.batch(); ch.forEach(function(o){ if(o[0]==="set") b.set(o[1], o[2]); else b.delete(o[1]); }); return b.commit(); });
+    }, Promise.resolve()).catch(function(e){ setFbState("err", "Gagal menyimpan ke database: "+(e && e.code ? e.code : e)); });
+  }
+  function fcol(name){ return FB.db.collection(name); }
+  function flush(){
+    if(typeof FB==="undefined" || !FB || !FB.on || FB.applying || FB.empty) return;
+    var ops = [], now = {}, roleOleh = VIEW==="admin" ? "admin" : "petugas";
+    allCards().forEach(function(x){
+      var j = JSON.stringify(cardDoc(x.c, x.p)); now[x.c.id] = true;
+      if(FB.synced.tumpukan[x.c.id]!==j){ ops.push(["set", fcol("tumpukan").doc(x.c.id), JSON.parse(j)]); FB.synced.tumpukan[x.c.id] = j; }
+    });
+    Object.keys(FB.synced.tumpukan).forEach(function(id){ if(!now[id]){ ops.push(["del", fcol("tumpukan").doc(id)]); delete FB.synced.tumpukan[id]; } });
+    ORDERS.forEach(function(o){
+      if(!o.ts) o.ts = Date.now();
+      var j = JSON.stringify(orderDoc(o));
+      if(FB.synced.order[o.no]!==j){ ops.push(["set", fcol("order").doc(o.no), JSON.parse(j)]); FB.synced.order[o.no] = j; }
+    });
+    var base = Date.now();
+    LOG.forEach(function(r, i){
+      if(r._id) return;
+      r._id = base.toString(36)+"-"+i+"-"+Math.random().toString(36).slice(2,7); r.ts = base + i; r.oleh = r.oleh || roleOleh;
+      ops.push(["set", fcol("transaksi").doc(r._id), logDoc(r)]);
+    });
+    var mj = JSON.stringify(metaDoc());
+    if(FB.synced.meta!==mj){ ops.push(["set", FB.db.doc("meta/sistem"), metaDoc()]); FB.synced.meta = mj; }
+    if(ops.length) commitOps(ops);
+  }
+
+  /* ---------- isi data awal / reset demo ---------- */
+  function resetOnline(){
+    if(!FB.on) return;
+    var ops = [];
+    ["tumpukan","order","transaksi"].forEach(function(cn){ Object.keys(FB.raw[cn]).forEach(function(id){ ops.push(["del", fcol(cn).doc(id)]); }); });
+    FB.applying = true; seedAll(); FB.applying = false;
+    MATS.forEach(function(m){ ops.push(["set", fcol("material").doc(m.code), { noMaterial:m.code, nama:m.name, kategori:cat(m.cat).name, panjangCm:m.flat[0], lebarCm:m.flat[1], tebalIkatCm:m.ikatCm, pcsPerIkat:m.pcs, aktif:true }]); });
+    S.forEach(function(p){ ops.push(["set", fcol("bin").doc(p.id), { kodeBin:p.id, line:p.cat, kategori:cat(p.cat).name, panjangM:PW, lebarM:PD, tinggiMaksM:SAFE_H/100, aktif:true }]); });
+    allCards().forEach(function(x){ ops.push(["set", fcol("tumpukan").doc(x.c.id), cardDoc(x.c, x.p)]); });
+    var base = Date.now();
+    LOG.forEach(function(r, i){ r._id = base.toString(36)+"-s"+i; r.ts = base + i; r.oleh = "admin"; ops.push(["set", fcol("transaksi").doc(r._id), logDoc(r)]); });
+    ops.push(["set", FB.db.doc("meta/sistem"), metaDoc()]);
+    FB.empty = false; snapSynced();
+    commitOps(ops);
+    renderAll();
+  }
+
+  /* ---------- status koneksi ---------- */
+  function setFbState(st, msg){ FB.state = st; FB.msg = msg||""; renderFbState(); }
+  function renderFbState(){
+    var el = $("#fb-state"); if(!el) return;
+    var t = { on:["ok","Online · tersinkron"], wait:["warn","Menyambung…"], off:["","Offline · data lokal"], err:["crit","Offline · gagal tersambung"] }[FB.state] || ["","Offline"];
+    el.className = "fbst "+t[0]; el.textContent = t[1]; el.title = FB.msg || "";
+    var box = $("#fb-panel"); if(!box) return;
+    var h = '';
+    if(FB.state==="on" && FB.empty) h = '<div class="msg warn"><b>Database masih kosong.</b> Isi data awal (material, bin, stok contoh) supaya admin dan petugas bisa mulai. <button class="primary" id="fb-seed">Isi data awal</button></div>';
+    else if(FB.state==="on") h = '<div class="msg ok">Tersambung ke database. Order dan stok tersinkron dengan scanner petugas di HP.</div>';
+    else if(FB.state==="err") h = '<div class="msg crit">Tidak bisa tersambung ke database. '+esc(FB.msg)+' Halaman jalan dengan data lokal.</div>';
+    else if(FB.state==="off" && IN_FRAME) h = '<div class="msg">Mode offline (data lokal di perangkat ini). Buka dari link Netlify agar tersambung ke database dan tersinkron dengan HP petugas.</div>';
+    box.innerHTML = h;
+    var sb = $("#fb-seed"); if(sb) sb.addEventListener("click", resetOnline);
+  }
+
+  /* ---------- sambung ---------- */
+  function onRemote(){
+    if(!(FB.ready.t && FB.ready.o && FB.ready.x && FB.ready.m)) return;
+    var wasOn = FB.on; FB.on = true;
+    FB.empty = !FB.meta && !Object.keys(FB.raw.tumpukan).length && !Object.keys(FB.raw.order).length;
+    if(!wasOn) setFbState("on");
+    rebuildFromRemote();
+    renderAll(); renderFbState();
+  }
+  function initFirebase(){
+    if(IN_FRAME || !window.firebase || !window.firebase.initializeApp){ setFbState("off"); return; }
+    setFbState("wait");
+    try{
+      var app = window.firebase.apps && window.firebase.apps.length ? window.firebase.app() : window.firebase.initializeApp(FB_CONFIG);
+      window.firebase.auth().signInAnonymously().then(function(){
+        FB.db = window.firebase.firestore();
+        function fail(e){ FB.on = false; setFbState("err", (e && (e.code || e.message)) || String(e)); }
+        ["tumpukan","order","transaksi"].forEach(function(cn){
+          FB.db.collection(cn).onSnapshot(function(snap){
+            var r = {}; snap.forEach(function(d){ r[d.id] = d.data(); }); FB.raw[cn] = r;
+            FB.ready[cn==="tumpukan"?"t":cn==="order"?"o":"x"] = true; onRemote();
+          }, fail);
+        });
+        FB.db.doc("meta/sistem").onSnapshot(function(d){ FB.meta = d.exists ? d.data() : null; FB.ready.m = true; onRemote(); }, fail);
+      }).catch(function(e){ var c = (e && e.code) || String(e); setFbState("err", c==="auth/network-request-failed" ? "Tidak ada koneksi internet." : "Login anonim gagal ("+c+"). Cek Authentication → Sign-in method → Anonymous sudah aktif, dan domain Netlify ada di Authorized domains."); });
+    }catch(e){ setFbState("err", String(e && e.message || e)); }
+  }
+
+  /* ---------- menu kamera ikut data bersama saat online ---------- */
+  (function(){
+    var lo = camCtx.order, ls = camCtx.stacks, lt = camCtx.take, li = camCtx.inbound, ld = camCtx.inDoneList, lc = camCtx.confirmIn;
+    camCtx.order = function(){ return FB.on ? simCtx.order() : lo(); };
+    camCtx.stacks = function(){ return FB.on ? simCtx.stacks() : ls(); };
+    camCtx.take = function(a,b,c,d,e){ return FB.on ? simCtx.take(a,b,c,d,e) : lt(a,b,c,d,e); };
+    camCtx.inbound = function(){ return FB.on ? simCtx.inbound() : li(); };
+    camCtx.inDoneList = function(){ return FB.on ? simCtx.inDoneList() : ld(); };
+    camCtx.confirmIn = function(t){ return FB.on ? simCtx.confirmIn(t) : lc(t); };
+    camCtx.refresh = function(){ if(FB.on) renderAll(); else renderKamera(); };
+  })();
+
+  function renderAll(){ fillSelects(); renderStats(); renderChips(); renderPickInfo(); renderSearch(); renderPutaway(); renderOrderForm(); renderOrderAdmin(); renderOrderList(); renderPicker(simCtx, $("#sim-scr")); renderLog(); update3D(); if(VIEW==="label") renderLabels(); if(VIEW==="kamera") renderKamera(); flush(); }
 
   /* ---------- 3D ---------- */
   function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888888"; }
@@ -1499,7 +1683,13 @@
   $("#dn-sel").addEventListener("change", function(){ plan = null; renderDnLines(); renderOptions(); renderChips(); update3D(); });
   $("#btn-search").addEventListener("click", startSearch);
   $("#btn-confirm").addEventListener("click", confirmPlan);
-  $("#btn-reset").addEventListener("click", function(){ seedAll(); $("#arr-labels").innerHTML=""; $("#arr-msg").innerHTML=""; renderOptions(); renderAll(); if(G) viewOverview(); });
+  var resetArm = 0;
+  $("#btn-reset").addEventListener("click", function(){
+    if(FB.on){
+      if(Date.now()-resetArm > 4000){ resetArm = Date.now(); this.textContent = "Yakin? Klik lagi untuk reset database"; var b = this; setTimeout(function(){ b.textContent = "Reset demo"; }, 4000); return; }
+      resetArm = 0; this.textContent = "Reset demo"; $("#arr-labels").innerHTML=""; $("#arr-msg").innerHTML=""; plan = null; renderOptions(); resetOnline(); if(G) viewOverview(); return;
+    }
+    seedAll(); $("#arr-labels").innerHTML=""; $("#arr-msg").innerHTML=""; renderOptions(); renderAll(); if(G) viewOverview(); });
   function doSearch(){ searchQ = $("#q").value.trim(); selCard = null; renderAll(); var ids = Object.keys(searchHit); if(G && ids.length){ var f = findCard(ids[0]); selPos = f.p.id; renderChips(); if(new Set(ids.map(function(i){ return findCard(i).p.cat; })).size>1) viewOverview(); else focusPos(selPos); } }
   $("#btn-q").addEventListener("click", doSearch);
   $("#q").addEventListener("keydown", function(e){ if(e.key==="Enter") doSearch(); });
@@ -1534,7 +1724,7 @@
   seedAll(); loadK();
   fillSelects(); renderDnLines();
   init3D();
-  renderAll(); route();
+  renderAll(); route(); initFirebase();
   if(document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){ if(G){ buildStatic(); update3D(); } }); }
 })();
 </script>
