@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <meta name="claude:viewport-fit-sides" content="cover">
-<title>Simulator Bin Karton</title>
+<title>WMS Karton Virtual</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
@@ -9,7 +9,7 @@
     --line:#cfc9ba; --accent:#c8731f; --accent-ink:#ffffff;
     --ok:#2f7a3d; --warn:#b5831a; --crit:#b0392f; --info:#2f62a8;
     --floor:#d9d5cb; --paint:#d9a21b; --top:#e6dcc4;
-    --m1:#c8731f; --m2:#c8588a; --m3:#2f6f6b; --m4:#5f9a3f; --m5:#5a4a8a; --m6:#c4a01c;
+    --m1:#c8731f; --m2:#c8588a; --m3:#2f6f6b; --m4:#5f9a3f; --m5:#5a4a8a; --m6:#c4a01c; --m7:#b5662a;
     --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
     --body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
     --display: "Oswald", var(--body);
@@ -20,7 +20,7 @@
       --line:#45423a; --accent:#e08a3c; --accent-ink:#1a1915;
       --ok:#5bbf6c; --warn:#dba93a; --crit:#e2625a; --info:#6f9be0;
       --floor:#34322c; --paint:#c99a2a; --top:#cfc5ac;
-      --m1:#e08a3c; --m2:#e07aa8; --m3:#5aa39e; --m4:#86c25f; --m5:#9a8ad0; --m6:#dcbb3a;
+      --m1:#e08a3c; --m2:#e07aa8; --m3:#5aa39e; --m4:#86c25f; --m5:#9a8ad0; --m6:#dcbb3a; --m7:#cf7f45;
       color-scheme: dark;
     }
   }
@@ -29,10 +29,10 @@
     --line:#45423a; --accent:#e08a3c; --accent-ink:#1a1915;
     --ok:#5bbf6c; --warn:#dba93a; --crit:#e2625a; --info:#6f9be0;
     --floor:#34322c; --paint:#c99a2a; --top:#cfc5ac;
-    --m1:#e08a3c; --m2:#e07aa8; --m3:#5aa39e; --m4:#86c25f; --m5:#9a8ad0; --m6:#dcbb3a;
+    --m1:#e08a3c; --m2:#e07aa8; --m3:#5aa39e; --m4:#86c25f; --m5:#9a8ad0; --m6:#dcbb3a; --m7:#cf7f45;
     color-scheme: dark;
   }
-  *{box-sizing:border-box}
+  *{box-sizing:border-box} [hidden]{display:none !important}
   body{background:var(--bg); color:var(--ink); font-family:var(--body); margin:0; line-height:1.5}
   body{padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px))}
   .wrap{max-width:1120px; margin:0 auto; padding-block:28px 60px}
@@ -82,7 +82,7 @@
   th{text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-dim); font-weight:600; padding:4px 6px; border-bottom:1px solid var(--line)}
   td{padding:5px 6px; border-bottom:1px solid var(--line); vertical-align:middle}
   .tablewrap{overflow-x:auto}
-  .mono{font-family:var(--mono)}
+  .mono{font-family:var(--mono)} td.mono{white-space:nowrap}
   .muted{color:var(--ink-dim)}
   .tag{font-family:var(--mono); font-size:.66rem; padding:1px 6px; border-radius:99px; border:1px solid var(--line); white-space:nowrap}
   .tag.ok{color:var(--ok); border-color:var(--ok)} .tag.info{color:var(--info); border-color:var(--info)} .tag.warn{color:var(--warn); border-color:var(--warn)} .tag.crit{color:var(--crit); border-color:var(--crit)}
@@ -109,20 +109,165 @@
   .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
   @media (max-width:760px){ .grid2{grid-template-columns:1fr} }
   ul.tight{margin:6px 0 0; padding-left:18px; font-size:.86rem} ul.tight li{margin-bottom:4px}
+  .searchbar{display:flex; gap:8px; flex-wrap:wrap; align-items:end; margin-top:14px}
+  .searchbar input[type=search]{background:var(--surface-2); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:7px 10px; min-width:0; width:100%; font-family:var(--mono)}
+  .res-mat{border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-top:10px; background:var(--surface)}
+  .res-mat .h{display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:.88rem}
+  .res-mat .h .tot{margin-left:auto; font-family:var(--mono); font-weight:600}
+  .bigname{font-family:var(--display); font-size:1.02rem; letter-spacing:.02em}
+  .bigname em{font-style:normal; background:var(--ink); color:var(--bg); padding:0 5px; border-radius:3px; margin-left:3px}
+  .tag.fifo{background:var(--ok); color:var(--surface); border-color:var(--ok)} .tag.nofifo{background:var(--warn); color:var(--surface); border-color:var(--warn)}
+  .orow{display:flex; gap:8px; align-items:end; flex-wrap:wrap; margin-bottom:8px}
+  .orow select{width:100%} .orow input[type=number]{width:100px}
+  .phone{max-width:390px; margin:0 auto; background:var(--ink); border-radius:26px; padding:12px 10px 16px; box-shadow:0 6px 24px rgba(0,0,0,.18)}
+  .phone .scr{background:var(--surface); border-radius:16px; padding:12px; min-height:420px; display:flex; flex-direction:column; gap:10px}
+  .phone .bar-top{display:flex; justify-content:space-between; font-family:var(--mono); font-size:.68rem; color:var(--ink-dim)}
+  .task{border:1px solid var(--line); border-radius:8px; padding:8px 10px; background:var(--surface-2); font-size:.82rem}
+  .task .th{display:flex; gap:6px; align-items:center; flex-wrap:wrap}
+  .task .th .st{margin-left:auto}
+  .step{display:flex; gap:6px; align-items:center; flex-wrap:wrap; padding:5px 0; border-top:1px dashed var(--line); font-family:var(--mono); font-size:.74rem}
+  .step.done{color:var(--ink-dim)}
+  .step.cur{font-weight:600}
+  .step button{margin-left:auto; padding:2px 8px; font-size:.7rem}
+  .scanbox{border:2px solid var(--line); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px}
+  .scanbox.ok{border-color:var(--ok)} .scanbox.bad{border-color:var(--crit)}
+  .scanrow{display:flex; gap:6px; align-items:end; flex-wrap:wrap}
+  .scanrow select{flex:none; width:100%}
+  .bigbtn{width:100%; padding:11px; font-size:.95rem}
+  .chk{display:inline-flex; gap:6px; align-items:center; font-size:.76rem; color:var(--ink-dim)}
+  .pa{border:1px solid var(--line); border-radius:8px; padding:10px; margin-top:10px; background:var(--surface-2); font-size:.82rem; display:flex; flex-direction:column; gap:8px}
   .fb{display:none; padding:30px; text-align:center; color:var(--ink-dim)}
+  .topnav{position:sticky; top:env(safe-area-inset-top,0px); z-index:30; background:var(--bg); border-bottom:1px solid var(--line); }
+  .topnav-in{max-width:1120px; margin:0 auto; display:flex; gap:4px; align-items:center; overflow-x:auto; padding-block:8px; scrollbar-width:none}
+  .topnav .brand{font-family:var(--display); text-transform:uppercase; letter-spacing:.06em; font-weight:600; margin-right:10px; white-space:nowrap}
+  .topnav a{white-space:nowrap; text-decoration:none; color:var(--ink-dim); font-size:.84rem; font-weight:500; padding:6px 11px; border-radius:6px; border:1px solid transparent}
+  .topnav a:hover{color:var(--ink); border-color:var(--line)}
+  .topnav a[aria-current=page]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+  @media (max-width:860px){ .grid3{grid-template-columns:1fr} }
+  .mob-head{max-width:420px; margin-inline:auto}
+  .labels.wide{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+  .label svg{max-width:100%; height:auto}
+  .qrorder{display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:12px; padding:12px; border:1px dashed var(--line); border-radius:8px}
+  .qrorder .qrbig{width:260px; max-width:100%; background:#fff; padding:8px; border-radius:6px; flex:none}
+  .qrorder .qrbig svg{width:100%; height:auto; display:block}
+  .qrorder p{flex:1; min-width:180px; font-size:.84rem}
+  /* scanner (picker) */
+  .ohead{display:grid; grid-template-columns:repeat(3,auto); gap:8px 14px; justify-content:start; font-size:.82rem}
+  .k{color:var(--ink-dim); font-size:.66rem; text-transform:uppercase; letter-spacing:.06em; font-weight:600}
+  .mblock{border:1px solid var(--line); border-radius:10px; background:var(--surface-2); overflow:hidden}
+  .mhead{padding:9px 10px; display:grid; grid-template-columns:auto 1fr auto; gap:2px 8px; align-items:start; border-bottom:1px solid var(--line)}
+  .mhead .sw{margin-top:5px}
+  .mhead .code{font-family:var(--mono); font-weight:600; font-size:1rem}
+  .mhead .nm{grid-column:2 / 4}
+  .mhead .qtys{grid-column:2 / 4; font-size:.76rem; color:var(--ink-dim)}
+  .mhead .qtys b{color:var(--ink); font-family:var(--mono)}
+  .ptable{font-size:.76rem}
+  .ptable th{font-size:.6rem; padding:4px 6px; background:var(--surface)}
+  .ptable td{padding:5px 6px; font-family:var(--mono)}
+  .ptable tr.done td{color:var(--ink-dim)}
+  .ptable tr.next td{background:color-mix(in srgb, var(--info) 12%, transparent); font-weight:600}
+  .target{border:2px solid var(--info); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:6px}
+  .kvgrid{display:grid; grid-template-columns:auto 1fr; gap:3px 12px; font-size:.82rem; align-items:baseline}
+  .kvgrid .v{font-family:var(--mono); font-weight:600; min-width:0; overflow-wrap:anywhere}
+  .kvgrid .v.n{font-family:var(--body)}
+  .stepbox{border:1px solid var(--line); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px}
+  .stepbox.ok{border-color:var(--ok); border-width:2px} .stepbox.bad{border-color:var(--crit); border-width:2px} .stepbox.off{opacity:.45}
+  .stephead{display:flex; gap:8px; align-items:center; font-weight:600; font-size:.86rem}
+  .stephead .num{width:22px; height:22px; border-radius:50%; background:var(--ink); color:var(--bg); display:inline-grid; place-items:center; font-size:.74rem; font-family:var(--mono); flex:none}
+  .stepbox.ok .num{background:var(--ok)} .stepbox.bad .num{background:var(--crit)}
+  .camrow{display:flex; gap:6px; flex-wrap:wrap}
+  .camrow input{flex:1 1 120px; min-width:0; background:var(--surface-2); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 8px; font-family:var(--mono)}
+  .ptabs{display:grid; grid-template-columns:1fr 1fr; gap:4px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:3px}
+  .ptabs button{border:0; background:none; padding:8px 4px; font-size:.82rem; border-radius:6px; color:var(--ink-dim)}
+  .ptabs button[aria-selected=true]{background:var(--surface); color:var(--ink); font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .badge{display:inline-block; min-width:18px; padding:0 5px; border-radius:99px; background:var(--accent); color:var(--accent-ink); font-size:.68rem; font-family:var(--mono); line-height:18px; text-align:center}
+  .matin{width:100%; background:var(--surface-2); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 8px; min-width:0}
+  .matin.bad{border-color:var(--crit); box-shadow:0 0 0 1px var(--crit)}
+  .prchks{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:4px}
+  .prchk{font-family:var(--mono); color:var(--ink)}
+  #print-area{margin-top:16px; display:flex; flex-direction:column; align-items:center; gap:16px}
+  .sheet{width:min(100%,560px); aspect-ratio:210/297; background:#fff; color:#111; box-shadow:0 2px 12px rgba(0,0,0,.18); padding:4%; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:3%; container-type:inline-size}
+  .pcell{border:1px dashed #9a9a9a; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:3cqw; gap:1cqw; overflow:hidden; font-family:var(--mono); min-width:0}
+  .pcell .pq{width:34cqw; max-width:100%} .pcell .pq svg{width:100%; height:auto; display:block}
+  .pcell .pb{width:40cqw; max-width:100%} .pcell .pb svg{width:100%; height:auto; display:block}
+  .pcell .pt{font-size:5.2cqw; font-weight:700; line-height:1.15; margin-top:1.5cqw}
+  .pcell .pt.big{font-size:12cqw}
+  .pcell .pc{font-size:3.4cqw; font-weight:600}
+  .pcell .pn{font-size:2.8cqw; font-family:var(--body); line-height:1.25}
+  @media print{
+    @page{size:A4; margin:0}
+    html, body{background:#fff !important; padding:0 !important; margin:0 !important}
+    .topnav, #v-admin, #v-petugas, #v-kamera, .camov{display:none !important}
+    #v-label{padding:0 !important; max-width:none !important; display:block !important}
+    #v-label > *:not(.print-sec){display:none !important}
+    .print-sec{margin:0 !important} .print-sec .section-head, .print-sec .pr-ctrl{display:none !important}
+    .print-sec .panel{border:0 !important; padding:0 !important; background:none !important}
+    #print-area{margin:0; gap:0; display:block}
+    .sheet{width:210mm; height:297mm; aspect-ratio:auto; box-shadow:none; padding:10mm; gap:6mm; break-after:page; page-break-after:always; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+    .sheet:last-child{break-after:auto; page-break-after:auto}
+  }
+  .camov{position:fixed; inset:0; z-index:60; background:#0d0d0c; color:#f2f0ea; display:flex; flex-direction:column; gap:10px; padding:calc(12px + env(safe-area-inset-top,0px)) max(14px, env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(14px, env(safe-area-inset-left,0px))}
+  .camtop{display:flex; justify-content:space-between; align-items:center}
+  .camtop button{background:#2a2925; color:#f2f0ea; border-color:#45423a}
+  .camhint{font-size:.84rem; color:#bdb8ab}
+  #cam-reader{width:100%; max-width:520px; margin:0 auto; border-radius:10px; overflow:hidden; background:#000; min-height:200px}
+  #cam-reader video{width:100% !important; height:auto !important}
+  .cam-msg{font-size:.84rem; color:#f0a39c; text-align:center}
+  .cam-manual{display:flex; gap:6px; max-width:520px; width:100%; margin:0 auto}
+  .cam-manual input{flex:1; min-width:0; background:#1d1c19; color:#f2f0ea; border:1px solid #45423a; border-radius:6px; padding:9px; font-family:var(--mono)}
+  .cam-manual button{background:#e08a3c; color:#1a1915; border-color:#e08a3c; font-weight:600}
+  @media (max-width:520px){
+    .phone{background:none; box-shadow:none; padding:0; border-radius:0}
+    .phone .scr{padding:0; background:none; min-height:0}
+    header.mob-head{display:none}
+    .topnav .brand{display:none}
+  }
 </style>
 
-<div class="wrap">
-  <header class="top">
-    <span class="eyebrow">WMS Virtual · Raw Material Karton</span>
-    <h1>Simulator Bin Karton (3D)</h1>
-    <p class="lede">Karton belum punya WMS, jadi lokasi, stok per tumpukan, dan bin card digital semuanya dipegang sistem virtual ini. Alurnya: DN datang → sistem cari posisi → petugas pilih → QR tumpukan dibuat → saat ambil, scan QR → cek material → qty berkurang.</p>
-  </header>
+<nav class="topnav" aria-label="Menu">
+  <div class="topnav-in">
+    <span class="brand">WMS Karton</span>
+    <a href="#admin" data-v="admin">Admin</a>
+    <a href="#petugas" data-v="petugas">Petugas · simulasi</a>
+    <a href="#kamera" data-v="kamera">Petugas · kamera</a>
+    <a href="#label" data-v="label">Label &amp; master bin</a>
+  </div>
+</nav>
 
-  <div class="banner"><b>Angka masih asumsi kerja.</b> Ukuran lembar datar, tebal ikat, ukuran posisi (4,2 × 3,0 m), tinggi maks 2,5 m, no material, dan jendela gabung tumpukan belum dikonfirmasi lapangan. Kode no material di sini hanya contoh.</div>
+<!-- ================= ADMIN ================= -->
+<div class="wrap view" id="v-admin">
+  <header class="top">
+    <span class="eyebrow">WMS Virtual · Raw Material Karton · Admin</span>
+    <h1>Dashboard Admin Karton</h1>
+    <p class="lede">Admin membuat permintaan produksi, memantau petugas mengambil barang, dan memposting ke SAP. Peta stok, pencarian no material, dan barang datang ada di halaman yang sama.</p>
+  </header>
+  <div class="banner"><b>Data contoh.</b> No material, nama material, ukuran lembar, ukuran posisi (4,2 × 3,0 m), dan tinggi maks 2,5 m masih asumsi kerja dan belum dikonfirmasi lapangan.</div>
+
+  <section class="layout">
+    <div class="panel">
+      <div class="section-head"><h2>1 · Buat permintaan produksi</h2><p class="lede">Isi beberapa no material sekaligus. Sistem menyusun daftar ambil FIFO lintas posisi, lalu mengirimnya ke scanner petugas. Satu petugas satu order.</p></div>
+      <div id="order-form"></div>
+    </div>
+    <div class="panel">
+      <div class="section-head"><h2>Order aktif</h2></div>
+      <div id="order-admin"></div>
+    </div>
+  </section>
 
   <section>
-    <div class="section-head"><h2>1 · Peta gudang karton</h2><p class="lede">Satu balok = satu pile (ikatan lembar datar ditumpuk). Ukuran balok mengikuti ukuran lembar tiap no material, tingginya mengikuti jumlah ikat. Kotak putih kecil di sisi depan = label QR tumpukan.</p></div>
+    <div class="section-head"><h2>Daftar order</h2></div>
+    <div class="panel"><div class="tablewrap"><table id="order-list"></table></div></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>2 · Peta gudang &amp; cari stok</h2><p class="lede">Satu balok = satu pile. Ukuran balok mengikuti ukuran lembar tiap no material. Kotak putih di sisi depan = label QR tumpukan. Angka di atas tumpukan = urutan ambil order aktif.</p></div>
+    <div class="searchbar" style="margin-top:0;margin-bottom:12px">
+      <div class="field" style="flex:1 1 260px"><label for="q">Cari no material / nama</label><input type="search" id="q" list="mat-list" placeholder="contoh: 11002155 atau 540"></div>
+      <datalist id="mat-list"></datalist><datalist id="mat-full"></datalist>
+      <button class="primary" id="btn-q">Cari</button><button id="btn-q-clear">Hapus</button>
+    </div>
+    <div id="q-result" style="margin-bottom:14px"></div>
     <div class="stats" id="stats"></div>
     <div class="legend" id="legend"></div>
     <div class="scene-wrap">
@@ -130,18 +275,19 @@
         <button id="view-overview">Overview</button><button id="view-front">Tampak depan</button><button id="view-focus">Fokus posisi terpilih</button>
       </div>
       <div class="scene3d" id="scene3d"></div>
-      <div class="scene-hint" id="scene-hint">Seret = putar · scroll = zoom · klik tumpukan = scan</div>
+      <div class="scene-hint" id="scene-hint">Seret = putar · scroll = zoom · klik tumpukan = lihat detail</div>
       <div class="fb" id="scene-fallback">3D tidak tersedia di perangkat ini (WebGL). Gunakan daftar posisi di bawah.</div>
     </div>
     <div class="chips" id="chips" role="group" aria-label="Daftar posisi"></div>
+    <div id="pick-info"></div>
   </section>
 
   <section class="layout">
     <div class="panel">
-      <div class="section-head"><h2>2 · Barang datang (per DN)</h2><p class="lede">Input DN dulu. Sistem tarik no material per DN, cari posisi, lalu petugas pilih atau pecah ke beberapa posisi.</p></div>
+      <div class="section-head"><h2>3 · Barang datang (per DN)</h2><p class="lede">Input DN, sistem sarankan posisi (boleh diubah manual). Ini baru <b>booking</b>: tumpukan belum bisa diambil sebelum dikonfirmasi di lokasi.</p></div>
       <div class="row">
         <div class="field"><label for="dn-sel">No DN</label><select id="dn-sel"></select></div>
-        <div class="field"><label for="arr-date">Tanggal datang</label><input type="date" id="arr-date" value="2026-10-18"></div>
+        <div class="field"><label for="arr-date">Tanggal</label><input type="date" id="arr-date" value="2026-10-18"></div>
         <div class="field"><label for="win">Gabung jika selisih ≤ (hari)</label><input type="number" id="win" value="2" min="0" max="14" style="width:90px"></div>
       </div>
       <div class="tablewrap"><table id="dn-lines"></table></div>
@@ -150,44 +296,110 @@
       </div>
       <div class="row"><button class="primary" id="btn-search">Cari posisi</button><button id="btn-reset">Reset simulasi</button></div>
       <div id="arr-result"></div>
-      <div id="arr-confirm-wrap" hidden><button class="primary" id="btn-confirm">Konfirmasi &amp; buat QR tumpukan</button></div>
+      <div id="arr-confirm-wrap" hidden><button class="primary" id="btn-confirm">Booking posisi &amp; cetak QR tumpukan</button></div>
       <div id="arr-msg"></div>
       <div id="arr-labels"></div>
     </div>
-
     <div class="panel">
-      <div class="section-head"><h2>3 · Scan &amp; ambil</h2><p class="lede">Scan QR tumpukan (atau klik tumpukan di 3D). Info muncul dulu, baru tentukan berapa yang diambil.</p></div>
-      <div class="row">
-        <div class="field" style="flex:1"><label for="scan-sel">QR tumpukan</label><select id="scan-sel" style="width:100%"></select></div>
-        <button id="btn-scan">Scan</button>
-      </div>
-      <div class="row" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
-        <div class="field" style="flex:1;min-width:180px"><label for="wo-sel">Permintaan produksi (WO): material</label><select id="wo-sel" style="width:100%"></select></div>
-        <div class="field"><label for="wo-qty">Qty (pcs)</label><input type="number" id="wo-qty" value="1500" min="1" step="100" style="width:100px"></div>
-        <button id="btn-wo">Buat daftar ambil (FIFO)</button>
-      </div>
-      <div id="wo-list"></div>
-      <div id="detail"></div>
+      <div class="section-head"><h2>3b · Status taruh barang</h2><p class="lede">Konfirmasi dilakukan petugas gudang di menu <b>Petugas · Inbound</b>: scan QR tumpukan, barcode karton, dan label lokasi. Di sini admin hanya memantau.</p></div>
+      <div id="putaway"></div>
     </div>
   </section>
 
   <section>
-    <div class="section-head"><h2>4 · Log aktivitas (pengganti coret-coret bin card)</h2><p class="lede">Setiap masuk dan keluar tercatat otomatis dengan saldo berjalan.</p></div>
+    <div class="section-head"><h2>4 · Log aktivitas (pengganti bin card kertas)</h2><p class="lede">Setiap masuk, konfirmasi, keluar, selisih, dan posting tercatat otomatis dengan saldo berjalan.</p></div>
     <div class="panel"><div class="tablewrap"><table id="log"></table></div></div>
   </section>
 
   <section>
-    <div class="section-head"><h2>Dua jenis QR</h2></div>
-    <div class="panel grid2">
-      <div><h3>Label lokasi · permanen</h3><ul class="tight"><li>Ditempel sekali di tiap posisi (A1, A2, ...), dilaminasi.</li><li>Isinya hanya kode posisi. Dipakai untuk validasi saat taruh barang: "benar di posisi ini?".</li><li>Tidak pernah dicetak ulang.</li></ul></div>
-      <div><h3>Label tumpukan · sekali pakai</h3><ul class="tight"><li>Dibuat baru tiap no material mengisi tempat kosong (satu ID unik per tumpukan).</li><li>Isinya hanya ID. Data (material, lokasi, saldo, tanggal) ada di database.</li><li>Kalau tumpukan habis, ID ditutup dan tidak dipakai lagi. Datang lagi = ID baru.</li><li>Barang yang datang berdekatan hari (dalam jendela gabung) masuk ke tumpukan yang sama, label tetap.</li></ul></div>
+    <div class="section-head"><h2>Tiga kode yang dipakai</h2></div>
+    <div class="panel grid3">
+      <div><h3>Label lokasi · permanen</h3><ul class="tight"><li>Satu per bin (A1, A2, ...), dari master data bin.</li><li>Dipakai saat taruh barang: "benar di posisi ini?".</li><li>Tidak pernah dicetak ulang.</li></ul></div>
+      <div><h3>QR tumpukan · sekali pakai</h3><ul class="tight"><li>Dibuat saat booking. Isinya hanya ID, data ada di sistem.</li><li>Kedatangan no material sama dalam 2 hari memakai QR yang sama.</li><li>Tumpukan habis = QR ditutup.</li></ul></div>
+      <div><h3>Barcode karton · dari supplier</h3><ul class="tight"><li>Sudah tercetak di karton.</li><li>Dipakai untuk memastikan isi karton sesuai QR tumpukan (GT vs MT).</li><li>Format isinya perlu dicek ke supplier.</li></ul></div>
     </div>
   </section>
+</div>
+
+<!-- ================= PETUGAS SIMULASI ================= -->
+<div class="wrap view" id="v-petugas" hidden>
+  <header class="top mob-head">
+    <span class="eyebrow">Scanner petugas · simulasi</span>
+    <p class="lede">Tampilan scanner Android petugas, dengan menu Inbound (taruh) dan Outbound (ambil). Scan dipura-purakan dengan memilih dari daftar. Data sama dengan halaman Admin di perangkat ini.</p>
+  </header>
+  <div class="phone"><div class="scr" id="sim-scr"></div></div>
+</div>
+
+<!-- ================= PETUGAS KAMERA ================= -->
+<div class="wrap view" id="v-kamera" hidden>
+  <header class="top mob-head">
+    <span class="eyebrow">Scanner petugas · kamera</span>
+    <p class="lede">Buka halaman ini di HP. Ada dua menu: Inbound (taruh barang) dan Outbound (ambil untuk produksi). Scan pakai kamera. Untuk sekarang datanya memakai data contoh, karena belum tersambung ke database.</p>
+  </header>
+  <div class="phone"><div class="scr" id="kam-scr"></div></div>
+</div>
+
+<!-- ================= LABEL ================= -->
+<div class="wrap view" id="v-label" hidden>
+  <header class="top">
+    <span class="eyebrow">Label &amp; master data</span>
+    <h1>Label untuk Demo Scan</h1>
+    <p class="lede">Buka halaman ini di laptop, lalu scan langsung dari layar dengan HP (menu Petugas · kamera). Isi QR dan barcode sama dengan yang akan dicetak di lapangan.</p>
+  </header>
+  <div id="lbl-order"></div>
+  <section class="print-sec">
+    <div class="section-head"><h2>Cetak label · A4, 4 label per halaman</h2><p class="lede">Pilih jenis label, centang yang mau dicetak, lalu cetak. Garis putus-putus = garis potong.</p></div>
+    <div class="panel">
+      <div class="pr-ctrl">
+        <div class="row">
+          <div class="field" style="flex:1 1 220px"><label for="pr-type">Jenis label</label><select id="pr-type" style="width:100%">
+            <option value="stack">QR tumpukan · semua aktif</option>
+            <option value="pending">QR tumpukan · baru booking (belum ditaruh)</option>
+            <option value="loc">Label lokasi bin (master bin)</option>
+            <option value="demoin">QR contoh inbound (menu kamera)</option>
+            <option value="carton">Barcode karton (contoh)</option>
+          </select></div>
+          <button id="pr-all">Pilih semua</button><button id="pr-none">Kosongkan</button>
+          <button class="primary" id="pr-print" hidden>Cetak</button>
+        </div>
+        <div class="prchks" id="pr-items"></div>
+        <div class="muted" style="font-size:.78rem;margin-top:8px"><b id="pr-count"></b> · <span id="pr-note"></span></div>
+      </div>
+      <div id="print-area"></div>
+    </div>
+  </section>
+  <section>
+    <div class="section-head"><h2>Master data bin</h2><p class="lede">Semua bin didaftarkan dulu sebagai master data, lalu dicetak label lokasinya. Sementara di simulator, lokasi dipilih dari dropdown.</p></div>
+    <div class="panel"><div class="tablewrap"><table id="bin-table"></table></div><div class="labels" id="bin-labels"></div></div>
+  </section>
+  <section>
+    <div class="section-head"><h2>QR tumpukan aktif</h2><p class="lede">Satu label per tumpukan. Isi QR hanya ID tumpukan.</p></div>
+    <div class="panel"><div class="labels" id="stack-labels"></div></div>
+  </section>
+  <section>
+    <div class="section-head"><h2>Contoh inbound (untuk menu kamera)</h2><p class="lede">Dipakai tombol "Pakai data inbound contoh" di HP. Scan QR ini, lalu barcode karton, lalu label lokasi bin booking-nya.</p></div>
+    <div class="panel"><div class="labels" id="demo-in-labels"></div></div>
+  </section>
+  <section>
+    <div class="section-head"><h2>Barcode karton (contoh)</h2><p class="lede">Pengganti barcode supplier di karton, berisi no material. Coba scan barcode MT saat order meminta GT.</p></div>
+    <div class="panel"><div class="labels wide" id="carton-labels"></div></div>
+  </section>
+</div>
+
+<!-- kamera overlay -->
+<div class="camov" id="camov" hidden>
+  <div class="camtop"><b id="cam-title">Scan</b><button id="cam-x">Tutup</button></div>
+  <div class="camhint" id="cam-hint"></div>
+  <div id="cam-reader"></div>
+  <div class="cam-msg" id="cam-msg"></div>
+  <div class="cam-manual"><input id="cam-in" placeholder="atau ketik kode" autocomplete="off"><button id="cam-ok">OK</button></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 (function(){
   "use strict";
@@ -201,12 +413,13 @@
   var CATS = [ {id:"A", name:"Facial"}, {id:"B", name:"Toilet"}, {id:"C", name:"Napkin"} ];
   var TOTAL_W = CATS.length*PW + (CATS.length-1)*LGAP;
   var MATS = [
-    { id:"facial-200",   code:"KRT-FC-200", name:"Facial Tissue 200s",     cat:"A", token:"--m1", flat:[65,45], sheet:3.5, pcs:20 },
-    { id:"facial-mini",  code:"KRT-FC-MNI", name:"Facial Tissue Mini",     cat:"A", token:"--m2", flat:[48,34], sheet:3.0, pcs:20 },
-    { id:"toilet-12",    code:"KRT-TL-12",  name:"Toilet Roll Carton 12pk", cat:"B", token:"--m3", flat:[82,58], sheet:4.0, pcs:10 },
-    { id:"toilet-24",    code:"KRT-TL-24",  name:"Toilet Roll Carton 24pk", cat:"B", token:"--m4", flat:[98,68], sheet:4.5, pcs:10 },
-    { id:"napkin-besar", code:"KRT-NP-BSR", name:"Napkin Carton Besar",    cat:"C", token:"--m5", flat:[96,72], sheet:4.2, pcs:10 },
-    { id:"napkin-kecil", code:"KRT-NP-KCL", name:"Napkin Carton Kecil",    cat:"C", token:"--m6", flat:[62,50], sheet:3.2, pcs:20 }
+    { id:"facial-200",   code:"11002154", name:"Facial 540's 3 ply GT", cat:"A", token:"--m1", flat:[65,45], sheet:3.5, pcs:20, twin:"facial-200-mt" },
+    { id:"facial-200-mt", code:"11002155", name:"Facial 540's 3 ply MT", cat:"A", token:"--m7", flat:[65,45], sheet:3.5, pcs:20, twin:"facial-200" },
+    { id:"facial-mini",  code:"11002210", name:"Facial 250's 2 ply",     cat:"A", token:"--m2", flat:[48,34], sheet:3.0, pcs:20 },
+    { id:"toilet-12",    code:"11003120", name:"Toilet 12 roll 2 ply", cat:"B", token:"--m3", flat:[82,58], sheet:4.0, pcs:10 },
+    { id:"toilet-24",    code:"11003124", name:"Toilet 24 roll 2 ply", cat:"B", token:"--m4", flat:[98,68], sheet:4.5, pcs:10 },
+    { id:"napkin-besar", code:"11004301", name:"Napkin 100's 1 ply besar",    cat:"C", token:"--m5", flat:[96,72], sheet:4.2, pcs:10 },
+    { id:"napkin-kecil", code:"11004305", name:"Napkin 50's 1 ply kecil",    cat:"C", token:"--m6", flat:[62,50], sheet:3.2, pcs:20 }
   ];
   MATS.forEach(function(m){
     m.L = m.flat[0]/100; m.Wd = m.flat[1]/100; m.rd = m.Wd;
@@ -229,7 +442,8 @@
   function ymd6(d){ return d.slice(2,4)+d.slice(5,7)+d.slice(8,10); }
 
   /* ---------- state ---------- */
-  var S, seq, LOG, selPos, selCard, plan = null, lastAlloc = {}, G = null, wo = null;
+  var S, seq, LOG, selPos, selCard, plan = null, lastAlloc = {}, G = null;
+  var ORDER = null, ORDERS = [], DRAFT, orderSeq = 1, searchQ = "", searchHit = {}, paMsg = {}, paDone = [], VIEW = "admin";
   function newPosisi(){
     var list = [];
     CATS.forEach(function(c, li){ for(var pi=0; pi<3; pi++) list.push({ id:c.id+(pi+1), cat:c.id, li:li, pi:pi, cards:[] }); });
@@ -238,18 +452,20 @@
   function posisi(id, st){ var L = (st||S); for(var i=0;i<L.length;i++) if(L[i].id===id) return L[i]; }
   function pad4(n){ return ("0000"+n).slice(-4); }
   function mkCard(st, p, matId, date, dn, qty){
-    var c = { id:"BC-"+ymd6(date)+"-"+pad4(seq++), matId:matId, piles:[], lots:[], created:date };
+    var c = { id:"BC-"+ymd6(date)+"-"+pad4(seq++), matId:matId, piles:[], lots:[], created:date, status:"ok" };
     addQty(c, mat(matId), qty); c.lots.push({ dn:dn, date:date, qty:qty });
     p.cards.push(c); return c;
   }
   function seedAll(){
-    S = newPosisi(); seq = 1; LOG = []; selPos = "A1"; selCard = null; plan = null; lastAlloc = {}; wo = null;
+    S = newPosisi(); seq = 1; LOG = []; selPos = "A1"; selCard = null; plan = null; lastAlloc = {};
+    ORDER = null; ORDERS = []; orderSeq = 1; paMsg = {}; paDone = []; if(typeof simCtx!=="undefined"){ simCtx.sc = newSc(); simCtx.msg = ""; }
+    DRAFT = [ { matId:"facial-200", qty:1500 }, { matId:"toilet-12", qty:300 }, { matId:"napkin-kecil", qty:50 } ];
     function s(pid, matId, qty, date){
       var p = posisi(pid), c = mkCard(S, p, matId, date, "DN-awal", qty);
       LOG.push({ t:date, type:"IN", id:c.id, mat:mat(matId).name, pos:pid, qty:qty, saldo:qty, note:"stok awal" });
     }
     s("A1","facial-200",800,"2026-10-02"); s("A1","facial-mini",300,"2026-10-08");
-    s("A2","facial-200",600,"2026-10-10"); s("A1","facial-200",300,"2026-10-12"); s("A3","facial-200",400,"2026-10-15");
+    s("A2","facial-200",600,"2026-10-10"); s("A2","facial-200-mt",500,"2026-10-11"); s("A1","facial-200",300,"2026-10-12"); s("A3","facial-200",400,"2026-10-15");
     s("B1","toilet-12",450,"2026-10-05");
     s("C1","napkin-besar",150,"2026-10-05"); s("C1","napkin-kecil",200,"2026-10-09");
   }
@@ -381,8 +597,8 @@
     $("#btn-confirm").disabled = !anyQ || bad;
   }
 
-  function qrSvg(text){
-    try{ var q = window.qrcode(0, "M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize:4, margin:0, scalable:true }); }
+  function qrSvg(text, ecl){
+    try{ var q = window.qrcode(0, ecl||"M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize:4, margin:0, scalable:true }); }
     catch(e){ return '<div class="muted">QR</div>'; }
   }
   function confirmPlan(){
@@ -400,17 +616,18 @@
         if(q<o.q) notes.push(m.name+" di "+o.pid+": hanya "+fmt(q)+" dari "+fmt(o.q)+" pcs yang muat (ruang sudah dipakai baris DN sebelumnya).");
         if(q<=0) return;
         var r = applyAlloc(S, m, o.pid, o.cardId, q, plan.date, plan.dn);
+        if(r.isNew) r.c.status = "pending";
         lastAlloc[o.pid] = true;
-        LOG.push({ t:plan.date, type:"IN", id:r.c.id, mat:m.name, pos:o.pid, qty:q, saldo:cardQty(r.c), note:plan.dn+(r.isNew?" · QR baru":" · digabung, QR tetap") });
+        LOG.push({ t:plan.date, type:"IN", id:r.c.id, mat:m.name, pos:o.pid, qty:q, saldo:cardQty(r.c), note:plan.dn+(r.isNew?" · booking, QR baru dicetak":" · digabung, QR tetap") });
         created.push({ r:r, q:q, m:m });
       });
     });
     var html = "";
     if(created.length){
-      html += '<div class="msg ok"><b>Tersimpan.</b> Cetak label QR, tempel di tumpukan, lalu scan QR lokasi posisi untuk validasi.</div><div class="labels">';
+      html += '<div class="msg ok"><b>Booking tersimpan.</b> <a href="#label" data-pr="pending">Cetak label QR baru (A4)</a>. Cetak label QR, tempel di tumpukan, lalu petugas konfirmasi di menu Petugas · Inbound (scan QR + barcode karton + label lokasi). Sebelum dikonfirmasi, tumpukan belum bisa diambil.</div><div class="labels">';
       created.forEach(function(x){
         if(x.r.isNew){
-          html += '<div class="label"><div class="qr">'+qrSvg(x.r.c.id)+'</div><b>'+x.r.c.id+'</b>'+x.m.name+'<br>'+x.m.code+'<br>Posisi '+x.r.p.id+' · '+fmt(x.q)+' pcs<br>'+plan.dn+' · '+plan.date+'</div>';
+          html += '<div class="label"><div class="qr">'+qrSvg(x.r.c.id)+'</div><b>'+x.r.c.id+'</b><b style="font-size:.9rem">'+x.m.name+'</b>'+x.m.code+'<br>Posisi '+x.r.p.id+' · '+fmt(x.q)+' pcs<br>'+plan.dn+' · '+plan.date+'</div>';
         } else {
           html += '<div class="label" style="border-style:solid"><b>'+x.r.c.id+'</b>label sudah ada, tidak cetak ulang<br>'+x.m.name+'<br>+'+fmt(x.q)+' pcs → saldo '+fmt(cardQty(x.r.c))+'</div>';
         }
@@ -426,105 +643,637 @@
     renderAll();
   }
 
-  /* ---------- panel ambil ---------- */
+  /* ---------- helper tampilan ---------- */
+  function esc(t){ return String(t).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function bigName(m){
+    var n = esc(m.name).replace(/ (GT|MT)$/, function(x, v){ return ' <em>'+v+'</em>'; });
+    return '<span class="bigname">'+n+'</span>';
+  }
+  function swatch(m){ return '<span class="sw" style="background:var('+m.token+')"></span>'; }
+  function matLabel(m){ return m.code+" · "+m.name; }
+  function parseMat(v){
+    v = String(v||"").trim(); if(!v) return null;
+    var code = v.split(" ")[0], m = matByCode(code); if(m) return m;
+    var lv = v.toLowerCase(), hit = MATS.filter(function(x){ return x.name.toLowerCase()===lv || matLabel(x).toLowerCase()===lv; });
+    return hit.length===1 ? hit[0] : null;
+  }
+  function matByCode(code){ for(var i=0;i<MATS.length;i++) if(MATS[i].code===code) return MATS[i]; return null; }
+  function wrongFor(m){
+    if(m.twin) return mat(m.twin);
+    for(var i=0;i<MATS.length;i++) if(MATS[i].cat===m.cat && MATS[i].id!==m.id) return MATS[i];
+    return MATS[0]===m ? MATS[1] : MATS[0];
+  }
+  function today(){ var el = $("#arr-date"); return (el && el.value) || "2026-10-18"; }
+  function buzz(ok){ try{ if(navigator.vibrate) navigator.vibrate(ok ? 60 : [120,60,120]); }catch(e){} }
+
+  /* ---------- pilihan dropdown ---------- */
   function fillSelects(){
     var dn = $("#dn-sel"); if(!dn.options.length) dn.innerHTML = Object.keys(DNS).map(function(k){ return '<option>'+k+'</option>'; }).join("");
-    var wo = $("#wo-sel"), cur = wo.value;
-    wo.innerHTML = '<option value="">— pilih material —</option>' + MATS.map(function(m){ return '<option value="'+m.id+'">'+m.name+' ('+m.code+')</option>'; }).join("");
-    wo.value = cur;
-    var sc = $("#scan-sel"), cv = selCard;
-    var opts = allCards().map(function(x){ return '<option value="'+x.c.id+'">'+x.c.id+' · '+mat(x.c.matId).name+' · '+x.p.id+'</option>'; });
-    sc.innerHTML = opts.length ? opts.join("") : '<option value="">(belum ada tumpukan)</option>';
-    if(cv && findCard(cv)) sc.value = cv;
+    $("#mat-full").innerHTML = MATS.map(function(m){ return '<option value="'+esc(matLabel(m))+'"></option>'; }).join("");
+    $("#mat-list").innerHTML = MATS.map(function(m){ return '<option value="'+m.code+'">'+esc(m.name)+'</option>'; }).join("");
   }
   function renderDnLines(){
-    var key = $("#dn-sel").value, h = '<tr><th>No material</th><th>Nama</th><th>Qty (pcs)</th></tr>';
+    var key = $("#dn-sel").value, h = '<tr><th>No material</th><th>Nama material</th><th>Qty (pcs)</th></tr>';
     DNS[key].forEach(function(r, i){
       var m = mat(r[0]);
-      h += '<tr><td class="mono">'+m.code+'</td><td><span class="sw" style="background:var('+m.token+')"></span> '+m.name+'</td><td><input type="number" id="dnq-'+i+'" value="'+r[1]+'" min="0" step="100" style="width:100px"></td></tr>';
+      h += '<tr><td class="mono">'+m.code+'</td><td>'+swatch(m)+' '+esc(m.name)+'</td><td><input type="number" id="dnq-'+i+'" value="'+r[1]+'" min="0" step="100" style="width:100px"></td></tr>';
     });
     $("#dn-lines").innerHTML = h;
     Array.prototype.forEach.call(document.querySelectorAll("#dn-lines input"), function(i){ i.addEventListener("input", function(){ plan=null; renderOptions(); update3D(); renderChips(); }); });
   }
-  function renderDetail(){
-    var box = $("#detail"), f = selCard ? findCard(selCard) : null;
-    if(!f){
-      var p = posisi(selPos), h = '<div class="muted" style="font-size:.85rem">Belum ada tumpukan dipindai. Posisi terpilih: <b class="mono">'+selPos+'</b> ('+posPct(p)+'% terpakai, sisa kedalaman '+freeDepth(p).toFixed(1)+' m).</div>';
-      if(p.cards.length){ h += '<div class="tablewrap" style="margin-top:8px"><table><tr><th>QR</th><th>Material</th><th>Saldo</th></tr>'+p.cards.map(function(c){ return '<tr><td class="mono">'+c.id+'</td><td>'+mat(c.matId).name+'</td><td class="mono">'+fmt(cardQty(c))+'</td></tr>'; }).join("")+'</table></div>'; }
-      box.innerHTML = h; return;
-    }
-    var c = f.c, p2 = f.p, m = mat(c.matId), q = cardQty(c), cap = m.qpp*c.piles.length;
-    var steps = wo ? woSteps() : [], wrong = false, offTurn = false, msg = "", defQty = Math.min(q, 500);
-    var older = allCards().filter(function(x){ return x.c.matId===c.matId && x.c.id!==c.id && x.c.lots[0].date < c.lots[0].date; });
-    if(wo){
-      if(wo.matId!==c.matId){ wrong = true; msg = '<div class="msg crit">SALAH MATERIAL. Produksi minta '+mat(wo.matId).name+', tumpukan ini '+m.name+'. Jangan diambil.</div>'; }
-      else if(!steps.length){ msg = '<div class="msg ok">Permintaan produksi sudah terpenuhi.</div>'; }
-      else if(steps[0].cardId===c.id){ msg = '<div class="msg ok">Giliran yang benar (FIFO). Ambil '+fmt(steps[0].q)+' pcs dari tumpukan ini.</div>'; defQty = Math.min(q, steps[0].q); }
-      else { offTurn = true; msg = '<div class="msg crit">BUKAN GILIRAN FIFO. Ambil dulu '+steps[0].cardId+' di posisi '+steps[0].posId+' (lot '+steps[0].date+').</div>'; }
-    } else if(older.length){
-      msg = '<div class="msg warn">FIFO: ada tumpukan '+m.name+' yang lebih lama ('+older.map(function(x){ return x.c.id+' di '+x.p.id; }).join(", ")+'). Buat permintaan produksi di atas untuk dapat urutan ambil.</div>';
-    }
-    var h = '<div class="cardbox"><div class="qrbox">'+qrSvg(c.id)+'</div><div class="info">'+
-      '<div class="mono"><b>'+c.id+'</b></div>'+
-      '<div><span class="sw" style="background:var('+m.token+')"></span> <b>'+m.name+'</b> <span class="muted mono">'+m.code+'</span></div>'+
-      '<div class="k">Lokasi</div><div>Line '+p2.cat+' ('+cat(p2.cat).name+') · posisi <b>'+p2.id+'</b></div>'+
-      '<div class="k">Saldo</div><div class="mono"><b>'+fmt(q)+' pcs</b> · '+c.piles.length+' pile · tinggi tumpukan '+(Math.max.apply(null,c.piles)/m.qpp*m.fullH).toFixed(2)+' m</div>'+
-      '<div class="bar"><i style="width:'+Math.round(q/cap*100)+'%"></i></div>'+
-      '<div class="k">Lot masuk (tanggal tertua di atas)</div>'+c.lots.map(function(l){ return '<div class="mono" style="font-size:.76rem">'+l.date+' · '+l.dn+' · '+fmt(l.qty)+'</div>'; }).join("")+
-      '</div></div>' + msg;
-    h += '<div class="qtyrow"><div class="field"><label for="pick-q">Ambil (pcs)</label><input type="number" id="pick-q" min="1" max="'+q+'" value="'+defQty+'"></div>'+
-         '<button class="primary" id="btn-pick"'+(wrong?' disabled':'')+'>'+(offTurn?'Tetap ambil (catat pelanggaran FIFO)':'Konfirmasi ambil')+'</button></div><div id="pick-msg"></div>';
+
+  /* ---------- info tumpukan terpilih ---------- */
+  function renderPickInfo(){
+    var box = $("#pick-info"), f = selCard ? findCard(selCard) : null;
+    if(!f){ box.innerHTML = ""; return; }
+    var c = f.c, m = mat(c.matId), q = cardQty(c);
+    box.innerHTML = '<div class="cardbox"><div class="qrbox">'+qrSvg(c.id)+'</div><div class="info">'+
+      '<div class="mono"><b>'+c.id+'</b> '+(c.status==="pending"?'<span class="tag warn">belum dikonfirmasi</span>':'<span class="tag ok">terkonfirmasi</span>')+'</div>'+
+      '<div class="k">No material</div><div class="mono"><b>'+m.code+'</b></div>'+
+      '<div class="k">Nama material</div><div>'+swatch(m)+' '+bigName(m)+'</div>'+
+      '<div class="k">Lokasi</div><div>Line '+f.p.cat+' ('+cat(f.p.cat).name+') · bin <b>'+f.p.id+'</b></div>'+
+      '<div class="k">Saldo</div><div class="mono"><b>'+fmt(q)+' pcs</b> · '+c.piles.length+' pile</div>'+
+      '<div class="k">Lot masuk</div>'+c.lots.map(function(l){ return '<div class="mono" style="font-size:.76rem">'+l.date+' · '+l.dn+' · '+fmt(l.qty)+'</div>'; }).join("")+
+      '</div></div>';
+  }
+
+  /* ---------- pencarian no material ---------- */
+  function searchMats(){
+    var q = (searchQ||"").trim().toLowerCase(); if(!q) return [];
+    return MATS.filter(function(m){ return (m.code+" "+m.name).toLowerCase().indexOf(q)>=0; });
+  }
+  function renderSearch(){
+    var box = $("#q-result"); searchHit = {};
+    if(!searchQ){ box.innerHTML = ""; return; }
+    var ms = searchMats();
+    if(!ms.length){ box.innerHTML = '<div class="msg warn">Tidak ada no material yang cocok dengan "'+esc(searchQ)+'".</div>'; return; }
+    var h = "";
+    if(ms.length>1) h += '<div class="msg">'+ms.length+' no material cocok. Perhatikan beda no material dan nama, misalnya GT dan MT.</div>';
+    ms.forEach(function(m){
+      var rows = allCards().filter(function(x){ return x.c.matId===m.id; }).sort(function(a,b){ return a.c.lots[0].date<b.c.lots[0].date?-1:1; });
+      var tot = 0, ready = 0; rows.forEach(function(x){ var q = cardQty(x.c); tot += q; if(x.c.status!=="pending") ready += q; searchHit[x.c.id] = true; });
+      h += '<div class="res-mat"><div class="h">'+swatch(m)+'<span class="mono"><b>'+m.code+'</b></span>'+bigName(m)+'<span class="tot">'+fmt(tot)+' pcs</span></div>';
+      if(!rows.length){ h += '<div class="muted" style="font-size:.82rem;margin-top:4px">Tidak ada stok.</div></div>'; return; }
+      h += '<div class="tablewrap" style="margin-top:6px"><table><tr><th>Urutan FIFO</th><th>Lokasi (bin)</th><th>QR tumpukan</th><th>Lot tertua</th><th>Qty (pcs)</th><th>Status</th></tr>';
+      var n = 0;
+      rows.forEach(function(x){
+        var pend = x.c.status==="pending"; if(!pend) n++;
+        h += '<tr><td class="mono">'+(pend?'–':n)+'</td><td class="mono"><b>'+x.p.id+'</b></td><td class="mono">'+x.c.id+'</td><td class="mono">'+x.c.lots[0].date+'</td><td class="mono">'+fmt(cardQty(x.c))+'</td><td>'+(pend?'<span class="tag warn">belum dikonfirmasi</span>':'<span class="tag ok">siap ambil</span>')+'</td></tr>';
+      });
+      h += '</table></div>';
+      if(ready!==tot) h += '<div class="muted" style="font-size:.76rem;margin-top:4px">Siap ambil '+fmt(ready)+' pcs. Sisanya menunggu konfirmasi taruh.</div>';
+      h += '</div>';
+    });
     box.innerHTML = h;
-    $("#btn-pick").addEventListener("click", function(){
-      var v = Math.max(1, Math.min(q, parseInt($("#pick-q").value||"0",10)));
-      var date = $("#arr-date").value || "2026-10-18";
-      takeQty(c, v);
+  }
+
+  /* ---------- konfirmasi taruh ---------- */
+  function renderPutaway(){
+    var box = $("#putaway"), pend = allCards().filter(function(x){ return x.c.status==="pending"; });
+    var konf = LOG.filter(function(r){ return r.type==="KONF"; }).slice(-4).reverse();
+    var h = '';
+    if(!pend.length) h += '<div class="muted" style="font-size:.85rem">Tidak ada tumpukan yang menunggu ditaruh.</div>';
+    else h += '<div class="tablewrap"><table><tr><th>QR tumpukan</th><th>No material</th><th>Nama material</th><th>Bin booking</th><th>Qty</th><th>Status</th></tr>'+pend.map(function(x){ var m = mat(x.c.matId); return '<tr><td class="mono">'+x.c.id+'</td><td class="mono">'+m.code+'</td><td>'+esc(m.name)+'</td><td class="mono"><b>'+x.p.id+'</b></td><td class="mono">'+fmt(cardQty(x.c))+'</td><td><span class="tag warn">menunggu petugas</span></td></tr>'; }).join("")+'</table></div>';
+    if(konf.length) h += '<h3 style="margin-top:14px">Baru dikonfirmasi</h3><div class="tablewrap"><table>'+konf.map(function(r){ return '<tr><td class="mono">'+r.id+'</td><td>'+esc(r.mat)+'</td><td class="mono">'+r.pos+'</td><td><span class="tag ok">terkonfirmasi</span></td></tr>'; }).join("")+'</table></div>';
+    box.innerHTML = h;
+  }
+
+  /* =========================================================
+     KONTEKS PENGAMBILAN
+     simCtx  = stok & order yang sama dengan halaman admin
+     camCtx  = order dari QR order (HP terpisah), disimpan di HP
+     ========================================================= */
+  function newSc(){ return { qr:"", bc:"", gap:false }; }
+  function byFifo(a,b){ return a.date<b.date ? -1 : a.date>b.date ? 1 : (a.id<b.id ? -1 : 1); }
+
+  var simCtx = {
+    mode:"sim", sc:newSc(), msg:"",
+    order:function(){ return ORDER && !ORDER.posted ? ORDER : null; },
+    stacks:function(){ return allCards().map(function(x){ return { id:x.c.id, pos:x.p.id, matId:x.c.matId, qty:cardQty(x.c), date:x.c.lots[0].date, pending:x.c.status==="pending" }; }); },
+    take:function(st, q, gap, fifo, li){
+      var f = findCard(st.id), c = f.c, p = f.p, m = mat(c.matId), L = ORDER.lines[li], t = today();
+      if(q>0){ takeQty(c, q); L.picked += q; ORDER.done.push({ li:li, id:c.id, pos:p.id, q:q, fifo:fifo }); }
       var left = cardQty(c);
-      var viol = wo ? offTurn : older.length>0;
-      if(wo && wo.matId===c.matId) wo.picked += v;
-      LOG.push({ t:date, type:"OUT", id:c.id, mat:m.name, pos:p2.id, qty:v, saldo:left, note: (viol?"⚠ melanggar FIFO · ":"")+(wo?"sesuai WO · ":"")+"scan ambil" + (left===0?" · tumpukan habis, QR ditutup":"") });
-      if(left===0){ p2.cards = p2.cards.filter(function(x){ return x.id!==c.id; }); selCard = null; }
+      if(q>0) LOG.push({ t:t, type:"OUT", id:c.id, mat:m.name, pos:p.id, qty:q, saldo: gap>0 ? Math.max(0,left-gap) : left, fifo:fifo, note:ORDER.no+" · scan QR + barcode karton"+(left-gap<=0?" · tumpukan habis, QR ditutup":"") });
+      if(gap>0){ takeQty(c, gap); LOG.push({ t:t, type:"SELISIH", id:c.id, mat:m.name, pos:p.id, qty:gap, saldo:cardQty(c), note:"lapor selisih petugas · menunggu koreksi admin" }); }
+      if(cardQty(c)===0){ p.cards = p.cards.filter(function(x){ return x.id!==c.id; }); if(selCard===c.id) selCard = null; }
       lastAlloc = {};
+    },
+    refresh:function(){ renderAll(); }
+  };
+
+  var K = null;
+  function saveK(){ try{ localStorage.setItem("wms-karton-kamera", JSON.stringify(K)); }catch(e){} }
+  function loadK(){ try{ var t = localStorage.getItem("wms-karton-kamera"); if(t) K = JSON.parse(t); }catch(e){ K = null; } }
+  var camCtx = {
+    mode:"cam", sc:newSc(), msg:"",
+    order:function(){ return K && K.order ? K.order : null; },
+    stacks:function(){ return K && K.stacks ? K.stacks : []; },
+    take:function(st, q, gap, fifo, li){
+      var L = K.order.lines[li];
+      if(q>0){ st.qty -= q; L.picked += q; K.order.done.push({ li:li, id:st.id, pos:st.pos, q:q, fifo:fifo }); }
+      if(gap>0){ st.qty -= gap; K.order.gaps = (K.order.gaps||0) + gap; }
+      K.stacks = K.stacks.filter(function(s){ return s.qty>0; });
+      saveK();
+    },
+    refresh:function(){ renderKamera(); }
+  };
+
+  /* ---------- logika daftar ambil (dipakai kedua konteks) ---------- */
+  function lineSteps(ctx, L){
+    var out = [], left = L.qty - L.picked;
+    if(left<=0){ out.short = 0; return out; }
+    ctx.stacks().filter(function(s){ return s.matId===L.matId && !s.pending && s.qty>0; }).sort(byFifo).forEach(function(s){
+      if(left<=0) return; var t = Math.min(s.qty, left); out.push({ id:s.id, pos:s.pos, q:t, date:s.date }); left -= t;
+    });
+    out.short = Math.max(0, left); return out;
+  }
+  function lineStatus(ctx, L){
+    var rem = L.qty - L.picked, st = lineSteps(ctx, L);
+    if(rem<=0) return { k:"selesai", c:"ok" };
+    if(!st.length) return { k:"kurang stok", c:"crit" };
+    if(L.picked>0) return { k:"sedang diambil", c:"info" };
+    return { k:"menunggu", c:"" };
+  }
+  function orderDone(ctx){
+    var o = ctx.order(); if(!o) return false;
+    return o.lines.every(function(L){ var s = lineStatus(ctx, L).k; return s==="selesai" || s==="kurang stok"; });
+  }
+  function findStack(ctx, id){ var a = ctx.stacks(); for(var i=0;i<a.length;i++) if(a[i].id===id) return a[i]; return null; }
+  function evalQr(ctx){
+    var o = ctx.order(), code = ctx.sc.qr;
+    if(!code || !o) return null;
+    var s = findStack(ctx, code);
+    if(!s){
+      if(/^LOC-/.test(code)) return { ok:false, s:null, msg:'Ini QR lokasi bin '+esc(code.slice(4))+', bukan QR tumpukan. Scan label QR yang menempel di tumpukan.' };
+      var mm = matByCode(code); if(mm) return { ok:false, s:null, msg:'Ini barcode karton ('+mm.code+'). Scan QR tumpukan dulu, barcode karton di langkah 2.' };
+      return { ok:false, s:null, msg:'QR "'+esc(code)+'" tidak dikenal atau tumpukannya sudah ditutup.' };
+    }
+    var m = mat(s.matId);
+    if(s.pending) return { ok:false, s:s, msg:'Tumpukan ini belum dikonfirmasi saat taruh. Tidak bisa diambil.' };
+    var li = -1;
+    o.lines.forEach(function(L, i){ if(li<0 && L.matId===s.matId && L.qty-L.picked>0) li = i; });
+    if(li<0){
+      var twin = null; o.lines.forEach(function(L){ if(mat(L.matId).twin===s.matId && L.qty-L.picked>0) twin = L; });
+      if(twin){ var t = mat(twin.matId); return { ok:false, s:s, msg:'SALAH MATERIAL · MIRIP TAPI BEDA. Order minta '+t.code+' '+esc(t.name)+'. Tumpukan ini '+m.code+' '+esc(m.name)+'.' }; }
+      var inOrder = o.lines.some(function(L){ return L.matId===s.matId; });
+      return { ok:false, s:s, msg: inOrder ? 'No material '+m.code+' untuk order ini sudah terpenuhi. Jangan diambil lagi.' : 'SALAH MATERIAL. '+m.code+' '+esc(m.name)+' tidak ada di order ini.' };
+    }
+    var L = o.lines[li], st = lineSteps(ctx, L), fifo = !!(st.length && st[0].id===s.id);
+    var q = fifo ? st[0].q : Math.min(L.qty-L.picked, s.qty);
+    return { ok:true, s:s, li:li, fifo:fifo, q:q, first:st[0] };
+  }
+
+  /* ---------- tampilan scanner (dipakai simulasi & kamera) ---------- */
+  function scanInput(ctx, kind, ev){
+    var id = ctx.mode+"-"+kind;
+    if(ctx.mode==="cam"){
+      return '<div class="camrow"><button class="primary" data-cam="'+kind+'" style="flex:1 1 100%;padding:10px">Buka kamera</button>'+
+             '<input id="'+id+'-in" placeholder="atau ketik kode" autocomplete="off"><button data-man="'+kind+'">OK</button></div>';
+    }
+    var opts;
+    if(kind==="qr") opts = '<option value="">— pilih QR yang discan —</option>' + ctx.stacks().map(function(s){ return '<option value="'+s.id+'"'+(s.id===ctx.sc.qr?' selected':'')+'>'+s.pos+' · '+s.id+'</option>'; }).join("") + S.map(function(p){ return '<option value="LOC-'+p.id+'">label lokasi '+p.id+'</option>'; }).join("");
+    else {
+      var def = ev && ev.s ? mat(ev.s.matId).code : "";
+      opts = MATS.map(function(m){ return '<option value="'+m.code+'"'+(m.code===def?' selected':'')+'>'+m.code+' · '+esc(m.name)+'</option>'; }).join("");
+    }
+    return '<div class="scanrow"><div class="field" style="flex:1 1 100%"><label for="'+id+'-sel">'+(kind==="qr"?'Simulasi: QR yang terbaca':'Simulasi: barcode karton yang terbaca')+'</label><select id="'+id+'-sel">'+opts+'</select></div><button class="primary" data-sim="'+kind+'" style="flex:1">Scan</button></div>';
+  }
+  function kv(rows){ return '<div class="kvgrid">'+rows.map(function(r){ return '<span class="k">'+r[0]+'</span><span class="v'+(r[2]?' n':'')+'">'+r[1]+'</span>'; }).join("")+'</div>'; }
+
+  function renderPicker(ctx, box){ if(ctx.tab==="in") renderInbound(ctx, box); else renderOutbound(ctx, box); }
+  function renderOutbound(ctx, box){
+    var o = ctx.order(), sc = ctx.sc;
+    var h = barTop(ctx, o?o.date:null) + tabsHtml(ctx);
+    if(!o){
+      if(ctx.mode==="cam"){
+        h += '<div class="stepbox"><div class="stephead"><span class="num">0</span>Menunggu order</div><p style="font-size:.84rem">Belum ada order masuk. Nanti order dari admin muncul otomatis di sini setelah tersambung ke database. Untuk sekarang, pakai order contoh.</p>'+
+             '<button class="primary bigbtn" data-k="demo">Pakai order contoh</button>'+
+             (camCtx.msg?'<div class="msg crit" style="margin-top:0">'+camCtx.msg+'</div>':'')+'</div>';
+      } else h += '<div class="muted" style="font-size:.88rem;margin:auto;text-align:center">Belum ada tugas.<br>Buat permintaan produksi di menu Admin.</div>';
+      box.innerHTML = h; wirePicker(ctx, box, null); return;
+    }
+    var steps = [];
+    o.lines.forEach(function(L, li){ lineSteps(ctx, L).forEach(function(st, si){ steps.push({ li:li, si:si, id:st.id, pos:st.pos, q:st.q, date:st.date }); }); });
+    var nDone = o.lines.filter(function(L){ return lineStatus(ctx, L).k==="selesai"; }).length;
+    h += '<div class="ohead"><div><div class="k">No order</div><b class="mono">'+esc(o.no)+'</b></div><div><div class="k">Tujuan</div>Produksi</div><div><div class="k">Progres</div><span class="mono">'+nDone+' / '+o.lines.length+'</span> material</div></div>';
+
+    o.lines.forEach(function(L, li){
+      var m = mat(L.matId), s = lineStatus(ctx, L), rem = Math.max(0, L.qty-L.picked);
+      h += '<div class="mblock"><div class="mhead">'+swatch(m)+'<div><div class="k">No material</div><div class="code">'+m.code+'</div></div><span class="tag '+s.c+'">'+s.k+'</span>'+
+           '<div class="nm"><div class="k">Nama material</div>'+bigName(m)+'</div>'+
+           '<div class="qtys">Diminta <b>'+fmt(L.qty)+'</b> · Diambil <b>'+fmt(L.picked)+'</b> · Sisa <b>'+fmt(rem)+'</b> pcs</div></div>';
+      var done = o.done.filter(function(d){ return d.li===li; }), pend = steps.filter(function(x){ return x.li===li; });
+      if(done.length || pend.length){
+        h += '<div class="tablewrap"><table class="ptable"><tr><th>#</th><th>Lokasi</th><th>QR tumpukan</th><th>Ambil (pcs)</th><th>Status</th></tr>';
+        var n = 0;
+        done.forEach(function(d){ n++; h += '<tr class="done"><td>✓</td><td>'+d.pos+'</td><td>'+d.id+'</td><td>'+fmt(d.q)+'</td><td><span class="tag '+(d.fifo?'fifo':'nofifo')+'">'+(d.fifo?'FIFO':'NO FIFO')+'</span></td></tr>'; });
+        pend.forEach(function(x){ n++; var nx = steps[0]===x; h += '<tr'+(nx?' class="next"':'')+'><td>'+n+'</td><td><b>'+x.pos+'</b></td><td>'+x.id+'</td><td>'+fmt(x.q)+'</td><td>'+(nx?'<span class="tag info">berikutnya</span>':'<span class="tag">antri</span>')+'</td></tr>'; });
+        h += '</table></div>';
+      }
+      if(s.k==="kurang stok") h += '<div class="msg crit" style="margin:6px">Stok habis. Kurang '+fmt(rem)+' pcs, admin perlu tindak lanjut.</div>';
+      h += '</div>';
+    });
+
+    if(orderDone(ctx)){
+      var nf = o.done.filter(function(d){ return !d.fifo; }).length;
+      h += '<div class="msg ok"><b>Order selesai.</b> '+o.done.length+' kali ambil · '+(o.done.length-nf)+' FIFO · '+nf+' NO FIFO.'+(ctx.mode==="cam"?' Di sistem nyata hasil ini langsung masuk ke admin dan siap posting SAP.':' Dikirim ke admin untuk posting SAP.')+'</div>';
+      if(ctx.mode==="cam") h += '<button class="bigbtn" data-k="new">Mulai order baru</button>';
+      box.innerHTML = h; wirePicker(ctx, box, null); return;
+    }
+
+    var ev = evalQr(ctx), nx = steps[0];
+    if(!sc.qr && nx){
+      var mn = mat(o.lines[nx.li].matId);
+      h += '<div class="target"><div class="k" style="color:var(--info)">Tugas berikutnya</div>'+kv([["Lokasi", nx.pos], ["QR tumpukan", nx.id], ["No material", mn.code], ["Nama material", bigName(mn), true], ["Ambil", fmt(nx.q)+' pcs']])+'</div>';
+    }
+    // langkah 1
+    var c1 = !ev ? '' : (ev.ok ? 'ok' : 'bad');
+    h += '<div class="stepbox '+c1+'"><div class="stephead"><span class="num">1</span>Scan QR tumpukan</div>';
+    if(ev){
+      var rows = [["QR terbaca", esc(sc.qr)]];
+      if(ev.s){ var ms = mat(ev.s.matId); rows.push(["Lokasi", ev.s.pos], ["No material", ms.code], ["Nama material", bigName(ms), true], ["Saldo", fmt(ev.s.qty)+' pcs']); }
+      h += kv(rows);
+      if(!ev.ok) h += '<div class="msg crit" style="margin-top:0">✕ '+ev.msg+'</div><button data-k="reset">Scan ulang</button>';
+      else h += '<div><span class="tag '+(ev.fifo?'fifo':'nofifo')+'">'+(ev.fifo?'FIFO':'NO FIFO')+'</span> <span class="muted" style="font-size:.76rem">'+(ev.fifo?'Lot tertua, sesuai urutan.':'Ada lot lebih lama di '+ev.first.pos+' ('+ev.first.id+'). Boleh diambil, tercatat NO FIFO.')+'</span></div>';
+    } else h += scanInput(ctx, "qr", null);
+    h += '</div>';
+    // langkah 2
+    var bcM = sc.bc ? matByCode(sc.bc) : null, bcOk = ev && ev.ok && bcM && bcM.id===ev.s.matId;
+    h += '<div class="stepbox '+(!ev||!ev.ok?'off':(sc.bc?(bcOk?'ok':'bad'):''))+'"><div class="stephead"><span class="num">2</span>Scan barcode karton</div>';
+    if(ev && ev.ok){
+      if(sc.bc){
+        h += kv([["Barcode terbaca", esc(sc.bc)], ["Nama material", bcM ? bigName(bcM) : '<span class="muted">tidak dikenal</span>', true]]);
+        if(!bcOk) h += '<div class="msg crit" style="margin-top:0">✕ ISI KARTON TIDAK SESUAI. QR tumpukan '+mat(ev.s.matId).code+', barcode karton '+esc(sc.bc)+'. Diblokir, lapor admin.</div><button data-k="rebc">Scan barcode ulang</button>';
+        else h += '<div class="msg ok" style="margin-top:0">✓ Isi karton sesuai QR tumpukan.</div>';
+      } else h += scanInput(ctx, "bc", ev);
+    }
+    h += '</div>';
+    // langkah 3
+    h += '<div class="stepbox '+(bcOk?'':'off')+'"><div class="stephead"><span class="num">3</span>Ambil &amp; konfirmasi</div>';
+    if(bcOk){
+      if(sc.gap){
+        h += '<div class="field"><label for="'+ctx.mode+'-phys">Fisik yang ada di tumpukan (pcs)</label><input type="number" id="'+ctx.mode+'-phys" min="0" max="'+ev.s.qty+'" value="'+Math.max(0, ev.s.qty-100)+'"></div>'+
+             '<button class="primary bigbtn" data-k="gapok">Simpan selisih &amp; ambil yang ada</button><button data-k="gapx">Batal</button>';
+      } else {
+        h += kv([["Qty ambil", fmt(ev.q)+' pcs (otomatis dari daftar)'], ["Saldo setelah ambil", fmt(ev.s.qty-ev.q)+' pcs']]);
+        h += '<button class="primary bigbtn" data-k="take">Konfirmasi ambil '+fmt(ev.q)+' pcs</button><button data-k="gap">Lapor selisih (fisik kurang)</button>';
+      }
+    }
+    h += '</div>';
+    if(sc.qr) h += '<button data-k="reset">Batal, scan tumpukan lain</button>';
+    if(ctx.msg) h += '<div class="msg ok">'+ctx.msg+'</div>';
+    if(ctx.mode==="cam") h += '<button data-k="new" style="margin-top:6px">Ganti order</button>';
+    box.innerHTML = h;
+    wirePicker(ctx, box, ev);
+  }
+
+  function onScan(ctx, kind, text){
+    text = String(text||"").trim(); if(!text) return;
+    if(kind==="order"){
+      var k = parsePayload(text);
+      if(!k){ camCtx.msg = 'Bukan QR order. Scan QR order dari dashboard admin.'; buzz(false); renderKamera(); return; }
+      K = K || {}; K.order = k.order; K.stacks = k.stacks; camCtx.sc = newSc(); camCtx.msg = ""; saveK(); buzz(true); renderKamera(); return;
+    }
+    if(kind==="qr"){ ctx.sc = { qr:text, bc:"", gap:false }; ctx.msg = ""; var e = evalQr(ctx); buzz(e && e.ok); }
+    if(kind==="iqr"){ ctx.isc = { qr:text, bc:"", loc:"" }; ctx.inMsg = ""; var ei = evalIn(ctx); buzz(ei && ei.ok); }
+    if(kind==="ibc"){ ctx.isc.bc = text; }
+    if(kind==="iloc"){ ctx.isc.loc = text; }
+    if(kind==="bc"){ ctx.sc.bc = text; var e2 = evalQr(ctx), mm = matByCode(text); buzz(!!(e2 && e2.ok && mm && mm.id===e2.s.matId)); }
+    ctx.refresh();
+  }
+  function wirePicker(ctx, box, ev){
+    function on(sel, fn){ Array.prototype.forEach.call(box.querySelectorAll(sel), function(b){ b.addEventListener("click", function(){ fn(b); }); }); }
+    on("[data-tab]", function(b){ ctx.tab = b.dataset.tab; ctx.refresh(); });
+    on("[data-sim]", function(b){ var k = b.dataset.sim, v = $("#"+ctx.mode+"-"+k+"-sel").value; onScan(ctx, k, v); });
+    on("[data-man]", function(b){ var k = b.dataset.man, v = $("#"+ctx.mode+"-"+k+"-in").value; onScan(ctx, k, v); });
+    on("[data-cam]", function(b){
+      var k = b.dataset.cam;
+      var title = k==="order" ? "Scan QR order" : k==="qr" ? "Scan QR tumpukan" : "Scan barcode karton";
+      var hint = k==="order" ? "Arahkan ke QR order di dashboard admin." : k==="qr" ? "Arahkan ke label QR yang menempel di tumpukan." : "Arahkan ke barcode di karton (garis-garis).";
+      openCam(title, hint, function(t){ onScan(ctx, k, t); });
+    });
+    on("[data-k=reset]", function(){ ctx.sc = newSc(); ctx.refresh(); });
+    on("[data-k=rebc]", function(){ ctx.sc.bc = ""; ctx.refresh(); });
+    on("[data-k=gap]", function(){ ctx.sc.gap = true; ctx.refresh(); });
+    on("[data-k=gapx]", function(){ ctx.sc.gap = false; ctx.refresh(); });
+    on("[data-k=take]", function(){ doTake(ctx, ev, ev.q, 0); });
+    on("[data-k=gapok]", function(){
+      var phys = Math.max(0, Math.min(ev.s.qty, parseInt($("#"+ctx.mode+"-phys").value||"0",10)));
+      doTake(ctx, ev, Math.min(ev.q, phys), ev.s.qty - phys);
+    });
+    on("[data-k=demo]", function(){
+      var merged = {}; DRAFT.forEach(function(r){ if(r.matId) merged[r.matId] = (merged[r.matId]||0) + r.qty; });
+      var tmp = { no:"ORD-CONTOH", date:today(), lines:Object.keys(merged).map(function(k){ return { matId:k, qty:merged[k], picked:0 }; }) };
+      onScan(camCtx, "order", buildPayload(tmp));
+    });
+    on("[data-k=new]", function(){ if(K){ K.order = null; K.stacks = []; } camCtx.sc = newSc(); camCtx.msg = ""; saveK(); renderKamera(); });
+  }
+  function doTake(ctx, ev, q, gap){
+    var m = mat(ev.s.matId);
+    ctx.take(ev.s, q, gap, ev.fifo, ev.li);
+    ctx.msg = (q>0 ? 'Tercatat: ambil '+fmt(q)+' pcs '+m.code+' dari '+ev.s.pos+' ('+(ev.fifo?'FIFO':'NO FIFO')+').' : '')+(gap>0?' Selisih '+fmt(gap)+' pcs dilaporkan ke admin. Sisa kebutuhan dicarikan dari tumpukan berikutnya.':'');
+    ctx.sc = newSc(); buzz(true);
+    ctx.refresh();
+  }
+  function renderKamera(){ renderPicker(camCtx, $("#kam-scr")); }
+
+  /* ---------- INBOUND: konfirmasi taruh oleh petugas ---------- */
+  var DEMO_IN = [
+    { id:"BC-261018-9001", pos:"A3", matId:"facial-200",   qty:700, pending:true },
+    { id:"BC-261018-9002", pos:"C2", matId:"napkin-kecil", qty:400, pending:true }
+  ];
+  function newIsc(){ return { qr:"", bc:"", loc:"" }; }
+  simCtx.tab = "out"; simCtx.isc = newIsc(); simCtx.inMsg = ""; simCtx.inDone = [];
+  simCtx.inbound = function(){ return allCards().filter(function(x){ return x.c.status==="pending"; }).map(function(x){ return { id:x.c.id, pos:x.p.id, matId:x.c.matId, qty:cardQty(x.c), pending:true }; }); };
+  simCtx.inDoneList = function(){ return simCtx.inDone; };
+  simCtx.confirmIn = function(t){
+    var f = findCard(t.id); if(!f) return; var m = mat(f.c.matId);
+    f.c.status = "ok"; simCtx.inDone.push({ id:t.id, pos:t.pos, matId:t.matId, qty:t.qty });
+    LOG.push({ t:today(), type:"KONF", id:t.id, mat:m.name, pos:t.pos, qty:0, saldo:cardQty(f.c), note:"konfirmasi taruh petugas: QR + barcode karton + lokasi cocok" });
+    selCard = t.id; selPos = t.pos;
+  };
+  camCtx.tab = "out"; camCtx.isc = newIsc(); camCtx.inMsg = "";
+  camCtx.inbound = function(){ return K && K.inbound ? K.inbound.filter(function(i){ return i.pending; }) : []; };
+  camCtx.inDoneList = function(){ return K && K.inbound ? K.inbound.filter(function(i){ return !i.pending; }) : []; };
+  camCtx.confirmIn = function(t){ t.pending = false; saveK(); };
+
+  function tabsHtml(ctx){
+    var nIn = ctx.inbound().length, o = ctx.order(), nOut = o && !orderDone(ctx) ? o.lines.filter(function(L){ return L.qty-L.picked>0; }).length : 0;
+    return '<div class="ptabs" role="tablist"><button role="tab" data-tab="in" aria-selected="'+(ctx.tab==="in")+'">Inbound · taruh'+(nIn?' <span class="badge">'+nIn+'</span>':'')+'</button>'+
+           '<button role="tab" data-tab="out" aria-selected="'+(ctx.tab==="out")+'">Outbound · ambil'+(nOut?' <span class="badge">'+nOut+'</span>':'')+'</button></div>';
+  }
+  function barTop(ctx, date){ return '<div class="bar-top"><span>Scanner · Petugas 1</span><span>'+(ctx.mode==="cam"?'kamera':'simulasi')+' · '+(date||today())+'</span></div>'; }
+
+  function evalIn(ctx){
+    var code = ctx.isc.qr; if(!code) return null;
+    var t = ctx.inbound().filter(function(x){ return x.id===code; })[0];
+    if(t) return { ok:true, t:t };
+    if(/^LOC-/.test(code)) return { ok:false, msg:'Ini QR lokasi bin '+esc(code.slice(4))+'. Scan QR tumpukan dulu, label lokasi di langkah 3.' };
+    var mm = matByCode(code); if(mm) return { ok:false, msg:'Ini barcode karton ('+mm.code+'). Scan QR tumpukan dulu, barcode karton di langkah 2.' };
+    if(ctx.inDoneList().some(function(x){ return x.id===code; })) return { ok:false, msg:'Tumpukan '+esc(code)+' sudah dikonfirmasi sebelumnya.' };
+    return { ok:false, msg:'QR "'+esc(code)+'" tidak ada di daftar barang yang perlu ditaruh.' };
+  }
+  function inInput(ctx, kind, t){
+    var id = ctx.mode+"-"+kind;
+    if(ctx.mode==="cam"){
+      return '<div class="camrow"><button class="primary" data-cam="'+kind+'" style="flex:1 1 100%;padding:10px">Buka kamera</button>'+
+             '<input id="'+id+'-in" placeholder="atau ketik kode" autocomplete="off"><button data-man="'+kind+'">OK</button></div>';
+    }
+    var opts, lbl;
+    if(kind==="iqr"){ lbl = "Simulasi: QR yang terbaca"; opts = '<option value="">— pilih QR yang discan —</option>'+ctx.inbound().map(function(x){ return '<option value="'+x.id+'"'+(x.id===ctx.isc.qr?' selected':'')+'>'+x.id+' · '+mat(x.matId).code+'</option>'; }).join("")+S.map(function(p){ return '<option value="LOC-'+p.id+'">label lokasi '+p.id+'</option>'; }).join(""); }
+    else if(kind==="ibc"){ lbl = "Simulasi: barcode karton yang terbaca"; opts = MATS.map(function(m){ return '<option value="'+m.code+'"'+(t&&m.id===t.matId?' selected':'')+'>'+m.code+' · '+esc(m.name)+'</option>'; }).join(""); }
+    else { lbl = "Simulasi: label lokasi yang terbaca"; opts = S.map(function(p){ return '<option value="LOC-'+p.id+'"'+(t&&p.id===t.pos?' selected':'')+'>LOC-'+p.id+' · bin '+p.id+'</option>'; }).join(""); }
+    return '<div class="scanrow"><div class="field" style="flex:1 1 100%"><label for="'+id+'-sel">'+lbl+'</label><select id="'+id+'-sel">'+opts+'</select></div><button class="primary" data-sim="'+kind+'" style="flex:1">Scan</button></div>';
+  }
+  function renderInbound(ctx, box){
+    var tasks = ctx.inbound(), done = ctx.inDoneList(), sc = ctx.isc;
+    var h = barTop(ctx) + tabsHtml(ctx);
+    if(!tasks.length && !done.length){
+      if(ctx.mode==="cam") h += '<div class="stepbox"><div class="stephead"><span class="num">0</span>Menunggu barang datang</div><p style="font-size:.84rem">Belum ada barang yang perlu ditaruh. Nanti hasil booking admin muncul otomatis di sini setelah tersambung ke database. Untuk sekarang, pakai data contoh. Label QR-nya ada di menu Label (bagian contoh inbound).</p><button class="primary bigbtn" data-k="demoin">Pakai data inbound contoh</button></div>';
+      else h += '<div class="muted" style="font-size:.88rem;margin:auto;text-align:center">Belum ada barang yang perlu ditaruh.<br>Admin input DN lalu booking posisi di dashboard.</div>';
+      box.innerHTML = h; wireIn(ctx, box, null); return;
+    }
+    h += '<div class="ohead"><div><div class="k">Perlu ditaruh</div><span class="mono">'+tasks.length+'</span> tumpukan</div><div><div class="k">Sudah</div><span class="mono">'+done.length+'</span> tumpukan</div></div>';
+    h += '<div class="mblock"><div class="tablewrap"><table class="ptable"><tr><th>#</th><th>Lokasi booking</th><th>QR tumpukan</th><th>Material</th><th>Qty</th></tr>';
+    var n = 0;
+    done.forEach(function(x){ var m = mat(x.matId); n++; h += '<tr class="done"><td>✓</td><td>'+x.pos+'</td><td>'+x.id+'</td><td>'+m.code+'</td><td>'+fmt(x.qty)+'</td></tr>'; });
+    tasks.forEach(function(x, i){ var m = mat(x.matId); n++; h += '<tr'+(i===0?' class="next"':'')+'><td>'+n+'</td><td><b>'+x.pos+'</b></td><td>'+x.id+'</td><td>'+m.code+'<div style="font-family:var(--body);font-weight:400;font-size:.7rem">'+esc(m.name)+'</div></td><td>'+fmt(x.qty)+'</td></tr>'; });
+    h += '</table></div></div>';
+    if(!tasks.length){
+      h += '<div class="msg ok"><b>Semua barang sudah ditaruh dan dikonfirmasi.</b> Tumpukan sekarang bisa diambil untuk produksi.</div>';
+      if(ctx.inMsg) h += '<div class="msg ok">'+ctx.inMsg+'</div>';
+      box.innerHTML = h; wireIn(ctx, box, null); return;
+    }
+    var ev = evalIn(ctx), t = ev && ev.ok ? ev.t : null;
+    if(!sc.qr){ var nx = tasks[0], mn = mat(nx.matId); h += '<div class="target"><div class="k" style="color:var(--info)">Tugas berikutnya</div>'+kv([["Lokasi booking", nx.pos], ["QR tumpukan", nx.id], ["No material", mn.code], ["Nama material", bigName(mn), true], ["Qty", fmt(nx.qty)+' pcs']])+'</div>'; }
+    // 1 QR
+    h += '<div class="stepbox '+(!ev?'':(ev.ok?'ok':'bad'))+'"><div class="stephead"><span class="num">1</span>Scan QR tumpukan (label baru)</div>';
+    if(ev){
+      var rows = [["QR terbaca", esc(sc.qr)]];
+      if(t){ var mt = mat(t.matId); rows.push(["No material", mt.code], ["Nama material", bigName(mt), true], ["Qty", fmt(t.qty)+' pcs'], ["Lokasi booking", t.pos]); }
+      h += kv(rows);
+      if(!ev.ok) h += '<div class="msg crit" style="margin-top:0">✕ '+ev.msg+'</div><button data-k="ireset">Scan ulang</button>';
+    } else h += inInput(ctx, "iqr", null);
+    h += '</div>';
+    // 2 barcode
+    var bm = sc.bc ? matByCode(sc.bc) : null, bOk = t && bm && bm.id===t.matId;
+    h += '<div class="stepbox '+(!t?'off':(sc.bc?(bOk?'ok':'bad'):''))+'"><div class="stephead"><span class="num">2</span>Scan barcode karton</div>';
+    if(t){
+      if(sc.bc){
+        h += kv([["Barcode terbaca", esc(sc.bc)], ["Nama material", bm ? bigName(bm) : '<span class="muted">tidak dikenal</span>', true]]);
+        if(!bOk) h += '<div class="msg crit" style="margin-top:0">✕ DITOLAK. Label QR untuk '+mat(t.matId).code+', isi karton '+esc(sc.bc)+'. Label salah tempel atau barang salah. Lapor admin, cetak ulang label.</div><button data-k="irebc">Scan barcode ulang</button>';
+        else h += '<div class="msg ok" style="margin-top:0">✓ Isi karton sesuai label QR.</div>';
+      } else h += inInput(ctx, "ibc", t);
+    }
+    h += '</div>';
+    // 3 lokasi
+    var lOk = bOk && sc.loc === "LOC-"+t.pos;
+    h += '<div class="stepbox '+(!bOk?'off':(sc.loc?(lOk?'ok':'bad'):''))+'"><div class="stephead"><span class="num">3</span>Scan label lokasi bin</div>';
+    if(bOk){
+      if(sc.loc){
+        var bin = /^LOC-/.test(sc.loc) ? sc.loc.slice(4) : "";
+        h += kv([["Label terbaca", esc(sc.loc)], ["Bin", bin ? esc(bin) : '<span class="muted">bukan label lokasi</span>']]);
+        if(!lOk) h += '<div class="msg crit" style="margin-top:0">✕ LOKASI TIDAK SESUAI. Booking di '+t.pos+(bin?', yang discan '+esc(bin):'')+'. Pindahkan ke bin '+t.pos+', atau minta admin ubah booking.</div><button data-k="ireloc">Scan lokasi ulang</button>';
+        else h += '<div class="msg ok" style="margin-top:0">✓ Lokasi sesuai booking.</div>';
+      } else h += inInput(ctx, "iloc", t);
+    }
+    h += '</div>';
+    // 4 konfirmasi
+    h += '<div class="stepbox '+(lOk?'':'off')+'"><div class="stephead"><span class="num">4</span>Konfirmasi taruh</div>';
+    if(lOk) h += kv([["Tumpukan", t.id], ["Di bin", t.pos], ["Qty", fmt(t.qty)+' pcs']]) + '<button class="primary bigbtn" data-k="iok">Konfirmasi taruh</button>';
+    h += '</div>';
+    if(sc.qr) h += '<button data-k="ireset">Batal, scan tumpukan lain</button>';
+    if(ctx.inMsg) h += '<div class="msg ok">'+ctx.inMsg+'</div>';
+    box.innerHTML = h;
+    wireIn(ctx, box, t);
+  }
+  function wireIn(ctx, box, t){
+    function on(sel, fn){ Array.prototype.forEach.call(box.querySelectorAll(sel), function(b){ b.addEventListener("click", function(){ fn(b); }); }); }
+    on("[data-tab]", function(b){ ctx.tab = b.dataset.tab; ctx.refresh(); });
+    on("[data-sim]", function(b){ var k = b.dataset.sim; onScan(ctx, k, $("#"+ctx.mode+"-"+k+"-sel").value); });
+    on("[data-man]", function(b){ var k = b.dataset.man; onScan(ctx, k, $("#"+ctx.mode+"-"+k+"-in").value); });
+    on("[data-cam]", function(b){
+      var k = b.dataset.cam, T = { iqr:["Scan QR tumpukan","Arahkan ke label QR yang baru ditempel di tumpukan."], ibc:["Scan barcode karton","Arahkan ke barcode di karton (garis-garis)."], iloc:["Scan label lokasi","Arahkan ke label lokasi permanen di bin."] }[k];
+      openCam(T[0], T[1], function(x){ onScan(ctx, k, x); });
+    });
+    on("[data-k=ireset]", function(){ ctx.isc = newIsc(); ctx.refresh(); });
+    on("[data-k=irebc]", function(){ ctx.isc.bc = ""; ctx.refresh(); });
+    on("[data-k=ireloc]", function(){ ctx.isc.loc = ""; ctx.refresh(); });
+    on("[data-k=iok]", function(){ ctx.confirmIn(t); ctx.inMsg = 'Tercatat: '+t.id+' ('+mat(t.matId).code+') terkonfirmasi di bin '+t.pos+'.'; ctx.isc = newIsc(); buzz(true); ctx.refresh(); });
+    on("[data-k=demoin]", function(){ K = K || { order:null, stacks:[] }; K.inbound = JSON.parse(JSON.stringify(DEMO_IN)); camCtx.isc = newIsc(); camCtx.inMsg = ""; saveK(); renderKamera(); });
+  }
+
+
+  /* ---------- QR order (laptop → HP, tanpa server) ---------- */
+  function buildPayload(order){
+    var lines = order.lines.filter(function(L){ return L.qty-(L.picked||0)>0; }).map(function(L){ return mat(L.matId).code+":"+(L.qty-(L.picked||0)); }).join(",");
+    var st = allCards().map(function(x){ return [x.c.id, x.p.id, mat(x.c.matId).code, cardQty(x.c), ymd6(x.c.lots[0].date), x.c.status==="pending"?0:1].join(":"); }).join(";");
+    return "WK1|"+order.no+"|"+ymd6(order.date)+"|"+lines+"|"+st;
+  }
+  function parsePayload(t){
+    var p = String(t).split("|"); if(p[0]!=="WK1" || p.length<5) return null;
+    function d6(s){ return "20"+s.slice(0,2)+"-"+s.slice(2,4)+"-"+s.slice(4,6); }
+    var lines = p[3].split(",").map(function(x){ var a = x.split(":"), m = matByCode(a[0]); return m ? { matId:m.id, qty:+a[1], picked:0 } : null; }).filter(Boolean);
+    var stacks = p[4] ? p[4].split(";").map(function(x){ var a = x.split(":"), m = matByCode(a[2]); return m ? { id:a[0], pos:a[1], matId:m.id, qty:+a[3], date:d6(a[4]), pending:a[5]==="0" } : null; }).filter(Boolean) : [];
+    if(!lines.length) return null;
+    return { order:{ no:p[1], date:d6(p[2]), lines:lines, done:[] }, stacks:stacks };
+  }
+
+  /* ---------- kamera ---------- */
+  var CAM = { inst:null, cb:null };
+  function camFormats(){
+    var F = window.Html5QrcodeSupportedFormats; if(!F) return undefined;
+    return [F.QR_CODE, F.CODE_128, F.CODE_39, F.EAN_13, F.EAN_8, F.UPC_A, F.ITF];
+  }
+  function openCam(title, hint, cb){
+    CAM.cb = cb;
+    $("#cam-title").textContent = title; $("#cam-hint").textContent = hint; $("#cam-msg").textContent = ""; $("#cam-in").value = "";
+    $("#camov").hidden = false;
+    if(!window.Html5Qrcode){ $("#cam-msg").textContent = "Pustaka scanner tidak termuat. Ketik kode di bawah."; return; }
+    try{
+      CAM.inst = new window.Html5Qrcode("cam-reader", { formatsToSupport:camFormats(), verbose:false, experimentalFeatures:{ useBarCodeDetectorIfSupported:true } });
+      CAM.inst.start({ facingMode:"environment" }, { fps:10, qrbox:function(w,h){ var s = Math.min(w,h); return { width:Math.floor(Math.min(w*0.9, s*1.2)), height:Math.floor(s*0.6) }; } },
+        function(text){ var cb2 = CAM.cb; closeCam(); if(cb2) cb2(text); }, function(){})
+      .catch(function(err){
+        $("#cam-msg").textContent = "Kamera tidak bisa dibuka di sini. Buka link hasil deploy (HTTPS) di HP dan izinkan kamera. Sementara bisa ketik kode di bawah.";
+        CAM.inst = null;
+      });
+    }catch(e){ $("#cam-msg").textContent = "Kamera tidak tersedia. Ketik kode di bawah."; CAM.inst = null; }
+  }
+  function closeCam(){
+    var inst = CAM.inst; CAM.inst = null; $("#camov").hidden = true;
+    if(inst){ try{ inst.stop().then(function(){ try{ inst.clear(); }catch(e){} }).catch(function(){}); }catch(e){} }
+  }
+
+  /* ---------- order produksi (admin) ---------- */
+  function renderOrderForm(){
+    var box = $("#order-form");
+    var busy = ORDER && !ORDER.posted;
+    if(busy){ box.innerHTML = '<div class="msg">Order <b class="mono">'+ORDER.no+'</b> sedang dikerjakan petugas. Order berikutnya bisa dibuat setelah order ini diposting (satu petugas satu order).</div>'; return; }
+    var h = '';
+    DRAFT.forEach(function(r, i){
+      h += '<div class="orow"><div class="field" style="flex:1 1 220px"><label>No material · nama (ketik untuk cari)</label><input class="matin'+(r.matId?'':' bad')+'" list="mat-full" data-i="'+i+'" data-k="m" value="'+(r.matId?esc(matLabel(mat(r.matId))):esc(r.raw||''))+'" placeholder="ketik no material atau nama" autocomplete="off"></div>'+
+        '<div class="field"><label>Qty (pcs)</label><input type="number" min="1" step="50" value="'+r.qty+'" data-i="'+i+'" data-k="q"></div>'+
+        '<button data-i="'+i+'" data-k="x" aria-label="Hapus baris">Hapus</button></div>';
+    });
+    h += '<div class="row"><button id="btn-addline">+ Tambah baris</button><button class="primary" id="btn-order">Buat daftar ambil &amp; kirim ke scanner</button></div><div id="order-msg"></div>';
+    box.innerHTML = h;
+    Array.prototype.forEach.call(box.querySelectorAll("[data-k]"), function(el){
+      var i = +el.dataset.i;
+      if(el.dataset.k==="m") el.addEventListener("input", function(){ var m = parseMat(el.value); DRAFT[i].matId = m ? m.id : null; DRAFT[i].raw = el.value; el.classList.toggle("bad", !m); if(m && el.value!==matLabel(m) && /^\d{8}$/.test(el.value.trim())) el.value = matLabel(m); });
+      if(el.dataset.k==="q") el.addEventListener("input", function(){ DRAFT[i].qty = Math.max(1, parseInt(el.value||"1",10)); });
+      if(el.dataset.k==="x") el.addEventListener("click", function(){ DRAFT.splice(i,1); if(!DRAFT.length) DRAFT.push({ matId:null, qty:100, raw:"" }); renderOrderForm(); });
+    });
+    $("#btn-addline").addEventListener("click", function(){ DRAFT.push({ matId:null, qty:100, raw:"" }); renderOrderForm(); var ins = box.querySelectorAll(".matin"); ins[ins.length-1].focus(); });
+    $("#btn-order").addEventListener("click", function(){
+      if(DRAFT.some(function(r){ return !r.matId; })){ $("#order-msg").innerHTML = '<div class="msg crit">Ada baris yang no materialnya belum valid (kotak merah). Pilih dari saran yang muncul saat mengetik.</div>'; return; }
+      var merged = {};
+      DRAFT.forEach(function(r){ merged[r.matId] = (merged[r.matId]||0) + r.qty; });
+      ORDER = { no:"ORD-"+pad4(orderSeq++), date:today(), lines:Object.keys(merged).map(function(k){ return { matId:k, qty:merged[k], picked:0 }; }), done:[], posted:false, doc:null };
+      ORDERS.push(ORDER);
+      simCtx.sc = newSc(); simCtx.msg = ""; selCard = null;
       renderAll();
     });
   }
-  function woSteps(){
-    var out = [];
-    if(!wo){ out.short = 0; return out; }
-    var left = wo.qty - wo.picked;
-    var cards = allCards().filter(function(x){ return x.c.matId===wo.matId; }).sort(function(a,b){
-      var da = a.c.lots[0].date, db = b.c.lots[0].date; return da<db ? -1 : da>db ? 1 : (a.c.id<b.c.id ? -1 : 1);
+  function renderOrderAdmin(){
+    var box = $("#order-admin");
+    if(!ORDER || ORDER.posted){
+      box.innerHTML = '<div class="muted" style="font-size:.84rem">Tidak ada order aktif.'+(ORDER&&ORDER.posted?' Order terakhir '+ORDER.no+' sudah diposting (dok '+ORDER.doc+').':'')+' Contoh di kiri: tiga no material, salah satunya punya kembaran (GT dan MT).</div>';
+      return;
+    }
+    var done = orderDone(simCtx);
+    var h = '<div class="optline" style="margin-top:0"><div class="optline-h"><b class="mono">'+ORDER.no+'</b><span class="muted">'+ORDER.date+' · ke produksi</span><span class="tot">'+(done?'<span class="tag ok">siap posting</span>':'<span class="tag info">di scanner petugas</span>')+'</span></div>';
+    h += '<div class="tablewrap"><table><tr><th>No material</th><th>Nama material</th><th>Diminta</th><th>Diambil</th><th>Status</th></tr>';
+    ORDER.lines.forEach(function(L){
+      var m = mat(L.matId), s = lineStatus(simCtx, L), st = lineSteps(simCtx, L);
+      h += '<tr><td class="mono">'+swatch(m)+' '+m.code+'</td><td style="font-size:.78rem">'+esc(m.name)+'</td><td class="mono">'+fmt(L.qty)+'</td><td class="mono">'+fmt(L.picked)+'</td><td><span class="tag '+s.c+'">'+s.k+'</span>'+(st.short>0&&s.k!=="selesai"?'<div class="muted" style="font-size:.72rem">kurang '+fmt(st.short)+' pcs</div>':'')+'</td></tr>';
     });
-    cards.forEach(function(x){ if(left<=0) return; var t = Math.min(cardQty(x.c), left); out.push({ cardId:x.c.id, posId:x.p.id, q:t, date:x.c.lots[0].date }); left -= t; });
-    out.short = Math.max(0, left); return out;
-  }
-  function renderWo(){
-    var box = $("#wo-list");
-    if(!wo){ box.innerHTML = ""; return; }
-    var m = mat(wo.matId), steps = woSteps(), rem = wo.qty - wo.picked;
-    var h = '<div class="optline"><div class="optline-h"><span class="sw" style="background:var('+m.token+')"></span><b>'+m.name+'</b><span class="muted">diminta '+fmt(wo.qty)+' pcs · sudah diambil '+fmt(wo.picked)+'</span></div>';
-    if(rem<=0) h += '<div class="msg ok" style="margin-top:0">Permintaan terpenuhi.</div>';
-    else {
-      h += '<div class="muted" style="font-size:.78rem;margin-bottom:6px">Urutan ambil: lot tertua dulu, lintas posisi. Angka yang sama muncul di atas tumpukan di 3D.</div>';
-      if(steps.length){
-        h += '<div class="tablewrap"><table><tr><th>#</th><th>QR</th><th>Posisi</th><th>Lot tertua</th><th>Ambil</th><th></th></tr>';
-        steps.forEach(function(st, i){
-          h += '<tr><td class="mono"><b>'+(i+1)+'</b></td><td class="mono">'+st.cardId+'</td><td class="mono">'+st.posId+'</td><td class="mono">'+st.date+'</td><td class="mono">'+fmt(st.q)+'</td>'+
-               '<td>'+(i===0 ? '<span class="tag ok">giliran sekarang</span> ' : '<span class="tag">menunggu</span> ')+'<button class="chip" data-c="'+st.cardId+'">Scan</button></td></tr>';
-        });
-        h += '</table></div>';
-      }
-      if(steps.short>0) h += '<div class="msg warn">Stok tidak cukup. Kurang '+fmt(steps.short)+' pcs.</div>';
+    h += '</table></div>';
+    var nf = ORDER.done.filter(function(d){ return !d.fifo; }).length;
+    if(ORDER.done.length) h += '<div class="muted" style="font-size:.76rem;margin-top:6px">'+ORDER.done.length+' kali ambil · '+(ORDER.done.length-nf)+' FIFO · '+nf+' NO FIFO</div>';
+    if(!done){
+      h += '<div class="msg">Order terkirim ke scanner petugas. Buka menu <b>Petugas · simulasi</b> untuk mencoba mengambil.</div>';
+    } else {
+      h += '<div style="margin-top:10px"><h3>Siap posting SAP · pindah SLOC ke produksi</h3><div class="tablewrap"><table><tr><th>No material</th><th>Nama material</th><th>Qty posting</th></tr>'+
+        ORDER.lines.filter(function(L){ return L.picked>0; }).map(function(L){ var m = mat(L.matId); return '<tr><td class="mono">'+m.code+'</td><td>'+esc(m.name)+'</td><td class="mono">'+fmt(L.picked)+'</td></tr>'; }).join("")+'</table></div>';
+      h += '<div class="row" style="margin-top:8px"><button class="primary" id="btn-post">Posting ke SAP (simulasi API)</button></div><div class="muted" style="font-size:.74rem">Di sistem nyata: API/BAPI goods movement. RPA hanya cadangan bila API belum tersedia.</div></div>';
     }
     box.innerHTML = h + '</div>';
-    Array.prototype.forEach.call(box.querySelectorAll("button[data-c]"), function(b){
-      b.addEventListener("click", function(){ var f = findCard(b.dataset.c); selCard = b.dataset.c; selPos = f.p.id; renderAll(); if(G) focusPos(selPos); });
+    var bp = $("#btn-post");
+    if(bp) bp.addEventListener("click", function(){
+      ORDER.posted = true; ORDER.doc = "49" + String(10000000 + orderSeq*7351).slice(-8);
+      LOG.push({ t:today(), type:"SAP", id:ORDER.no, mat:ORDER.lines.length+" no material", pos:"→ SLOC produksi", qty:ORDER.lines.reduce(function(s,L){ return s+L.picked; },0), saldo:0, note:"posting API · dok "+ORDER.doc });
+      renderAll();
     });
   }
+  function renderOrderList(){
+    var t = $("#order-list");
+    if(!ORDERS.length){ t.innerHTML = '<tr><td class="muted">Belum ada order.</td></tr>'; return; }
+    t.innerHTML = '<tr><th>No order</th><th>Tanggal</th><th>Isi</th><th>Total diminta</th><th>Diambil</th><th>NO FIFO</th><th>Status</th></tr>' +
+      ORDERS.slice().reverse().map(function(o){
+        var req = o.lines.reduce(function(s,L){ return s+L.qty; },0), got = o.lines.reduce(function(s,L){ return s+L.picked; },0);
+        var st = o.posted ? '<span class="tag ok">terposting · '+o.doc+'</span>' : (o===ORDER && orderDone(simCtx) ? '<span class="tag ok">siap posting</span>' : '<span class="tag info">di petugas</span>');
+        return '<tr><td class="mono"><b>'+o.no+'</b></td><td class="mono">'+o.date+'</td><td>'+o.lines.map(function(L){ return mat(L.matId).code; }).join(", ")+'</td><td class="mono">'+fmt(req)+'</td><td class="mono">'+fmt(got)+'</td><td class="mono">'+o.done.filter(function(d){ return !d.fifo; }).length+'</td><td>'+st+'</td></tr>';
+      }).join("");
+  }
+  function orderSteps(){
+    var r = [], o = simCtx.order(); if(!o) return r;
+    o.lines.forEach(function(L){ lineSteps(simCtx, L).forEach(function(st){ r.push({ cardId:st.id, posId:st.pos, q:st.q }); }); });
+    return r;
+  }
+
+  /* ---------- halaman label ---------- */
+  function barcodeSvg(code){
+    try{ var svg = document.createElementNS("http://www.w3.org/2000/svg","svg"); window.JsBarcode(svg, code, { format:"CODE128", width:2, height:70, displayValue:true, margin:8, fontSize:16, background:"#ffffff", lineColor:"#111111", font:"monospace" }); return svg.outerHTML; }
+    catch(e){ return '<div class="mono">'+code+'</div>'; }
+  }
+  /* ---------- cetak label A4 (4 per halaman) ---------- */
+  var IN_FRAME = true; try{ IN_FRAME = window.self !== window.top; }catch(e){ IN_FRAME = true; }
+  var PR = { type:"stack", sel:null };
+  function prItems(type){
+    if(type==="stack" || type==="pending") return allCards().filter(function(x){ return type==="stack" || x.c.status==="pending"; }).map(function(x){ var m = mat(x.c.matId); return { key:x.c.id, kind:"qr", code:x.c.id, t:m.code, c:x.c.id, n:[m.name, "Bin "+x.p.id+" · "+fmt(cardQty(x.c))+" pcs · masuk "+x.c.lots[0].date] }; });
+    if(type==="loc") return S.map(function(p){ return { key:p.id, kind:"qr", code:"LOC-"+p.id, t:p.id, big:true, c:"LOC-"+p.id, n:["Line "+p.cat+" · "+cat(p.cat).name, "Label lokasi permanen"] }; });
+    if(type==="demoin") return DEMO_IN.map(function(x){ var m = mat(x.matId); return { key:x.id, kind:"qr", code:x.id, t:m.code, c:x.id, n:[m.name, "Booking bin "+x.pos+" · "+fmt(x.qty)+" pcs"] }; });
+    return MATS.map(function(m){ return { key:m.code, kind:"bar", code:m.code, t:m.name, n:["Contoh barcode karton"] }; });
+  }
+  function prCell(it){
+    var art = it.kind==="qr" ? '<div class="pq">'+qrSvg(it.code)+'</div>' : '<div class="pb">'+barcodeSvg(it.code)+'</div>';
+    return '<div class="pcell">'+art+'<div class="pt'+(it.big?' big':'')+'">'+esc(it.t)+'</div>'+(it.c&&!it.big?'<div class="pc">'+esc(it.c)+'</div>':'')+it.n.map(function(x){ return '<div class="pn">'+esc(x)+'</div>'; }).join("")+'</div>';
+  }
+  function renderPrint(){
+    var items = prItems(PR.type);
+    if(!PR.sel) PR.sel = {}, items.forEach(function(it){ PR.sel[it.key] = true; });
+    $("#pr-type").value = PR.type;
+    $("#pr-items").innerHTML = items.length ? items.map(function(it){ return '<label class="chk prchk"><input type="checkbox" data-pk="'+esc(it.key)+'"'+(PR.sel[it.key]?' checked':'')+'> '+esc(it.kind==="qr"&&it.c&&!it.big?it.c:it.t)+'</label>'; }).join("") : '<span class="muted">Tidak ada label untuk jenis ini.</span>';
+    var chosen = items.filter(function(it){ return PR.sel[it.key]; }), pages = Math.ceil(chosen.length/4);
+    $("#pr-count").textContent = chosen.length+" label · "+pages+" halaman A4";
+    var h = "";
+    for(var i=0;i<chosen.length;i+=4){ h += '<div class="sheet">'+chosen.slice(i,i+4).map(prCell).join("")+'</div>'; }
+    $("#print-area").innerHTML = h;
+    $("#pr-print").hidden = IN_FRAME || !chosen.length;
+    $("#pr-note").innerHTML = IN_FRAME ? 'Tombol <b>Cetak</b> muncul saat halaman dibuka dari link Netlify. Di jendela Claude ini, cetak tidak didukung.' : 'Di dialog cetak: kertas A4, skala 100%, margin "None/Tidak ada".';
+    Array.prototype.forEach.call(document.querySelectorAll("#pr-items input"), function(c){ c.addEventListener("change", function(){ PR.sel[c.dataset.pk] = c.checked; renderPrint(); }); });
+  }
+  function goPrint(type){ PR.type = type; PR.sel = null; if(location.hash!=="#label") location.hash = "label"; else renderLabels(); }
+  document.addEventListener("click", function(e){ var a = e.target.closest ? e.target.closest("[data-pr]") : null; if(a){ e.preventDefault(); goPrint(a.dataset.pr); } });
+  function renderLabels(){
+    renderPrint();
+    var o = ORDER && !ORDER.posted && !orderDone(simCtx) ? ORDER : null;
+    $("#lbl-order").innerHTML = "";
+    $("#bin-table").innerHTML = '<tr><th>Kode bin</th><th>Line</th><th>Kategori</th><th>Ukuran</th><th>Tinggi maks</th><th>Isi QR lokasi</th><th>Tumpukan aktif</th></tr>' +
+      S.map(function(p){ return '<tr><td class="mono"><b>'+p.id+'</b></td><td>'+p.cat+'</td><td>'+cat(p.cat).name+'</td><td class="mono">4,2 × 3,0 m</td><td class="mono">2,5 m</td><td class="mono">LOC-'+p.id+'</td><td class="mono">'+p.cards.length+'</td></tr>'; }).join("");
+    $("#bin-labels").innerHTML = S.map(function(p){ return '<div class="label" style="border-style:solid"><div class="qr">'+qrSvg("LOC-"+p.id)+'</div><b style="font-size:1.3rem">'+p.id+'</b>Line '+p.cat+' · '+cat(p.cat).name+'</div>'; }).join("");
+    $("#stack-labels").innerHTML = allCards().map(function(x){ var m = mat(x.c.matId); return '<div class="label"><div class="qr">'+qrSvg(x.c.id)+'</div><b>'+x.c.id+'</b><b style="font-size:.95rem">'+m.code+'</b>'+esc(m.name)+'<br>Bin '+x.p.id+' · '+fmt(cardQty(x.c))+' pcs'+(x.c.status==="pending"?'<br>(belum dikonfirmasi)':'')+'</div>'; }).join("") || '<div class="muted">Tidak ada tumpukan.</div>';
+    $("#demo-in-labels").innerHTML = DEMO_IN.map(function(x){ var m = mat(x.matId); return '<div class="label"><div class="qr">'+qrSvg(x.id)+'</div><b>'+x.id+'</b><b style="font-size:.95rem">'+m.code+'</b>'+esc(m.name)+'<br>Booking bin '+x.pos+' · '+fmt(x.qty)+' pcs</div>'; }).join("");
+    $("#carton-labels").innerHTML = MATS.map(function(m){ return '<div class="label" style="border-style:solid">'+barcodeSvg(m.code)+'<b style="font-size:.85rem">'+esc(m.name)+'</b></div>'; }).join("");
+  }
+
+  var LT = { IN:["ok","MASUK","+"], OUT:["info","KELUAR","-"], KONF:["ok","KONFIRMASI",""], SELISIH:["crit","SELISIH","-"], SAP:["warn","POSTING SAP",""] };
   function renderLog(){
-    var rows = LOG.slice(-12).reverse();
-    $("#log").innerHTML = '<tr><th>Tanggal</th><th>Jenis</th><th>QR</th><th>Material</th><th>Posisi</th><th>Qty</th><th>Saldo</th><th>Ket.</th></tr>' +
-      rows.map(function(r){ return '<tr><td class="mono">'+r.t+'</td><td><span class="tag '+(r.type==="IN"?"ok":"info")+'">'+(r.type==="IN"?"MASUK":"KELUAR")+'</span></td><td class="mono">'+r.id+'</td><td>'+r.mat+'</td><td class="mono">'+r.pos+'</td><td class="mono">'+(r.type==="IN"?"+":"-")+fmt(r.qty)+'</td><td class="mono">'+fmt(r.saldo)+'</td><td class="muted">'+r.note+'</td></tr>'; }).join("");
+    var rows = LOG.slice(-14).reverse();
+    $("#log").innerHTML = '<tr><th>Tanggal</th><th>Jenis</th><th>QR / order</th><th>Material</th><th>Posisi</th><th>Qty</th><th>Saldo</th><th>FIFO</th><th>Ket.</th></tr>' +
+      rows.map(function(r){ var t = LT[r.type]; return '<tr><td class="mono">'+r.t+'</td><td><span class="tag '+t[0]+'">'+t[1]+'</span></td><td class="mono">'+r.id+'</td><td>'+r.mat+'</td><td class="mono">'+r.pos+'</td><td class="mono">'+(r.qty?t[2]+fmt(r.qty):'–')+'</td><td class="mono">'+(r.type==="SAP"?'–':fmt(r.saldo))+'</td><td>'+(r.type==="OUT"?'<span class="tag '+(r.fifo?'fifo':'nofifo')+'">'+(r.fifo?'FIFO':'NO FIFO')+'</span>':'')+'</td><td class="muted">'+r.note+'</td></tr>'; }).join("");
   }
   function renderStats(){
     var used = 0, n = 0, piles = 0;
@@ -534,7 +1283,7 @@
       '<div class="stat"><div class="n">'+n+'</div><div class="l">Tumpukan aktif (QR)</div></div>'+
       '<div class="stat"><div class="n">'+piles+'</div><div class="l">Pile terisi</div></div>'+
       '<div class="stat"><div class="n">'+Math.round(used/(S.length*USABLE_D)*100)+'%</div><div class="l">Okupansi lantai</div></div>';
-    $("#legend").innerHTML = MATS.map(function(m){ return '<span><span class="sw" style="background:var('+m.token+')"></span>'+m.name+' · '+(m.flat[0])+'×'+m.flat[1]+' cm</span>'; }).join("");
+    $("#legend").innerHTML = MATS.map(function(m){ return '<span><span class="sw" style="background:var('+m.token+')"></span>'+m.name+' · '+(m.flat[0])+'×'+m.flat[1]+' cm</span>'; }).join("") + '<span><span class="sw" style="background:var(--line)"></span>transparan = belum dikonfirmasi</span>';
   }
   function candState(){
     var r = {};
@@ -551,7 +1300,7 @@
       b.addEventListener("click", function(){ selPos = b.dataset.p; selCard = null; renderAll(); if(G) focusPos(selPos); });
     });
   }
-  function renderAll(){ fillSelects(); renderStats(); renderChips(); renderWo(); renderDetail(); renderLog(); update3D(); }
+  function renderAll(){ fillSelects(); renderStats(); renderChips(); renderPickInfo(); renderSearch(); renderPutaway(); renderOrderForm(); renderOrderAdmin(); renderOrderList(); renderPicker(simCtx, $("#sim-scr")); renderLog(); update3D(); if(VIEW==="label") renderLabels(); }
 
   /* ---------- 3D ---------- */
   function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888888"; }
@@ -600,11 +1349,11 @@
     for(var f=0; f<6; f++){ if(f===2 || f===3) continue; for(var v=0; v<4; v++){ var i = f*4+v; uv.setY(i, uv.getY(i)*frac); } }
     uv.needsUpdate = true; G.geo[key] = g; return g;
   }
-  function pileMats(m){
-    var T = G.T, k = m.id;
+  function pileMats(m, pend){
+    var T = G.T, k = m.id+(pend?"|p":"");
     if(!G.mat[k]){
-      var side = new T.MeshStandardMaterial({ map:sideTexture(m), roughness:0.9 });
-      var top = new T.MeshStandardMaterial({ color:col(G.colors.top), roughness:0.95 });
+      var side = new T.MeshStandardMaterial({ map:sideTexture(m), roughness:0.9, transparent:!!pend, opacity:pend?0.4:1 });
+      var top = new T.MeshStandardMaterial({ color:col(G.colors.top), roughness:0.95, transparent:!!pend, opacity:pend?0.4:1 });
       G.mat[k] = [side, side, top, top, side, side];
     }
     return G.mat[k];
@@ -644,7 +1393,7 @@
   function update3D(){
     if(!G) return;
     var g = G.pilesGroup, cs = candState(), stepIdx = {};
-    if(wo) woSteps().forEach(function(st, i){ stepIdx[st.cardId] = i+1; });
+    orderSteps().forEach(function(st, i){ if(!stepIdx[st.cardId]) stepIdx[st.cardId] = i+1; });
     while(g.children.length) g.remove(g.children[0]);
     disposeGroup(G.labelsGroup);
     S.forEach(function(p){
@@ -660,13 +1409,14 @@
       var cursor = 0;
       p.cards.forEach(function(card){
         var m = mat(card.matId), rowsC = Math.ceil(card.piles.length/m.cols);
-        if(card.id===selCard || stepIdx[card.id]){
-          var hl = new G.T.Mesh(new G.T.PlaneGeometry(m.cols*m.L+0.1, rowsC*m.rd+0.1), new G.T.MeshBasicMaterial({ color:col(card.id===selCard ? G.colors.accent : G.colors.info), transparent:true, opacity:0.55, depthWrite:false }));
+        if(card.id===selCard || stepIdx[card.id] || searchHit[card.id]){
+          var hc = card.id===selCard ? G.colors.accent : (stepIdx[card.id] ? G.colors.info : G.colors.ok);
+          var hl = new G.T.Mesh(new G.T.PlaneGeometry(m.cols*m.L+0.1, rowsC*m.rd+0.1), new G.T.MeshBasicMaterial({ color:col(hc), transparent:true, opacity:0.55, depthWrite:false }));
           hl.rotation.x = -Math.PI/2; hl.position.set(o.x0+MARGIN+m.cols*m.L/2, 0.02, o.z0-FRONT_M-cursor-rowsC*m.rd/2); g.add(hl);
         }
         card.piles.forEach(function(q, i){
           var r = Math.floor(i/m.cols), cc = i%m.cols, h = Math.max(0.06, q/m.qpp*m.fullH);
-          var mesh = new G.T.Mesh(pileGeo(m, h), pileMats(m));
+          var mesh = new G.T.Mesh(pileGeo(m, h), pileMats(m, card.status==="pending"));
           mesh.userData.shared = true; mesh.userData.cardId = card.id; mesh.userData.posId = p.id;
           var zc = o.z0 - FRONT_M - cursor - r*m.rd - m.rd/2, xc = o.x0 + MARGIN + cc*m.L + m.L/2;
           mesh.position.set(xc, h/2, zc); mesh.castShadow = true; mesh.receiveShadow = true;
@@ -732,11 +1482,11 @@
       renderer.domElement.addEventListener("pointerdown", function(e){ down = { x:e.clientX, y:e.clientY }; });
       renderer.domElement.addEventListener("pointerup", function(e){
         if(!down) return; var dx=e.clientX-down.x, dy=e.clientY-down.y; down=null; if(dx*dx+dy*dy>30) return;
-        var u = pick(e); if(u){ selPos = u.posId; selCard = u.cardId || null; if(selCard) $("#scan-sel").value = selCard; renderAll(); }
+        var u = pick(e); if(u){ selPos = u.posId; selCard = u.cardId || null; renderAll(); }
       });
       renderer.domElement.addEventListener("pointermove", function(e){ if(e.buttons) return; renderer.domElement.style.cursor = pick(e) ? "pointer" : "grab"; });
       if(window.ResizeObserver){ new ResizeObserver(function(){ var w=el.clientWidth, h=el.clientHeight; if(!w||!h) return; renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); }).observe(el); }
-      (function loop(now){ requestAnimationFrame(loop); if(G.anim) G.anim(now||performance.now()); controls.update(); renderer.render(scene, camera); })();
+      (function loop(now){ requestAnimationFrame(loop); if(VIEW!=="admin") return; if(G.anim) G.anim(now||performance.now()); controls.update(); renderer.render(scene, camera); })();
     }catch(err){ fallback(); }
   }
   function onTheme(){
@@ -750,22 +1500,41 @@
   $("#btn-search").addEventListener("click", startSearch);
   $("#btn-confirm").addEventListener("click", confirmPlan);
   $("#btn-reset").addEventListener("click", function(){ seedAll(); $("#arr-labels").innerHTML=""; $("#arr-msg").innerHTML=""; renderOptions(); renderAll(); if(G) viewOverview(); });
-  $("#btn-scan").addEventListener("click", function(){ var v = $("#scan-sel").value; if(!v) return; var f = findCard(v); selCard = v; selPos = f.p.id; renderAll(); if(G) focusPos(selPos); });
-  $("#btn-wo").addEventListener("click", function(){
-    var id = $("#wo-sel").value; if(!id) return;
-    wo = { matId:id, qty:Math.max(1, parseInt($("#wo-qty").value||"0",10)), picked:0 }; selCard = null; renderAll();
-  });
-  $("#wo-sel").addEventListener("change", function(){ wo = null; renderAll(); });
+  function doSearch(){ searchQ = $("#q").value.trim(); selCard = null; renderAll(); var ids = Object.keys(searchHit); if(G && ids.length){ var f = findCard(ids[0]); selPos = f.p.id; renderChips(); if(new Set(ids.map(function(i){ return findCard(i).p.cat; })).size>1) viewOverview(); else focusPos(selPos); } }
+  $("#btn-q").addEventListener("click", doSearch);
+  $("#q").addEventListener("keydown", function(e){ if(e.key==="Enter") doSearch(); });
+  $("#btn-q-clear").addEventListener("click", function(){ $("#q").value = ""; searchQ = ""; renderAll(); });
   $("#view-overview").addEventListener("click", function(){ if(G) viewOverview(); });
   $("#view-front").addEventListener("click", function(){ if(G) viewFront(); });
   $("#view-focus").addEventListener("click", function(){ if(G) focusPos(selPos); });
   try{ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", onTheme); }catch(e){}
   try{ new MutationObserver(onTheme).observe(document.documentElement, { attributes:true, attributeFilter:["data-theme"] }); }catch(e){}
 
-  seedAll();
-  fillSelects(); $("#wo-sel").value = "facial-200"; renderDnLines();
+  function route(){
+    var v = (location.hash||"").replace("#","");
+    if(["admin","petugas","kamera","label"].indexOf(v)<0) v = "admin";
+    VIEW = v;
+    ["admin","petugas","kamera","label"].forEach(function(k){ $("#v-"+k).hidden = k!==v; });
+    Array.prototype.forEach.call(document.querySelectorAll(".topnav a"), function(a){ if(a.dataset.v===v) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
+    if(v!=="kamera" && CAM.inst) closeCam();
+    if(v==="label") renderLabels();
+    if(v==="kamera") renderKamera();
+    if(v==="petugas") renderPicker(simCtx, $("#sim-scr"));
+    try{ window.scrollTo(0,0); }catch(e){}
+  }
+  window.addEventListener("hashchange", route);
+  $("#pr-type").addEventListener("change", function(){ PR.type = this.value; PR.sel = null; renderPrint(); });
+  $("#pr-all").addEventListener("click", function(){ prItems(PR.type).forEach(function(it){ PR.sel[it.key] = true; }); renderPrint(); });
+  $("#pr-none").addEventListener("click", function(){ PR.sel = {}; renderPrint(); });
+  $("#pr-print").addEventListener("click", function(){ try{ window.print(); }catch(e){} });
+  $("#cam-x").addEventListener("click", closeCam);
+  $("#cam-ok").addEventListener("click", function(){ var v = $("#cam-in").value, cb = CAM.cb; closeCam(); if(cb) cb(v); });
+  $("#cam-in").addEventListener("keydown", function(e){ if(e.key==="Enter") $("#cam-ok").click(); });
+
+  seedAll(); loadK();
+  fillSelects(); renderDnLines();
   init3D();
-  renderAll();
+  renderAll(); route();
   if(document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){ if(G){ buildStatic(); update3D(); } }); }
 })();
 </script>
