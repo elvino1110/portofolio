@@ -59,7 +59,7 @@
   .legend span{display:inline-flex; align-items:center; gap:6px}
   .sw{width:10px; height:10px; border-radius:2px; display:inline-block; flex:none}
   .scene-wrap{position:relative; border-radius:10px; overflow:hidden; border:1px solid var(--line); background:var(--bg)}
-  .scene3d{height:520px; width:100%; touch-action:none}
+  .scene3d{height:560px; width:100%; touch-action:none}
   .scene3d canvas{display:block}
   @media (max-width:640px){ .scene3d{height:380px} }
   .scene-ctrl{position:absolute; top:10px; left:10px; right:10px; display:flex; gap:6px; flex-wrap:wrap}
@@ -210,6 +210,44 @@
   .fbst{margin-left:auto; white-space:nowrap; font-family:var(--mono); font-size:.68rem; padding:3px 8px; border-radius:99px; border:1px solid var(--line); color:var(--ink-dim)}
   .fbst::before{content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:currentColor; margin-right:5px; vertical-align:1px}
   .fbst.ok{color:var(--ok); border-color:var(--ok)} .fbst.warn{color:var(--warn); border-color:var(--warn)} .fbst.crit{color:var(--crit); border-color:var(--crit)}
+  .mapgrid{display:grid; grid-template-columns:minmax(0,1fr) 270px; gap:14px; align-items:start}
+  @media (max-width:900px){ .mapgrid{grid-template-columns:1fr} }
+  .denahwrap{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px; min-width:0}
+  .denah{display:grid; grid-template-columns:22px repeat(3,minmax(0,1fr)) 28px; gap:2px; font-family:var(--mono); font-size:.62rem}
+  .denah .dh{font-size:.6rem; color:var(--ink-dim); text-align:center; font-weight:600; white-space:nowrap; overflow:hidden}
+  .denah .ds{color:var(--ink-dim); text-align:right; padding-right:3px; line-height:20px}
+  .dcell{position:relative; height:20px; padding:0; border-radius:3px; overflow:hidden; background:var(--surface-2); font-family:var(--mono); font-size:.62rem; border:1px solid var(--line)}
+  .dcell .dfill{position:absolute; left:0; top:0; bottom:0; background:color-mix(in srgb, var(--accent) 45%, transparent)}
+  .dcell .dlbl{position:relative}
+  .dcell[aria-pressed=true]{outline:2px solid var(--accent); outline-offset:0}
+  .dcell.cand{border-color:var(--info)} .dcell.chosen{border-color:var(--info); box-shadow:inset 0 0 0 2px var(--info)}
+  .demg{background:color-mix(in srgb, var(--ok) 18%, transparent); color:var(--ok); border-radius:3px; text-align:center; line-height:20px; font-size:.6rem; white-space:nowrap; overflow:hidden}
+  .drak{background:repeating-linear-gradient(90deg, var(--line) 0 2px, transparent 2px 6px); border-radius:3px; opacity:.7}
+  .bininfo{display:flex; flex-wrap:wrap; gap:8px 22px; margin-top:12px; font-size:.84rem}
+  .bininfo .k{display:block}
+  .tgrid{display:grid; gap:3px; margin-top:4px; max-width:420px}
+  .tcell{border:1px solid var(--line); border-radius:4px; padding:3px 5px; font-family:var(--mono); font-size:.66rem; display:flex; flex-direction:column; background:var(--surface-2)}
+  .tcell b{font-size:.72rem} .tcell.empty{opacity:.45} .tcell.next{border-color:var(--info); box-shadow:inset 0 0 0 1px var(--info)}
+  .linkbtn{background:none; border:0; padding:0; color:var(--info); font-family:var(--mono); font-size:inherit; text-decoration:underline; cursor:pointer}
+  .binsvg{width:100%; max-width:260px; height:auto; display:block; margin:6px auto}
+  .binsvg .bs-area{fill:var(--surface-2); stroke:var(--paint); stroke-width:2}
+  .binsvg .bs-blk{stroke:var(--ink); stroke-width:.6}
+  .binsvg .bs-hl{stroke:var(--info); stroke-width:3}
+  .binsvg .bs-ghost{fill:none; stroke:var(--info); stroke-width:2.5; stroke-dasharray:6 4}
+  .binsvg .bs-cell{fill:color-mix(in srgb, var(--info) 14%, transparent); stroke:var(--info); stroke-width:.6}
+  .binsvg text{font-family:var(--mono); text-anchor:middle; dominant-baseline:middle; fill:var(--ink)}
+  .binsvg .bs-t{font-size:9px; font-weight:600} .binsvg .bs-tc{font-size:8px; fill:var(--info); font-weight:600}
+  .binsvg .bs-front{font-size:10px; font-weight:700; fill:var(--accent)} .binsvg .bs-side{font-size:9px; fill:var(--ink-dim)}
+  .dcell.est-ok{border-left:3px solid var(--ok)} .dcell.est-warn{border-left:3px solid var(--warn)} .dcell.est-crit{border-left:3px solid var(--crit)}
+  .dcell.manual{border-style:dotted}
+  .camrow button[aria-pressed=true]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  .txtin{background:var(--surface-2); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 8px}
+  .binsvg .bs-est{stroke-dasharray:4 3; stroke-width:1.4}
+  .binsvg .bs-spot{fill:color-mix(in srgb, var(--warn) 10%, transparent); stroke:var(--warn); stroke-width:1; stroke-dasharray:3 3}
+  .binsvg .bs-spot.on{fill:color-mix(in srgb, var(--info) 18%, transparent); stroke:var(--info); stroke-width:2}
+  .binsvg .bs-num{fill:var(--warn)} .binsvg .bs-num.on{fill:var(--info)}
+  .binsvg .bs-numt{font-size:9px; font-weight:700; fill:var(--surface)}
+  .binview{margin-top:10px; max-width:320px}
   .camov{position:fixed; inset:0; z-index:60; background:#0d0d0c; color:#f2f0ea; display:flex; flex-direction:column; gap:10px; padding:calc(12px + env(safe-area-inset-top,0px)) max(14px, env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(14px, env(safe-area-inset-left,0px))}
   .camtop{display:flex; justify-content:space-between; align-items:center}
   .camtop button{background:#2a2925; color:#f2f0ea; border-color:#45423a}
@@ -266,7 +304,7 @@
   </section>
 
   <section>
-    <div class="section-head"><h2>2 · Peta gudang &amp; cari stok</h2><p class="lede">Satu balok = satu pile. Ukuran balok mengikuti ukuran lembar tiap no material. Kotak putih di sisi depan = label QR tumpukan. Angka di atas tumpukan = urutan ambil order aktif.</p></div>
+    <div class="section-head"><h2>2 · Peta gudang &amp; cari stok</h2><p class="lede">Denah sesuai lapangan: line A Facial (19 bin), B Toilet (18), C Napkin (18), jalur darurat di slot 6, racking plastik di kanan. Bin 8,1 × 6 m dengan ruang ambil 40 cm. Tiap blok tersusun dari tumpukan ikat (maks 560 pcs), digambar bersusun batu bata. Kotak putih di sisi depan blok = label QR. Angka di atas blok = urutan ambil order aktif.</p></div>
     <div class="searchbar" style="margin-top:0;margin-bottom:12px">
       <div class="field" style="flex:1 1 260px"><label for="q">Cari no material / nama</label><input type="search" id="q" list="mat-list" placeholder="contoh: 11002155 atau 540"></div>
       <datalist id="mat-list"></datalist><datalist id="mat-full"></datalist>
@@ -275,38 +313,36 @@
     <div id="q-result" style="margin-bottom:14px"></div>
     <div class="stats" id="stats"></div>
     <div class="legend" id="legend"></div>
-    <div class="scene-wrap">
+    <div class="mapgrid"><div class="scene-wrap">
       <div class="scene-ctrl" id="scene-ctrl">
-        <button id="view-overview">Overview</button><button id="view-front">Tampak depan</button><button id="view-focus">Fokus posisi terpilih</button>
+        <button id="view-overview">Overview</button><button id="view-front">Depan</button><button data-line="0">Line A</button><button data-line="1">Line B</button><button data-line="2">Line C</button><button id="view-focus">Fokus bin</button>
       </div>
       <div class="scene3d" id="scene3d"></div>
-      <div class="scene-hint" id="scene-hint">Seret = putar · scroll = zoom · klik tumpukan = lihat detail</div>
+      <div class="scene-hint" id="scene-hint">Seret = putar · scroll = zoom · klik blok = lihat detail</div>
       <div class="fb" id="scene-fallback">3D tidak tersedia di perangkat ini (WebGL). Gunakan daftar posisi di bawah.</div>
     </div>
-    <div class="chips" id="chips" role="group" aria-label="Daftar posisi"></div>
+    <div class="denahwrap"><div class="k" style="margin-bottom:6px">Denah bin (klik untuk fokus)</div><div id="chips"></div></div></div>
     <div id="pick-info"></div>
   </section>
 
   <section class="layout">
     <div class="panel">
-      <div class="section-head"><h2>3 · Barang datang (per DN)</h2><p class="lede">Input DN, sistem sarankan posisi (boleh diubah manual). Ini baru <b>booking</b>: tumpukan belum bisa diambil sebelum dikonfirmasi di lokasi.</p></div>
+      <div class="section-head"><h2>3 · Barang datang (input admin)</h2><p class="lede">Sementara diinput manual (nanti otomatis dari SAP). Sistem menyarankan bin dan pembagian blok. QR dicetak di kantor, barang ditaruh di <b>transit point</b>, lalu petugas shift berikutnya menaruh ke bin.</p></div>
+      <div id="in-form"></div>
       <div class="row">
-        <div class="field"><label for="dn-sel">No DN</label><select id="dn-sel"></select></div>
-        <div class="field"><label for="arr-date">Tanggal</label><input type="date" id="arr-date" value="2026-10-18"></div>
+        <div class="field"><label for="in-dn">No DN (opsional)</label><input type="text" id="in-dn" placeholder="mis. 80012345" style="width:140px" class="txtin"></div>
+        <div class="field"><label for="arr-date">Tanggal</label><input type="date" id="arr-date"></div>
         <div class="field"><label for="win">Gabung jika selisih ≤ (hari)</label><input type="number" id="win" value="2" min="0" max="14" style="width:90px"></div>
       </div>
-      <div class="tablewrap"><table id="dn-lines"></table></div>
-      <div class="row" style="margin-top:10px">
-        <label style="display:inline-flex;gap:6px;align-items:center;font-size:.82rem"><input type="checkbox" id="allow-other"> Boleh pinjam posisi line lain bila line sendiri penuh</label>
-      </div>
-      <div class="row"><button class="primary" id="btn-search">Cari posisi</button><button id="btn-reset">Reset simulasi</button></div>
+      <div class="muted" style="font-size:.76rem;margin-top:2px">Barang wajib masuk ke line sesuai kategori. Batas 560 pcs per tumpukan (isi per ikat tidak dibedakan).</div>
+      <div class="row"><button class="primary" id="btn-search">Cari saran bin</button><button id="btn-reset">Reset simulasi</button></div>
       <div id="arr-result"></div>
-      <div id="arr-confirm-wrap" hidden><button class="primary" id="btn-confirm">Booking posisi &amp; cetak QR tumpukan</button></div>
+      <div id="arr-confirm-wrap" hidden><button class="primary" id="btn-confirm">Cetak QR &amp; kirim ke transit point</button></div>
       <div id="arr-msg"></div>
       <div id="arr-labels"></div>
     </div>
     <div class="panel">
-      <div class="section-head"><h2>3b · Status taruh barang</h2><p class="lede">Konfirmasi dilakukan petugas gudang di menu <b>Petugas · Inbound</b>: scan QR tumpukan, barcode karton, dan label lokasi. Di sini admin hanya memantau.</p></div>
+      <div class="section-head"><h2>3b · Transit point &amp; status taruh</h2><p class="lede">Petugas menaruh dari transit point ke bin di menu <b>Petugas · Inbound</b>. Saran bin boleh diganti petugas (line yang sama). Di sini admin memantau.</p></div>
       <div id="putaway"></div>
     </div>
   </section>
@@ -319,9 +355,9 @@
   <section>
     <div class="section-head"><h2>Tiga kode yang dipakai</h2></div>
     <div class="panel grid3">
-      <div><h3>Label lokasi · permanen</h3><ul class="tight"><li>Satu per bin (A1, A2, ...), dari master data bin.</li><li>Dipakai saat taruh barang: "benar di posisi ini?".</li><li>Tidak pernah dicetak ulang.</li></ul></div>
-      <div><h3>QR tumpukan · sekali pakai</h3><ul class="tight"><li>Dibuat saat booking. Isinya hanya ID, data ada di sistem.</li><li>Kedatangan no material sama dalam 2 hari memakai QR yang sama.</li><li>Tumpukan habis = QR ditutup.</li></ul></div>
-      <div><h3>Barcode karton · dari supplier</h3><ul class="tight"><li>Sudah tercetak di karton.</li><li>Dipakai untuk memastikan isi karton sesuai QR tumpukan (GT vs MT).</li><li>Format isinya perlu dicek ke supplier.</li></ul></div>
+      <div><h3>Label lokasi · permanen</h3><ul class="tight"><li>Satu per bin (55 bin: A1–A19, B1–B18, C1–C18), dari master data bin.</li><li>Dipakai saat taruh barang: "benar di posisi ini?".</li><li>Tidak pernah dicetak ulang.</li></ul></div>
+      <div><h3>QR blok · sekali pakai</h3><ul class="tight"><li>Dibuat saat booking. Isinya hanya ID, data ada di sistem.</li><li>Kedatangan no material sama dalam 2 hari memakai QR yang sama.</li><li>Satu QR untuk satu blok (bin card, misalnya "51 × 120"). Blok habis = QR ditutup.</li></ul></div>
+      <div><h3>Barcode karton · dari supplier</h3><ul class="tight"><li>Sudah tercetak di karton.</li><li>Dipakai untuk memastikan isi karton sesuai QR blok (GT vs MT).</li><li>Format isinya perlu dicek ke supplier.</li></ul></div>
     </div>
   </section>
 </div>
@@ -358,10 +394,10 @@
       <div class="pr-ctrl">
         <div class="row">
           <div class="field" style="flex:1 1 220px"><label for="pr-type">Jenis label</label><select id="pr-type" style="width:100%">
-            <option value="stack">QR tumpukan · semua aktif</option>
-            <option value="pending">QR tumpukan · baru booking (belum ditaruh)</option>
+            <option value="stack">QR blok · semua aktif</option>
+            <option value="pending">QR blok · di transit point</option>
             <option value="loc">Label lokasi bin (master bin)</option>
-            <option value="demoin">QR contoh inbound (menu kamera)</option>
+            <option value="needlabel">QR blok · perlu cetak label (sisa pecahan)</option>
             <option value="carton">Barcode karton (contoh)</option>
           </select></div>
           <button id="pr-all">Pilih semua</button><button id="pr-none">Kosongkan</button>
@@ -378,13 +414,10 @@
     <div class="panel"><div class="tablewrap"><table id="bin-table"></table></div><div class="labels" id="bin-labels"></div></div>
   </section>
   <section>
-    <div class="section-head"><h2>QR tumpukan aktif</h2><p class="lede">Satu label per tumpukan. Isi QR hanya ID tumpukan.</p></div>
+    <div class="section-head"><h2>QR blok aktif</h2><p class="lede">Satu label per blok. Isi QR hanya ID blok.</p></div>
     <div class="panel"><div class="labels" id="stack-labels"></div></div>
   </section>
-  <section>
-    <div class="section-head"><h2>Contoh inbound (untuk menu kamera)</h2><p class="lede">Dipakai tombol "Pakai data inbound contoh" di HP. Scan QR ini, lalu barcode karton, lalu label lokasi bin booking-nya.</p></div>
-    <div class="panel"><div class="labels" id="demo-in-labels"></div></div>
-  </section>
+  
   <section>
     <div class="section-head"><h2>Barcode karton (contoh)</h2><p class="lede">Pengganti barcode supplier di karton, berisi no material. Coba scan barcode MT saat order meminta GT.</p></div>
     <div class="panel"><div class="labels wide" id="carton-labels"></div></div>
@@ -414,29 +447,24 @@
   var $ = function(s){ return document.querySelector(s); };
   var reduceMotion = false; try{ reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
 
-  /* ---------- konstanta fisik (ASUMSI) ---------- */
-  var PW = 4.2, PD = 3.0, MARGIN = 0.15, FRONT_M = 0.1, LGAP = 2.0, PGAP = 1.3;
-  var USABLE_D = PD - 0.2;
-  var SAFE_H = 250;
-  var CATS = [ {id:"A", name:"Facial"}, {id:"B", name:"Toilet"}, {id:"C", name:"Napkin"} ];
-  var TOTAL_W = CATS.length*PW + (CATS.length-1)*LGAP;
+  /* ---------- denah & aturan susun (hasil ukur lapangan) ----------
+     Bin 8,1 m (sisi menghadap koridor forklift, sumbu x) x 6 m (searah line, sumbu z).
+     Ruang ambil 40 cm diambil dari sisi 6 m pada sisi yang berdempetan dengan bin lain.
+     Batas 560 pcs per tumpukan. Tonjolan susun batu bata 10% ukuran karton per sisi. */
+  var BIN_X = 8.1, BIN_Z = 6.0, SPACE = 0.4, CORR = 3.6, RACK_W = 2.4;
+  var MAX_PCS_TUM = 560, OVERHANG = 0.10, HPP = 0.0047;
+  var EMERGENCY_SLOT = 6, SLOTS = 19;
+  var CATS = [ {id:"A", name:"Facial", n:19, gap:false}, {id:"B", name:"Toilet", n:18, gap:true}, {id:"C", name:"Napkin", n:18, gap:true} ];
   var MATS = [
-    { id:"facial-200",   code:"11002154", name:"Facial 540's 3 ply GT", cat:"A", token:"--m1", flat:[65,45], sheet:3.5, pcs:20, twin:"facial-200-mt" },
-    { id:"facial-200-mt", code:"11002155", name:"Facial 540's 3 ply MT", cat:"A", token:"--m7", flat:[65,45], sheet:3.5, pcs:20, twin:"facial-200" },
-    { id:"facial-mini",  code:"11002210", name:"Facial 250's 2 ply",     cat:"A", token:"--m2", flat:[48,34], sheet:3.0, pcs:20 },
-    { id:"toilet-12",    code:"11003120", name:"Toilet 12 roll 2 ply", cat:"B", token:"--m3", flat:[82,58], sheet:4.0, pcs:10 },
-    { id:"toilet-24",    code:"11003124", name:"Toilet 24 roll 2 ply", cat:"B", token:"--m4", flat:[98,68], sheet:4.5, pcs:10 },
-    { id:"napkin-besar", code:"11004301", name:"Napkin 100's 1 ply besar",    cat:"C", token:"--m5", flat:[96,72], sheet:4.2, pcs:10 },
-    { id:"napkin-kecil", code:"11004305", name:"Napkin 50's 1 ply kecil",    cat:"C", token:"--m6", flat:[62,50], sheet:3.2, pcs:20 }
+    { id:"facial-200",    code:"11002154", name:"Facial 540's 3 ply GT",    cat:"A", token:"--m1", flat:[65,45], pcs:10, twin:"facial-200-mt" },
+    { id:"facial-200-mt", code:"11002155", name:"Facial 540's 3 ply MT",    cat:"A", token:"--m7", flat:[65,45], pcs:10, twin:"facial-200" },
+    { id:"facial-mini",   code:"11002210", name:"Facial 250's 2 ply",       cat:"A", token:"--m2", flat:[48,34], pcs:20 },
+    { id:"toilet-12",     code:"11003120", name:"Toilet 12 roll 2 ply",     cat:"B", token:"--m3", flat:[82,58], pcs:10 },
+    { id:"toilet-24",     code:"11003124", name:"Toilet 24 roll 2 ply",     cat:"B", token:"--m4", flat:[98,68], pcs:10 },
+    { id:"napkin-besar",  code:"11004301", name:"Napkin 100's 1 ply besar", cat:"C", token:"--m5", flat:[96,72], pcs:10 },
+    { id:"napkin-kecil",  code:"11004305", name:"Napkin 50's 1 ply kecil",  cat:"C", token:"--m6", flat:[62,50], pcs:20 }
   ];
-  MATS.forEach(function(m){
-    m.L = m.flat[0]/100; m.Wd = m.flat[1]/100; m.rd = m.Wd;
-    m.ikatCm = m.sheet/10*m.pcs;
-    m.layers = Math.max(1, Math.floor(SAFE_H/m.ikatCm));
-    m.qpp = m.layers*m.pcs;
-    m.fullH = m.layers*m.ikatCm/100;
-    m.cols = Math.max(1, Math.floor((PW-2*MARGIN)/m.L));
-  });
+  MATS.forEach(function(m){ m.pcs = 10; m.maxIkat = Math.floor(MAX_PCS_TUM/m.pcs); m.maxPcs = MAX_PCS_TUM; m.a = m.flat[0]/100; m.b = m.flat[1]/100; }); // m.pcs = langkah 10 pcs untuk perataan & gambar saja
   function mat(id){ for(var i=0;i<MATS.length;i++) if(MATS[i].id===id) return MATS[i]; }
   function cat(id){ for(var i=0;i<CATS.length;i++) if(CATS[i].id===id) return CATS[i]; }
   var DNS = {
@@ -446,56 +474,173 @@
     "DN-5004": [["facial-mini",300]]
   };
   function fmt(n){ return Math.round(n).toLocaleString("id-ID"); }
+  function fmt2(n){ return (Math.round(n*100)/100).toLocaleString("id-ID"); }
   function dayDiff(a,b){ return Math.abs((Date.parse(a)-Date.parse(b))/86400000); }
   function ymd6(d){ return d.slice(2,4)+d.slice(5,7)+d.slice(8,10); }
 
   /* ---------- state ---------- */
   var S, seq, LOG, selPos, selCard, plan = null, lastAlloc = {}, G = null;
+  var cadSeq = 10;
   var ORDER = null, ORDERS = [], DRAFT, orderSeq = 1, searchQ = "", searchHit = {}, paMsg = {}, paDone = [], VIEW = "admin";
-  function newPosisi(){
+  function newBins(){
     var list = [];
-    CATS.forEach(function(c, li){ for(var pi=0; pi<3; pi++) list.push({ id:c.id+(pi+1), cat:c.id, li:li, pi:pi, cards:[] }); });
+    CATS.forEach(function(c, li){
+      for(var k=1;k<=c.n;k++){
+        var slot = c.gap && k>=EMERGENCY_SLOT ? k+1 : k;
+        var before = k>1 && !(c.gap && k===EMERGENCY_SLOT), after = k<c.n && !(c.gap && k===EMERGENCY_SLOT-1);
+        list.push({ id:c.id+k, cat:c.id, li:li, k:k, slot:slot, nbBefore:before, nbAfter:after,
+                    z0:before?SPACE:0, uz:BIN_Z-(before?SPACE:0)-(after?SPACE:0), ux:BIN_X, cards:[] });
+      }
+    });
     return list;
   }
+  var newPosisi = newBins;
   function posisi(id, st){ var L = (st||S); for(var i=0;i<L.length;i++) if(L[i].id===id) return L[i]; }
   function pad4(n){ return ("0000"+n).slice(-4); }
-  function mkCard(st, p, matId, date, dn, qty){
-    var c = { id:"BC-"+ymd6(date)+"-"+pad4(seq++), matId:matId, piles:[], lots:[], created:date, status:"ok" };
-    addQty(c, mat(matId), qty); c.lots.push({ dn:dn, date:date, qty:qty });
+
+  /* ---------- blok: pola, tapak, isi per tumpukan ---------- */
+  function dims(m, ori){ return ori ? { cx:m.b, cz:m.a } : { cx:m.a, cz:m.b }; }
+  function blockSize(m, ori, cols, rows){ var d = dims(m, ori); return { sx:rows*d.cx + OVERHANG*d.cx, sz:cols*d.cz + OVERHANG*d.cz }; }
+  function maxCR(p, m, ori){ var d = dims(m, ori); return { c:Math.floor(p.uz/d.cz - OVERHANG + 1e-9), r:Math.floor(p.ux/d.cx - OVERHANG + 1e-9) }; }
+  function fits(p, r, ignore){
+    var e = 1e-6;
+    if(r.x < -e || r.z < -e || r.x + r.sx > p.ux + e || r.z + r.sz > p.uz + e) return false;
+    for(var i=0;i<p.cards.length;i++){
+      var c = p.cards[i]; if(c===ignore) continue;
+      if(r.x < c.x + c.sx - e && r.x + r.sx > c.x + e && r.z < c.z + c.sz - e && r.z + r.sz > c.z + e) return false;
+    }
+    return true;
+  }
+  function placeAt(p, sx, sz){
+    var xs = [0], zs = [0], best = null;
+    p.cards.forEach(function(c){ xs.push(c.x + c.sx); zs.push(c.z + c.sz); });
+    xs.forEach(function(x){ zs.forEach(function(z){
+      var r = { x:x, z:z, sx:sx, sz:sz };
+      if(fits(p, r) && (!best || x < best.x - 1e-9 || (Math.abs(x-best.x) < 1e-9 && z < best.z))) best = r;
+    }); });
+    return best;
+  }
+  function maxTum(p, m){
+    var best = 0;
+    [0,1].forEach(function(ori){
+      var mx = maxCR(p, m, ori);
+      for(var r=mx.r; r>=1; r--) for(var c=mx.c; c>=1; c--){
+        if(c*r <= best) break;
+        var s = blockSize(m, ori, c, r); if(placeAt(p, s.sx, s.sz)){ best = c*r; break; }
+      }
+    });
+    return best;
+  }
+  function bestBlock(p, m, q){
+    var n = Math.max(1, Math.ceil(q/m.maxPcs)), best = null;
+    [0,1].forEach(function(ori){
+      var mx = maxCR(p, m, ori);
+      for(var c=1; c<=mx.c; c++){
+        var r0 = Math.ceil(n/c); if(r0 > mx.r) continue;
+        for(var r=r0; r<=Math.min(mx.r, r0+1); r++){
+          var s = blockSize(m, ori, c, r), pos = placeAt(p, s.sx, s.sz); if(!pos) continue;
+          var score = 2*(s.sx + s.sz) + (c*r - n) + pos.x*0.01 + pos.z*0.001;
+          if(!best || score < best.score) best = { ori:ori, cols:c, rows:r, x:pos.x, z:pos.z, sx:s.sx, sz:s.sz, score:score };
+        }
+      }
+    });
+    return best;
+  }
+  function fillEven(tum, m, q){
+    var left = q;
+    while(left > 0){
+      var i = -1, lo = Infinity;
+      for(var j=0;j<tum.length;j++) if(tum[j] < m.maxPcs && tum[j] < lo){ lo = tum[j]; i = j; }
+      if(i < 0) break;
+      var t = Math.min(m.pcs, left, m.maxPcs - tum[i]); tum[i] += t; left -= t;
+    }
+    return left;
+  }
+  function mkBlock(st, p, matId, date, dn, q, spec){
+    var m = mat(matId);
+    var c = { id:"BC-"+ymd6(date)+"-"+pad4(seq++), matId:matId, lots:[], created:date, status:"ok",
+              ori:spec.ori, cols:spec.cols, rows:spec.rows, x:spec.x, z:spec.z, sx:spec.sx, sz:spec.sz, tum:[] };
+    for(var i=0;i<spec.cols*spec.rows;i++) c.tum.push(0);
+    fillEven(c.tum, m, q); c.lots.push({ dn:dn, date:date, qty:q });
     p.cards.push(c); return c;
   }
   function seedAll(){
-    S = newPosisi(); seq = 1; LOG = []; selPos = "A1"; selCard = null; plan = null; lastAlloc = {};
+    S = newBins(); seq = 1; cadSeq = 10; LOG = []; selPos = "A1"; selCard = null; plan = null; lastAlloc = {};
     ORDER = null; ORDERS = []; orderSeq = 1; paMsg = {}; paDone = []; if(typeof simCtx!=="undefined"){ simCtx.sc = newSc(); simCtx.msg = ""; }
     DRAFT = [ { matId:"facial-200", qty:1500 }, { matId:"toilet-12", qty:300 }, { matId:"napkin-kecil", qty:50 } ];
     function s(pid, matId, qty, date){
-      var p = posisi(pid), c = mkCard(S, p, matId, date, "DN-awal", qty);
-      LOG.push({ t:date, type:"IN", id:c.id, mat:mat(matId).name, pos:pid, qty:qty, saldo:qty, note:"stok awal" });
+      var p = posisi(pid), m = mat(matId), spec = bestBlock(p, m, qty); if(!spec) return;
+      var c = mkBlock(S, p, matId, date, "DN-awal", qty, spec);
+      LOG.push({ t:date, type:"IN", id:c.id, mat:m.name, pos:pid, qty:qty, saldo:qty, note:"stok awal · pola "+c.cols+"×"+c.rows });
     }
-    s("A1","facial-200",800,"2026-10-02"); s("A1","facial-mini",300,"2026-10-08");
-    s("A2","facial-200",600,"2026-10-10"); s("A2","facial-200-mt",500,"2026-10-11"); s("A1","facial-200",300,"2026-10-12"); s("A3","facial-200",400,"2026-10-15");
-    s("B1","toilet-12",450,"2026-10-05");
-    s("C1","napkin-besar",150,"2026-10-05"); s("C1","napkin-kecil",200,"2026-10-09");
+    s("A1","facial-200",900,"2026-10-02"); s("A1","facial-mini",2000,"2026-10-08");
+    s("A2","facial-200",6120,"2026-10-10"); s("A2","facial-200-mt",2400,"2026-10-11"); s("A3","facial-200",1800,"2026-10-15");
+    s("B1","toilet-12",4000,"2026-10-05"); s("B2","toilet-24",2500,"2026-10-07");
+    s("C1","napkin-besar",3000,"2026-10-05"); s("C1","napkin-kecil",2000,"2026-10-09");
+    s("A4","facial-200-mt",1600,"2026-10-13"); s("A7","facial-mini",4000,"2026-10-06"); s("A9","facial-200",3000,"2026-10-16");
+    s("B3","toilet-12",5000,"2026-10-12"); s("B4","toilet-24",3000,"2026-10-09"); s("B6","toilet-12",2000,"2026-10-14");
+    s("C2","napkin-besar",5000,"2026-10-11"); s("C3","napkin-kecil",3600,"2026-10-13"); s("C7","napkin-besar",2400,"2026-10-16");
+    autoInbound([{ matId:"facial-200", qty:2400 }, { matId:"napkin-kecil", qty:800 }], "DN-80012345");
   }
 
-  /* ---------- model ruang & kapasitas ---------- */
-  function cardQty(c){ var t=0; c.piles.forEach(function(q){ t+=q; }); return t; }
-  function usedDepth(p){ return p.cards.reduce(function(s,c){ var m=mat(c.matId); return s + Math.ceil(c.piles.length/m.cols)*m.rd; },0); }
-  function freeDepth(p){ return Math.max(0, USABLE_D - usedDepth(p)); }
-  function posPct(p){ return Math.round(usedDepth(p)/USABLE_D*100); }
-  function newCap(p, m){ return Math.floor((freeDepth(p)+1e-9)/m.rd)*m.cols*m.qpp; }
-  function mergeCap(p, c){
-    var m = mat(c.matId), n = c.piles.length, last = n ? c.piles[n-1] : m.qpp;
-    return (m.qpp-last) + (Math.ceil(n/m.cols)*m.cols - n)*m.qpp + newCap(p, m);
+  /* ---------- model kapasitas ---------- */
+  function cardQty(c){ var t = 0; c.tum.forEach(function(q){ t += q; }); return t; }
+  function nonEmptyTum(c){ return c.tum.filter(function(q){ return q>0; }).length; }
+  function tumLabel(c, i){ return (Math.floor(i/c.cols)+1)+"."+(i%c.cols+1); }
+  function binUsed(p){ return p.cards.reduce(function(s,c){ return s + c.sx*c.sz; }, 0); }
+  function posPct(p){ return Math.round(binUsed(p)/(p.ux*p.uz)*100); }
+  function addsQty(c){ return (c.adds||[]).reduce(function(s,a){ return s + a.qty; }, 0); }
+  // blok bisa membesar (kolom/baris bertambah) selama ruang di sekitarnya kosong
+  function growOptions(p, c){
+    var m = mat(c.matId), mx = maxCR(p, m, c.ori), out = [];
+    for(var cc=c.cols; cc<=Math.max(c.cols, mx.c); cc++) for(var rr=c.rows; rr<=Math.max(c.rows, mx.r); rr++){
+      var s = blockSize(m, c.ori, cc, rr);
+      if(cc===c.cols && rr===c.rows) { out.push({ cols:cc, rows:rr, sx:c.sx, sz:c.sz }); continue; }
+      if(fits(p, { x:c.x, z:c.z, sx:s.sx, sz:s.sz }, c)) out.push({ cols:cc, rows:rr, sx:s.sx, sz:s.sz });
+    }
+    return out;
   }
-  function addQty(c, m, q){
-    var left = q;
-    if(c.piles.length){ var i = c.piles.length-1, t = Math.min(m.qpp-c.piles[i], left); c.piles[i] += t; left -= t; }
-    while(left>0){ var t2 = Math.min(m.qpp, left); c.piles.push(t2); left -= t2; }
+  function mergeCap(c, p){
+    var m = mat(c.matId), maxN = c.cols*c.rows;
+    if(p) growOptions(p, c).forEach(function(o){ if(o.cols*o.rows > maxN) maxN = o.cols*o.rows; });
+    return maxN*m.maxPcs - cardQty(c) - addsQty(c);
   }
+  function growSpec(p, c, total){
+    var m = mat(c.matId), need = Math.ceil(total/m.maxPcs), best = null;
+    if(c.cols*c.rows >= need) return null;
+    growOptions(p, c).forEach(function(o){
+      if(o.cols*o.rows < need) return;
+      var score = 2*(o.sx + o.sz) + (o.cols*o.rows - need);
+      if(!best || score < best.score){ best = o; best.score = score; }
+    });
+    return best;
+  }
+  function applyGrow(c, g){
+    var nt = [];
+    for(var i=0;i<g.cols*g.rows;i++) nt.push(0);
+    for(var r=0;r<c.rows;r++) for(var k=0;k<c.cols;k++) nt[r*g.cols+k] = c.tum[r*c.cols+k] || 0;
+    c.tum = nt; c.cols = g.cols; c.rows = g.rows; c.sx = g.sx; c.sz = g.sz;
+  }
+  function growFor(p, c, extra){ var g = growSpec(p, c, cardQty(c) + addsQty(c) + extra); if(g) applyGrow(c, g); return g; }
+  function fallbackSpec(p, m, q){ var e = bestBlock({ ux:p.ux, uz:p.uz, cards:[] }, m, q) || { ori:0, cols:1, rows:1, sx:1, sz:1 }; e.x = 0; e.z = 0; e.over = true; return e; }
   function takeQty(c, q){
     var left = q;
-    while(left>0 && c.piles.length){ var i=c.piles.length-1, t=Math.min(c.piles[i], left); c.piles[i]-=t; left-=t; if(c.piles[i]<=0) c.piles.pop(); }
+    for(var i=0;i<c.tum.length && left>0;i++){ var t = Math.min(c.tum[i], left); c.tum[i] -= t; left -= t; }
+    return q - left;
+  }
+  function pickParts(tum, cols, q){
+    var out = [], left = q;
+    for(var i=0;i<tum.length && left>0;i++){ if(tum[i]<=0) continue; var t = Math.min(tum[i], left); out.push({ label:(Math.floor(i/cols)+1)+"."+(i%cols+1), pcs:t, of:tum[i] }); left -= t; }
+    return out;
+  }
+  function partsText(parts){ return parts.map(function(x){ return x.label+(parts.length>1?" ("+fmt(x.pcs)+")":""); }).join(" → "); }
+  function blockText(c){
+    var n = c.cols*c.rows, mx = Math.max.apply(null, c.tum);
+    return c.cols+"×"+c.rows+" · "+n+" tumpukan · maks "+fmt(mx)+" pcs/tumpukan";
+  }
+  function specText(m, spec, q){
+    var n = spec.cols*spec.rows;
+    return spec.cols+"×"+spec.rows+" = "+n+" tumpukan · ± "+fmt(Math.ceil(q/n))+" pcs/tumpukan"+(spec.ori?" · karton diputar":"");
   }
   function findCard(id){
     for(var i=0;i<S.length;i++) for(var j=0;j<S[i].cards.length;j++) if(S[i].cards[j].id===id) return { p:S[i], c:S[i].cards[j] };
@@ -504,62 +649,79 @@
   function allCards(){ var r=[]; S.forEach(function(p){ p.cards.forEach(function(c){ r.push({p:p, c:c}); }); }); return r; }
   function lastDate(c){ return c.lots[c.lots.length-1].date; }
 
-  /* ---------- cari opsi ---------- */
-  function findOptions(st, m, date, win, allowOther){
+  /* ---------- cari posisi ---------- */
+  function findOptions(st, m, date, win){
     var out = [];
     st.forEach(function(p){
-      var own = p.cat===m.cat;
-      if(!own && !allowOther) return;
+      if(p.cat!==m.cat || p.manual==="penuh") return;
       var merge = null;
-      p.cards.forEach(function(c){
-        if(c.matId===m.id && dayDiff(lastDate(c), date)<=win){ if(!merge || lastDate(c)>lastDate(merge)) merge = c; }
-      });
-      var tier, kind, cap, card = null;
-      if(merge){ kind="gabung"; card=merge; cap=mergeCap(p, merge); tier = own ? 0 : 3; }
-      else { kind="baru"; cap=newCap(p, m); tier = own ? (p.cards.length ? 1 : 2) : 3; }
-      if(cap<=0) return;
-      out.push({ pid:p.id, cardId: card ? card.id : null, kind:kind, tier:tier, cap:cap, other:!own, used:usedDepth(p) });
+      p.cards.forEach(function(c){ if(c.matId===m.id && dayDiff(lastDate(c), date)<=win && mergeCap(c, p)>0){ if(!merge || lastDate(c)>lastDate(merge)) merge = c; } });
+      if(merge){ out.push({ pid:p.id, cardId:merge.id, kind:"gabung", tier:0, cap:mergeCap(merge, p), used:binUsed(p), slot:p.slot, dd:dayDiff(lastDate(merge), date) }); return; }
+      var mt = maxTum(p, m); if(!mt && p.manual==="ruang") mt = 4; if(!mt) return;
+      out.push({ pid:p.id, cardId:null, kind:"baru", tier:p.cards.length?1:2, cap:mt*m.maxPcs, used:binUsed(p), slot:p.slot });
     });
-    out.sort(function(a,b){ return a.tier-b.tier || b.used-a.used || (a.pid<b.pid?-1:1); });
+    out.sort(function(a,b){ return a.tier-b.tier || (a.tier===0 ? (a.dd-b.dd) : 0) || b.used-a.used || a.slot-b.slot; });
     return out;
   }
   function applyAlloc(st, m, pid, cardId, q, date, dn){
     var p = posisi(pid, st), c = null;
     if(cardId){ for(var i=0;i<p.cards.length;i++) if(p.cards[i].id===cardId) c = p.cards[i]; }
-    var isNew = false;
-    if(c){ addQty(c, m, q); c.lots.push({ dn:dn, date:date, qty:q }); }
-    else { c = mkCard(st, p, m.id, date, dn, q); isNew = true; }
-    return { p:p, c:c, isNew:isNew };
+    if(c){
+      var g = growFor(p, c, q);
+      if(st===S){ c.adds = c.adds || []; c.adds.push({ id:"ADD-"+ymd6(date)+"-"+pad4(seq++), qty:q, dn:dn, date:date }); return { p:p, c:c, isNew:false, q:q }; }
+      var left = fillEven(c.tum, m, q); c.lots.push({ dn:dn, date:date, qty:q-left }); return { p:p, c:c, isNew:false, q:q-left };
+    }
+    var spec = bestBlock(p, m, q) || (p.manual==="ruang" ? fallbackSpec(p, m, q) : null); if(!spec) return null;
+    c = mkBlock(st, p, m.id, date, dn, q, spec);
+    return { p:p, c:c, isNew:true, q:q };
   }
 
-  function dnLines(){
-    var key = $("#dn-sel").value, rows = [];
-    DNS[key].forEach(function(r, i){
-      var inp = document.getElementById("dnq-"+i);
-      rows.push({ matId:r[0], qty: inp ? Math.max(0, parseInt(inp.value||"0",10)) : r[1] });
-    });
-    return rows;
-  }
-  function startSearch(){
-    var date = $("#arr-date").value || "2026-10-18", win = Math.max(0, parseInt($("#win").value||"0",10));
-    var other = $("#allow-other").checked;
-    var sim = JSON.parse(JSON.stringify(S)), simSeq = seq, savedSeq = seq;
-    var lines = dnLines().filter(function(l){ return l.qty>0; });
-    plan = { date:date, dn:$("#dn-sel").value, lines:[] };
+  var IN_DRAFT = [ { matId:"facial-200", qty:2400, raw:"" }, { matId:"facial-mini", qty:1200, raw:"" } ];
+  function dnLines(){ return IN_DRAFT.filter(function(r){ return r.matId && r.qty>0; }).map(function(r){ return { matId:r.matId, qty:r.qty }; }); }
+  function buildPlan(lines, date, dn, win){
+    var sim = JSON.parse(JSON.stringify(S)), savedSeq = seq, pl = { date:date, dn:dn, lines:[] };
     lines.forEach(function(l){
-      var m = mat(l.matId), opts = findOptions(sim, m, date, win, other), left = l.qty;
-      opts.forEach(function(o){ o.q = Math.min(o.cap, left); left -= o.q; if(o.q>0){ applyAlloc(sim, m, o.pid, o.cardId, o.q, date, plan.dn); } });
-      plan.lines.push({ matId:l.matId, need:l.qty, opts:opts });
+      var m = mat(l.matId), opts = findOptions(sim, m, date, win), left = l.qty;
+      opts.forEach(function(o){
+        o.q = Math.min(o.cap, left);
+        if(o.q>0){
+          var p = posisi(o.pid, sim);
+          o.spec = o.cardId ? null : bestBlock(p, m, o.q);
+          var r = applyAlloc(sim, m, o.pid, o.cardId, o.q, date, dn);
+          if(!r){ o.q = 0; return; }
+          left -= o.q;
+        }
+      });
+      var shown = 0; opts.forEach(function(o){ o.show = o.q>0 || shown++ < 3; });
+      pl.lines.push({ matId:l.matId, need:l.qty, opts:opts });
     });
     seq = savedSeq;
-    $("#arr-msg").innerHTML = ""; $("#arr-labels").innerHTML = "";
+    return pl;
+  }
+  function autoInbound(lines, dn){ plan = buildPlan(lines, today(), dn||"-", 2); confirmPlan(true); }
+  function startSearch(){
+    var date = $("#arr-date").value || isoToday(), win = Math.max(0, parseInt($("#win").value||"0",10));
+    $("#arr-labels").innerHTML = "";
+    if(IN_DRAFT.some(function(r){ return !r.matId; })){ plan = null; renderOptions(); $("#arr-msg").innerHTML = '<div class="msg crit">Ada baris yang no materialnya belum valid (kotak merah).</div>'; return; }
+    var lines = dnLines(); if(!lines.length) return;
+    plan = buildPlan(lines, date, ($("#in-dn").value||"").trim() || "-", win);
+    $("#arr-msg").innerHTML = "";
     renderOptions(); renderChips(); update3D();
   }
 
   function tagFor(o){
-    if(o.other) return '<span class="tag warn">pinjam line lain</span>';
     if(o.kind==="gabung") return '<span class="tag ok">gabung ke '+o.cardId+'</span>';
-    return o.tier===1 ? '<span class="tag info">kartu baru · posisi terpakai</span>' : '<span class="tag info">kartu baru · posisi kosong</span>';
+    return o.tier===1 ? '<span class="tag info">blok baru · bin terpakai</span>' : '<span class="tag info">blok baru · bin kosong</span>';
+  }
+  function optPola(o, m){
+    if(o.kind==="gabung"){
+      var f = findCard(o.cardId); if(!f) return '–';
+      var g = o.q>0 ? growSpec(f.p, f.c, cardQty(f.c) + addsQty(f.c) + o.q) : null;
+      return g ? 'blok '+f.c.cols+'×'+f.c.rows+' → <b>'+g.cols+'×'+g.rows+'</b> (diperbesar ke ruang kosong di sebelahnya)' : 'blok '+f.c.cols+'×'+f.c.rows+' (cukup, pola tetap)';
+    }
+    if(o.q<=0) return '<span class="muted">–</span>';
+    var spec = o.spec || bestBlock(posisi(o.pid), m, o.q);
+    return spec ? specText(m, spec, o.q) : '<span style="color:var(--crit)">tidak muat</span>';
   }
   function renderOptions(){
     var box = $("#arr-result");
@@ -567,14 +729,15 @@
     var h = "";
     plan.lines.forEach(function(L, li){
       var m = mat(L.matId);
-      h += '<div class="optline"><div class="optline-h"><span class="sw" style="background:var('+m.token+')"></span><b>'+m.name+'</b>'+
-           '<span class="muted">butuh '+fmt(L.need)+' pcs (≈'+Math.ceil(L.need/m.qpp)+' pile, '+fmt(m.qpp)+' pcs/pile)</span><span class="tot" id="tot-'+li+'"></span></div>';
-      if(!L.opts.length){ h += '<div class="muted" style="font-size:.82rem">Tidak ada posisi yang muat untuk material ini.</div>'; }
+      h += '<div class="optline"><div class="optline-h"><span class="sw" style="background:var('+m.token+')"></span><b>'+m.code+'</b> '+esc(m.name)+
+           '<span class="muted">'+fmt(L.need)+' pcs · maks 560 pcs/tumpukan · karton '+m.flat[0]+'×'+m.flat[1]+' cm</span><span class="tot" id="tot-'+li+'"></span></div>';
+      if(!L.opts.length){ h += '<div class="muted" style="font-size:.82rem">Tidak ada bin di line '+m.cat+' yang muat untuk material ini.</div>'; }
       else {
-        h += '<div class="tablewrap"><table><tr><th>Posisi</th><th>Cara</th><th>Maks muat</th><th>Taruh (pcs)</th></tr>';
+        h += '<div class="tablewrap"><table><tr><th>Bin</th><th>Cara</th><th>Saran pola blok</th><th>Maks muat</th><th>Taruh (pcs)</th></tr>';
         L.opts.forEach(function(o, oi){
-          h += '<tr><td class="mono"><b>'+o.pid+'</b></td><td>'+tagFor(o)+'</td><td class="mono">'+fmt(o.cap)+'</td>'+
-               '<td><input type="number" min="0" max="'+o.cap+'" step="1" value="'+o.q+'" data-l="'+li+'" data-o="'+oi+'" aria-label="Qty ke posisi '+o.pid+'"></td></tr>';
+          if(!o.show) return;
+          h += '<tr><td class="mono"><b>'+o.pid+'</b></td><td>'+tagFor(o)+'</td><td style="font-size:.78rem" id="pola-'+li+'-'+oi+'">'+optPola(o, m)+'</td><td class="mono">'+fmt(o.cap)+'</td>'+
+               '<td><input type="number" min="0" max="'+o.cap+'" step="1" value="'+o.q+'" data-l="'+li+'" data-o="'+oi+'" aria-label="Qty ke bin '+o.pid+'"></td></tr>';
         });
         h += '</table></div>';
       }
@@ -583,8 +746,9 @@
     box.innerHTML = h;
     Array.prototype.forEach.call(box.querySelectorAll("input[data-l]"), function(inp){
       inp.addEventListener("input", function(){
-        var o = plan.lines[+inp.dataset.l].opts[+inp.dataset.o];
-        var v = Math.max(0, parseInt(inp.value||"0",10)); o.q = Math.min(v, o.cap);
+        var L = plan.lines[+inp.dataset.l], o = L.opts[+inp.dataset.o], m = mat(L.matId);
+        var v = Math.max(0, parseInt(inp.value||"0",10)); o.q = Math.min(v, o.cap); o.spec = null;
+        var pe = document.getElementById("pola-"+inp.dataset.l+"-"+inp.dataset.o); if(pe) pe.innerHTML = optPola(o, m);
         updateTotals(); update3D(); renderChips();
       });
     });
@@ -609,46 +773,46 @@
     try{ var q = window.qrcode(0, ecl||"M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize:4, margin:0, scalable:true }); }
     catch(e){ return '<div class="muted">QR</div>'; }
   }
-  function confirmPlan(){
+  function confirmPlan(quiet){
     if(!plan) return;
-    var created = [], notes = [], touched = [];
+    var created = [], notes = [];
     lastAlloc = {};
     plan.lines.forEach(function(L){
       var m = mat(L.matId);
       L.opts.forEach(function(o){
         if(o.q<=0) return;
-        var p = posisi(o.pid), cap = 0;
-        var existing = null; if(o.cardId){ p.cards.forEach(function(c){ if(c.id===o.cardId) existing = c; }); }
-        cap = existing ? mergeCap(p, existing) : newCap(p, m);
+        var p = posisi(o.pid), existing = null;
+        if(o.cardId){ p.cards.forEach(function(c){ if(c.id===o.cardId) existing = c; }); }
+        var cap = existing ? mergeCap(existing, p) : maxTum(p, m)*m.maxPcs;
         var q = Math.min(o.q, cap);
-        if(q<o.q) notes.push(m.name+" di "+o.pid+": hanya "+fmt(q)+" dari "+fmt(o.q)+" pcs yang muat (ruang sudah dipakai baris DN sebelumnya).");
+        if(q<o.q) notes.push(m.code+" di "+o.pid+": hanya "+fmt(q)+" dari "+fmt(o.q)+" pcs yang muat (ruang sudah dipakai baris DN sebelumnya).");
         if(q<=0) return;
-        var r = applyAlloc(S, m, o.pid, o.cardId, q, plan.date, plan.dn);
-        if(r.isNew) r.c.status = "pending";
+        var r = applyAlloc(S, m, o.pid, o.cardId, q, plan.date, plan.dn); if(!r) return;
+        if(r.isNew){ r.c.status = "pending"; r.c.sug = o.pid; }
         lastAlloc[o.pid] = true;
-        LOG.push({ t:plan.date, type:"IN", id:r.c.id, mat:m.name, pos:o.pid, qty:q, saldo:cardQty(r.c), note:plan.dn+(r.isNew?" · booking, QR baru dicetak":" · digabung, QR tetap") });
-        created.push({ r:r, q:q, m:m });
+        LOG.push({ t:plan.date, type:"IN", id:r.c.id, mat:m.name, pos:o.pid, qty:r.q, saldo:cardQty(r.c), note:plan.dn+" · di transit point · "+(r.isNew?"QR baru dicetak, saran "+o.pid+" pola "+r.c.cols+"×"+r.c.rows:"tambah ke blok "+r.c.id+" (gabung 2 hari, tanpa label baru)") });
+        created.push({ r:r, q:r.q, m:m });
       });
     });
     var html = "";
     if(created.length){
-      html += '<div class="msg ok"><b>Booking tersimpan.</b> <a href="#label" data-pr="pending">Cetak label QR baru (A4)</a>. Cetak label QR, tempel di tumpukan, lalu petugas konfirmasi di menu Petugas · Inbound (scan QR + barcode karton + label lokasi). Sebelum dikonfirmasi, tumpukan belum bisa diambil.</div><div class="labels">';
+      html += '<div class="msg ok"><b>Tersimpan, barang di transit point.</b> <a href="#label" data-pr="pending">Cetak label QR (A4)</a>, tempel di barang. Petugas shift berikutnya menaruh ke bin lewat menu Petugas · Inbound. Sebelum dikonfirmasi, barang belum bisa diambil.</div><div class="labels">';
       created.forEach(function(x){
         if(x.r.isNew){
-          html += '<div class="label"><div class="qr">'+qrSvg(x.r.c.id)+'</div><b>'+x.r.c.id+'</b><b style="font-size:.9rem">'+x.m.name+'</b>'+x.m.code+'<br>Posisi '+x.r.p.id+' · '+fmt(x.q)+' pcs<br>'+plan.dn+' · '+plan.date+'</div>';
+          html += '<div class="label"><div class="qr">'+qrSvg(x.r.c.id)+'</div><b>'+x.r.c.id+'</b><b style="font-size:.9rem">'+x.m.code+'</b>'+esc(x.m.name)+'<br>Bin '+x.r.p.id+' · pola '+x.r.c.cols+'×'+x.r.c.rows+'<br>'+fmt(x.q)+' pcs · '+plan.dn+' · '+plan.date+'</div>';
         } else {
-          html += '<div class="label" style="border-style:solid"><b>'+x.r.c.id+'</b>label sudah ada, tidak cetak ulang<br>'+x.m.name+'<br>+'+fmt(x.q)+' pcs → saldo '+fmt(cardQty(x.r.c))+'</div>';
+          html += '<div class="label" style="border-style:solid"><b>'+x.r.c.id+'</b>tambah ke blok lama di '+x.r.p.id+'<br>tidak cetak label<br>'+esc(x.m.name)+' · +'+fmt(x.q)+' pcs</div>';
         }
       });
       html += '</div>';
     }
     notes.forEach(function(n){ html += '<div class="msg warn">'+n+'</div>'; });
     var unplaced = 0; plan.lines.forEach(function(L){ var s=0; L.opts.forEach(function(o){ s+=o.q; }); unplaced += Math.max(0, L.need-s); });
-    if(unplaced>0) html += '<div class="msg warn">'+fmt(unplaced)+' pcs belum dapat posisi. Cari ulang setelah ada ruang, atau aktifkan pinjam posisi line lain.</div>';
-    $("#arr-labels").innerHTML = html;
+    if(unplaced>0) html += '<div class="msg warn">'+fmt(unplaced)+' pcs belum dapat posisi. Cari ulang setelah ada ruang di line ini.</div>';
+    if(!quiet) $("#arr-labels").innerHTML = html;
     plan = null; renderOptions();
-    if(created.length){ selPos = created[0].r.p.id; selCard = created[0].r.c.id; }
-    renderAll();
+    if(created.length && !quiet){ selPos = created[0].r.p.id; selCard = created[0].r.c.id; }
+    if(!quiet) renderAll();
   }
 
   /* ---------- helper tampilan ---------- */
@@ -671,38 +835,86 @@
     for(var i=0;i<MATS.length;i++) if(MATS[i].cat===m.cat && MATS[i].id!==m.id) return MATS[i];
     return MATS[0]===m ? MATS[1] : MATS[0];
   }
-  function today(){ var el = $("#arr-date"); return (el && el.value) || "2026-10-18"; }
+  function isoToday(){ var d = new Date(); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }
+  function today(){ var el = $("#arr-date"); return (el && el.value) || isoToday(); }
   function buzz(ok){ try{ if(navigator.vibrate) navigator.vibrate(ok ? 60 : [120,60,120]); }catch(e){} }
 
   /* ---------- pilihan dropdown ---------- */
   function fillSelects(){
-    var dn = $("#dn-sel"); if(!dn.options.length) dn.innerHTML = Object.keys(DNS).map(function(k){ return '<option>'+k+'</option>'; }).join("");
     $("#mat-full").innerHTML = MATS.map(function(m){ return '<option value="'+esc(matLabel(m))+'"></option>'; }).join("");
     $("#mat-list").innerHTML = MATS.map(function(m){ return '<option value="'+m.code+'">'+esc(m.name)+'</option>'; }).join("");
   }
-  function renderDnLines(){
-    var key = $("#dn-sel").value, h = '<tr><th>No material</th><th>Nama material</th><th>Qty (pcs)</th></tr>';
+  function renderInForm(){
+    var box = $("#in-form"), h = '';
+    IN_DRAFT.forEach(function(r, i){
+      h += '<div class="orow"><div class="field" style="flex:1 1 220px"><label>No material · nama (ketik untuk cari)</label><input class="matin'+(r.matId?'':' bad')+'" list="mat-full" data-i="'+i+'" data-k="m" value="'+(r.matId?esc(matLabel(mat(r.matId))):esc(r.raw||''))+'" placeholder="ketik no material atau nama" autocomplete="off"></div>'+
+        '<div class="field"><label>Qty (pcs)</label><input type="number" min="1" step="1" value="'+r.qty+'" data-i="'+i+'" data-k="q"></div>'+
+        '<button data-i="'+i+'" data-k="x" aria-label="Hapus baris">Hapus</button></div>';
+    });
+    h += '<div class="row"><button id="in-add">+ Tambah baris</button></div>';
+    box.innerHTML = h;
+    Array.prototype.forEach.call(box.querySelectorAll("[data-k]"), function(el){
+      var i = +el.dataset.i;
+      if(el.dataset.k==="m") el.addEventListener("input", function(){ var m = parseMat(el.value); IN_DRAFT[i].matId = m ? m.id : null; IN_DRAFT[i].raw = el.value; el.classList.toggle("bad", !m); if(m && /^\d{8}$/.test(el.value.trim())) el.value = matLabel(m); plan = null; renderOptions(); });
+      if(el.dataset.k==="q") el.addEventListener("input", function(){ IN_DRAFT[i].qty = Math.max(1, parseInt(el.value||"1",10)); plan = null; renderOptions(); });
+      if(el.dataset.k==="x") el.addEventListener("click", function(){ IN_DRAFT.splice(i,1); if(!IN_DRAFT.length) IN_DRAFT.push({ matId:null, qty:100, raw:"" }); plan = null; renderOptions(); renderInForm(); });
+    });
+    $("#in-add").addEventListener("click", function(){ IN_DRAFT.push({ matId:null, qty:100, raw:"" }); renderInForm(); var ins = box.querySelectorAll(".matin"); ins[ins.length-1].focus(); });
+  }
+  function renderDnLines(){ renderInForm(); }
+  function renderDnLinesOld(){
+    var key = $("#dn-sel").value, h = '<tr><th>No material</th><th>Nama material</th><th>Qty (pcs, kelipatan ikat)</th></tr>';
     DNS[key].forEach(function(r, i){
       var m = mat(r[0]);
-      h += '<tr><td class="mono">'+m.code+'</td><td>'+swatch(m)+' '+esc(m.name)+'</td><td><input type="number" id="dnq-'+i+'" value="'+r[1]+'" min="0" step="100" style="width:100px"></td></tr>';
+      h += '<tr><td class="mono">'+m.code+'</td><td>'+swatch(m)+' '+esc(m.name)+'</td><td><input type="number" id="dnq-'+i+'" value="'+r[1]+'" min="0" step="'+m.pcs+'" style="width:100px"> <span class="muted" style="font-size:.72rem">= '+fmt(r[1]/m.pcs)+' ikat × '+m.pcs+'</span></td></tr>';
     });
     $("#dn-lines").innerHTML = h;
     Array.prototype.forEach.call(document.querySelectorAll("#dn-lines input"), function(i){ i.addEventListener("input", function(){ plan=null; renderOptions(); update3D(); renderChips(); }); });
   }
 
-  /* ---------- info tumpukan terpilih ---------- */
+  /* ---------- info bin / blok terpilih ---------- */
+  function ikatText(q, m){ return fmt(q)+" pcs"; }
+  function tumGrid(c){
+    var m = mat(c.matId), first = -1;
+    for(var i=0;i<c.tum.length;i++) if(c.tum[i]>0){ first = i; break; }
+    var h = '<div class="k" style="margin-top:6px">Tumpukan (baris 1 = depan, urutan ambil 1.1 → 1.2 → …)</div><div class="tgrid" style="grid-template-columns:repeat('+c.cols+',minmax(0,1fr))">';
+    for(var j=0;j<c.tum.length;j++){
+      var q = c.tum[j];
+      h += '<div class="tcell'+(q<=0?' empty':'')+(j===first?' next':'')+'"><b>'+tumLabel(c,j)+'</b><span>'+(q>0?ikatText(q,m):'kosong')+'</span></div>';
+    }
+    return h+'</div>';
+  }
   function renderPickInfo(){
     var box = $("#pick-info"), f = selCard ? findCard(selCard) : null;
-    if(!f){ box.innerHTML = ""; return; }
+    if(!f){
+      var p = posisi(selPos); if(!p){ box.innerHTML = ""; return; }
+      var h = '<div class="bininfo"><div><span class="k">Bin</span><div class="mono"><b>'+p.id+'</b> · Line '+p.cat+' ('+cat(p.cat).name+')</div></div>'+
+        '<div><span class="k">Ukuran</span><div class="mono">8,1 × 6,0 m</div></div>'+
+        '<div><span class="k">Area susun</span><div class="mono">8,1 × '+fmt2(p.uz)+' m'+(p.uz>5.3?' (satu sisi berdempetan)':'')+'</div></div>'+
+        '<div><span class="k">Lantai terpakai (perkiraan)</span><div class="mono">'+posPct(p)+'% · <span class="tag '+estState(p).c+'">'+estState(p).k+'</span></div></div>'+
+        '<div><span class="k">Status ruang manual</span><div class="camrow"><button data-bs="ruang"'+(p.manual==="ruang"?' aria-pressed="true"':'')+'>Masih ada ruang</button><button data-bs="penuh"'+(p.manual==="penuh"?' aria-pressed="true"':'')+'>Penuh</button><button data-bs=""'+(!p.manual?' aria-pressed="true"':'')+'>Pakai perkiraan</button></div></div></div>';
+      h += '<div class="binview"><div class="k">Gambar bin dari atas (garis putus-putus = posisi perkiraan)</div>'+binSvg(p, null)+'</div>';
+      if(p.cards.length){
+        h += '<div class="tablewrap" style="margin-top:8px"><table><tr><th>QR blok</th><th>No material</th><th>Pola</th><th>Qty</th><th>Status</th></tr>'+p.cards.map(function(c){ var m = mat(c.matId); return '<tr><td class="mono"><button class="linkbtn" data-c="'+c.id+'">'+c.id+'</button></td><td class="mono">'+m.code+'</td><td style="font-size:.78rem">'+blockText(c)+'</td><td class="mono">'+fmt(cardQty(c))+'</td><td>'+(c.status==="pending"?(c.needLabel?'<span class="tag warn">tunggu label</span>':'<span class="tag warn">di transit point</span>'):'<span class="tag ok">siap</span>')+(c.est?' <span class="tag">posisi perkiraan</span>':'')+'</td></tr>'; }).join("")+'</table></div>';
+      } else h += '<div class="muted" style="font-size:.82rem;margin-top:6px">Bin kosong.</div>';
+      box.innerHTML = h;
+      Array.prototype.forEach.call(box.querySelectorAll("[data-c]"), function(b){ b.addEventListener("click", function(){ selCard = b.dataset.c; renderAll(); }); });
+      Array.prototype.forEach.call(box.querySelectorAll("[data-bs]"), function(b){ b.addEventListener("click", function(){ p.manual = b.dataset.bs || null; LOG.push({ t:today(), type:"BIN", id:p.id, mat:"-", pos:p.id, qty:0, saldo:null, note:"status bin oleh admin: "+(p.manual==="penuh"?"penuh":p.manual==="ruang"?"masih ada ruang":"pakai perkiraan sistem") }); renderAll(); }); });
+      return;
+    }
     var c = f.c, m = mat(c.matId), q = cardQty(c);
     box.innerHTML = '<div class="cardbox"><div class="qrbox">'+qrSvg(c.id)+'</div><div class="info">'+
-      '<div class="mono"><b>'+c.id+'</b> '+(c.status==="pending"?'<span class="tag warn">belum dikonfirmasi</span>':'<span class="tag ok">terkonfirmasi</span>')+'</div>'+
+      '<div class="mono"><b>'+c.id+'</b> '+(c.status==="pending"?'<span class="tag warn">belum dikonfirmasi</span>':'<span class="tag ok">terkonfirmasi</span>')+' <button class="linkbtn" data-back="1">← kembali ke bin '+f.p.id+'</button></div>'+
       '<div class="k">No material</div><div class="mono"><b>'+m.code+'</b></div>'+
       '<div class="k">Nama material</div><div>'+swatch(m)+' '+bigName(m)+'</div>'+
       '<div class="k">Lokasi</div><div>Line '+f.p.cat+' ('+cat(f.p.cat).name+') · bin <b>'+f.p.id+'</b></div>'+
-      '<div class="k">Saldo</div><div class="mono"><b>'+fmt(q)+' pcs</b> · '+c.piles.length+' pile</div>'+
-      '<div class="k">Lot masuk</div>'+c.lots.map(function(l){ return '<div class="mono" style="font-size:.76rem">'+l.date+' · '+l.dn+' · '+fmt(l.qty)+'</div>'; }).join("")+
+      '<div class="k">Pola blok</div><div class="mono">'+blockText(c)+(c.ori?' · karton diputar':'')+'</div>'+
+      '<div class="k">Tapak di lantai (termasuk geseran susun batu bata 10%)</div><div class="mono">'+fmt2(c.sx)+' × '+fmt2(c.sz)+' m</div>'+
+      '<div class="k">Saldo</div><div class="mono"><b>'+fmt(q)+' pcs</b>'+(addsQty(c)?' · +'+fmt(addsQty(c))+' pcs menunggu di transit point':'')+'</div>'+
+      tumGrid(c)+
+      '<div class="k" style="margin-top:6px">Lot masuk</div>'+c.lots.map(function(l){ return '<div class="mono" style="font-size:.76rem">'+l.date+' · '+l.dn+' · '+fmt(l.qty)+'</div>'; }).join("")+
       '</div></div>';
+    var bk = box.querySelector("[data-back]"); if(bk) bk.addEventListener("click", function(){ selCard = null; renderAll(); });
   }
 
   /* ---------- pencarian no material ---------- */
@@ -722,11 +934,11 @@
       var tot = 0, ready = 0; rows.forEach(function(x){ var q = cardQty(x.c); tot += q; if(x.c.status!=="pending") ready += q; searchHit[x.c.id] = true; });
       h += '<div class="res-mat"><div class="h">'+swatch(m)+'<span class="mono"><b>'+m.code+'</b></span>'+bigName(m)+'<span class="tot">'+fmt(tot)+' pcs</span></div>';
       if(!rows.length){ h += '<div class="muted" style="font-size:.82rem;margin-top:4px">Tidak ada stok.</div></div>'; return; }
-      h += '<div class="tablewrap" style="margin-top:6px"><table><tr><th>Urutan FIFO</th><th>Lokasi (bin)</th><th>QR tumpukan</th><th>Lot tertua</th><th>Qty (pcs)</th><th>Status</th></tr>';
+      h += '<div class="tablewrap" style="margin-top:6px"><table><tr><th>Urutan FIFO</th><th>Lokasi (bin)</th><th>QR blok</th><th>Pola blok</th><th>Lot tertua</th><th>Qty (pcs)</th><th>Status</th></tr>';
       var n = 0;
       rows.forEach(function(x){
         var pend = x.c.status==="pending"; if(!pend) n++;
-        h += '<tr><td class="mono">'+(pend?'–':n)+'</td><td class="mono"><b>'+x.p.id+'</b></td><td class="mono">'+x.c.id+'</td><td class="mono">'+x.c.lots[0].date+'</td><td class="mono">'+fmt(cardQty(x.c))+'</td><td>'+(pend?'<span class="tag warn">belum dikonfirmasi</span>':'<span class="tag ok">siap ambil</span>')+'</td></tr>';
+        h += '<tr><td class="mono">'+(pend?'–':n)+'</td><td class="mono"><b>'+x.p.id+'</b></td><td class="mono">'+x.c.id+'</td><td style="font-size:.76rem">'+blockText(x.c)+'</td><td class="mono">'+x.c.lots[0].date+'</td><td class="mono">'+fmt(cardQty(x.c))+'</td><td>'+(pend?'<span class="tag warn">belum dikonfirmasi</span>':'<span class="tag ok">siap ambil</span>')+'</td></tr>';
       });
       h += '</table></div>';
       if(ready!==tot) h += '<div class="muted" style="font-size:.76rem;margin-top:4px">Siap ambil '+fmt(ready)+' pcs. Sisanya menunggu konfirmasi taruh.</div>';
@@ -737,13 +949,18 @@
 
   /* ---------- konfirmasi taruh ---------- */
   function renderPutaway(){
-    var box = $("#putaway"), pend = allCards().filter(function(x){ return x.c.status==="pending"; });
-    var konf = LOG.filter(function(r){ return r.type==="KONF"; }).slice(-4).reverse();
+    var box = $("#putaway"), all = inTasks(), ts = all.filter(function(x){ return !x.needLabel; }), nl = all.filter(function(x){ return x.needLabel; });
+    var konf = LOG.filter(function(r){ return r.type==="KONF"; }).slice(-6).reverse();
     var h = '';
-    if(!pend.length) h += '<div class="muted" style="font-size:.85rem">Tidak ada tumpukan yang menunggu ditaruh.</div>';
-    else h += '<div class="tablewrap"><table><tr><th>QR tumpukan</th><th>No material</th><th>Nama material</th><th>Bin booking</th><th>Qty</th><th>Status</th></tr>'+pend.map(function(x){ var m = mat(x.c.matId); return '<tr><td class="mono">'+x.c.id+'</td><td class="mono">'+m.code+'</td><td>'+esc(m.name)+'</td><td class="mono"><b>'+x.p.id+'</b></td><td class="mono">'+fmt(cardQty(x.c))+'</td><td><span class="tag warn">menunggu petugas</span></td></tr>'; }).join("")+'</table></div>';
-    if(konf.length) h += '<h3 style="margin-top:14px">Baru dikonfirmasi</h3><div class="tablewrap"><table>'+konf.map(function(r){ return '<tr><td class="mono">'+r.id+'</td><td>'+esc(r.mat)+'</td><td class="mono">'+r.pos+'</td><td><span class="tag ok">terkonfirmasi</span></td></tr>'; }).join("")+'</table></div>';
+    if(nl.length){
+      h += '<div class="msg warn" style="margin-top:0"><b>'+nl.length+' blok perlu cetak label</b> (sisa pecahan atau batal gabung). Barangnya menunggu di transit point. <a href="#label" data-pr="needlabel">Cetak label (A4)</a></div>';
+      h += '<div class="tablewrap"><table><tr><th>QR baru</th><th>No material</th><th>Qty</th><th>Saran bin</th><th>Asal / alasan</th><th></th></tr>'+nl.map(function(x){ var m = mat(x.matId), c = findCard(x.cardId).c; return '<tr><td class="mono">'+x.cardId+'</td><td class="mono">'+m.code+'</td><td class="mono">'+fmt(x.qty)+'</td><td class="mono"><b>'+x.pos+'</b></td><td style="font-size:.76rem">'+(c.from?'sisa dari '+c.from:'batal gabung')+(c.why?' · '+esc(c.why):'')+'</td><td><button data-lbl="'+x.cardId+'">Label sudah dicetak</button></td></tr>'; }).join("")+'</table></div>';
+    }
+    if(!ts.length) h += '<div class="muted" style="font-size:.85rem;margin-top:8px">Tidak ada barang siap ditaruh di transit point.</div>';
+    else h += '<div class="k" style="margin-top:10px">Di transit point, siap ditaruh ('+ts.length+')</div><div class="tablewrap"><table><tr><th>QR</th><th>No material</th><th>Qty</th><th>Saran bin</th><th>Keterangan</th></tr>'+ts.map(function(x){ var m = mat(x.matId); return '<tr><td class="mono">'+x.cardId+'</td><td class="mono">'+m.code+'</td><td class="mono">'+fmt(x.qty)+'</td><td class="mono"><b>'+x.pos+'</b></td><td style="font-size:.76rem">'+(x.kind==="gabung"?'tambah ke blok lama':(x.from?'sisa dari '+x.from:'blok baru'))+'</td></tr>'; }).join("")+'</table></div>';
+    if(konf.length) h += '<div class="k" style="margin-top:12px">Baru ditaruh petugas</div><div class="tablewrap"><table><tr><th>QR</th><th>Bin</th><th>Qty</th><th>Hasil</th></tr>'+konf.map(function(r){ var diff = /beda dari saran/.test(r.note), over = /cek fisik/.test(r.note), est = /posisi perkiraan/.test(r.note), part = /qty masuk/.test(r.note), why = (r.note.match(/alasan: ([^·]+)/)||[])[1]; return '<tr><td class="mono">'+r.id+'</td><td class="mono">'+r.pos+'</td><td class="mono">'+(r.qty?fmt(r.qty):'–')+'</td><td>'+(diff?'<span class="tag warn">beda dari saran</span> ':'')+(part?'<span class="tag warn">masuk sebagian</span> ':'')+(over?'<span class="tag crit">cek ruang bin</span> ':'')+(est?'<span class="tag">posisi perkiraan</span> ':'')+(!diff&&!over&&!part&&!est?'<span class="tag ok">sesuai</span>':'')+(why?'<div class="muted" style="font-size:.72rem">alasan: '+esc(why.trim())+'</div>':'')+'</td></tr>'; }).join("")+'</table></div>';
     box.innerHTML = h;
+    Array.prototype.forEach.call(box.querySelectorAll("[data-lbl]"), function(b){ b.addEventListener("click", function(){ var f = findCard(b.dataset.lbl); if(f){ f.c.needLabel = false; LOG.push({ t:today(), type:"IN", id:f.c.id, mat:mat(f.c.matId).name, pos:f.p.id, qty:0, saldo:cardQty(f.c), note:"label dicetak admin · siap ditaruh petugas" }); } renderAll(); }); });
   }
 
   /* =========================================================
@@ -757,12 +974,13 @@
   var simCtx = {
     mode:"sim", sc:newSc(), msg:"",
     order:function(){ return ORDER && !ORDER.posted ? ORDER : null; },
-    stacks:function(){ return allCards().map(function(x){ return { id:x.c.id, pos:x.p.id, matId:x.c.matId, qty:cardQty(x.c), date:x.c.lots[0].date, pending:x.c.status==="pending" }; }); },
+    stacks:function(){ return allCards().map(function(x){ return { id:x.c.id, pos:x.p.id, matId:x.c.matId, qty:cardQty(x.c), date:x.c.lots[0].date, pending:x.c.status==="pending", tum:x.c.tum.slice(), cols:x.c.cols, pola:blockText(x.c) }; }); },
     take:function(st, q, gap, fifo, li){
       var f = findCard(st.id), c = f.c, p = f.p, m = mat(c.matId), L = ORDER.lines[li], t = today();
-      if(q>0){ takeQty(c, q); L.picked += q; ORDER.done.push({ li:li, id:c.id, pos:p.id, q:q, fifo:fifo }); }
+      var tumTxt = partsText(pickParts(c.tum, c.cols, q));
+      if(q>0){ takeQty(c, q); L.picked += q; ORDER.done.push({ li:li, id:c.id, pos:p.id, q:q, fifo:fifo, tum:tumTxt }); }
       var left = cardQty(c);
-      if(q>0) LOG.push({ t:t, type:"OUT", id:c.id, mat:m.name, pos:p.id, qty:q, saldo: gap>0 ? Math.max(0,left-gap) : left, fifo:fifo, note:ORDER.no+" · scan QR + barcode karton"+(left-gap<=0?" · tumpukan habis, QR ditutup":"") });
+      if(q>0) LOG.push({ t:t, type:"OUT", id:c.id, mat:m.name, pos:p.id, qty:q, saldo: gap>0 ? Math.max(0,left-gap) : left, fifo:fifo, note:ORDER.no+" · tumpukan "+tumTxt+(left-gap<=0?" · blok habis, QR ditutup":"") });
       if(gap>0){ takeQty(c, gap); LOG.push({ t:t, type:"SELISIH", id:c.id, mat:m.name, pos:p.id, qty:gap, saldo:cardQty(c), note:"lapor selisih petugas · menunggu koreksi admin" }); }
       if(cardQty(c)===0){ p.cards = p.cards.filter(function(x){ return x.id!==c.id; }); if(selCard===c.id) selCard = null; }
       lastAlloc = {};
@@ -792,7 +1010,7 @@
     var out = [], left = L.qty - L.picked;
     if(left<=0){ out.short = 0; return out; }
     ctx.stacks().filter(function(s){ return s.matId===L.matId && !s.pending && s.qty>0; }).sort(byFifo).forEach(function(s){
-      if(left<=0) return; var t = Math.min(s.qty, left); out.push({ id:s.id, pos:s.pos, q:t, date:s.date }); left -= t;
+      if(left<=0) return; var t = Math.min(s.qty, left); out.push({ id:s.id, pos:s.pos, q:t, date:s.date, parts:s.tum?pickParts(s.tum, s.cols, t):null }); left -= t;
     });
     out.short = Math.max(0, left); return out;
   }
@@ -813,23 +1031,23 @@
     if(!code || !o) return null;
     var s = findStack(ctx, code);
     if(!s){
-      if(/^LOC-/.test(code)) return { ok:false, s:null, msg:'Ini QR lokasi bin '+esc(code.slice(4))+', bukan QR tumpukan. Scan label QR yang menempel di tumpukan.' };
-      var mm = matByCode(code); if(mm) return { ok:false, s:null, msg:'Ini barcode karton ('+mm.code+'). Scan QR tumpukan dulu, barcode karton di langkah 2.' };
-      return { ok:false, s:null, msg:'QR "'+esc(code)+'" tidak dikenal atau tumpukannya sudah ditutup.' };
+      if(/^LOC-/.test(code)) return { ok:false, s:null, msg:'Ini QR lokasi bin '+esc(code.slice(4))+', bukan QR blok. Scan label QR yang menempel di blok.' };
+      var mm = matByCode(code); if(mm) return { ok:false, s:null, msg:'Ini barcode karton ('+mm.code+'). Scan QR blok dulu, barcode karton di langkah 2.' };
+      return { ok:false, s:null, msg:'QR "'+esc(code)+'" tidak dikenal atau bloknya sudah ditutup.' };
     }
     var m = mat(s.matId);
-    if(s.pending) return { ok:false, s:s, msg:'Tumpukan ini belum dikonfirmasi saat taruh. Tidak bisa diambil.' };
+    if(s.pending) return { ok:false, s:s, msg:'Blok ini belum dikonfirmasi saat taruh. Tidak bisa diambil.' };
     var li = -1;
     o.lines.forEach(function(L, i){ if(li<0 && L.matId===s.matId && L.qty-L.picked>0) li = i; });
     if(li<0){
       var twin = null; o.lines.forEach(function(L){ if(mat(L.matId).twin===s.matId && L.qty-L.picked>0) twin = L; });
-      if(twin){ var t = mat(twin.matId); return { ok:false, s:s, msg:'SALAH MATERIAL · MIRIP TAPI BEDA. Order minta '+t.code+' '+esc(t.name)+'. Tumpukan ini '+m.code+' '+esc(m.name)+'.' }; }
+      if(twin){ var t = mat(twin.matId); return { ok:false, s:s, msg:'SALAH MATERIAL · MIRIP TAPI BEDA. Order minta '+t.code+' '+esc(t.name)+'. Blok ini '+m.code+' '+esc(m.name)+'.' }; }
       var inOrder = o.lines.some(function(L){ return L.matId===s.matId; });
       return { ok:false, s:s, msg: inOrder ? 'No material '+m.code+' untuk order ini sudah terpenuhi. Jangan diambil lagi.' : 'SALAH MATERIAL. '+m.code+' '+esc(m.name)+' tidak ada di order ini.' };
     }
     var L = o.lines[li], st = lineSteps(ctx, L), fifo = !!(st.length && st[0].id===s.id);
     var q = fifo ? st[0].q : Math.min(L.qty-L.picked, s.qty);
-    return { ok:true, s:s, li:li, fifo:fifo, q:q, first:st[0] };
+    return { ok:true, s:s, li:li, fifo:fifo, q:q, first:st[0], parts:s.tum?pickParts(s.tum, s.cols, q):null };
   }
 
   /* ---------- tampilan scanner (dipakai simulasi & kamera) ---------- */
@@ -862,7 +1080,7 @@
       box.innerHTML = h; wirePicker(ctx, box, null); return;
     }
     var steps = [];
-    o.lines.forEach(function(L, li){ lineSteps(ctx, L).forEach(function(st, si){ steps.push({ li:li, si:si, id:st.id, pos:st.pos, q:st.q, date:st.date }); }); });
+    o.lines.forEach(function(L, li){ lineSteps(ctx, L).forEach(function(st, si){ steps.push({ li:li, si:si, id:st.id, pos:st.pos, q:st.q, date:st.date, parts:st.parts }); }); });
     var nDone = o.lines.filter(function(L){ return lineStatus(ctx, L).k==="selesai"; }).length;
     h += '<div class="ohead"><div><div class="k">No order</div><b class="mono">'+esc(o.no)+'</b></div><div><div class="k">Tujuan</div>Produksi</div><div><div class="k">Progres</div><span class="mono">'+nDone+' / '+o.lines.length+'</span> material</div></div>';
 
@@ -873,10 +1091,10 @@
            '<div class="qtys">Diminta <b>'+fmt(L.qty)+'</b> · Diambil <b>'+fmt(L.picked)+'</b> · Sisa <b>'+fmt(rem)+'</b> pcs</div></div>';
       var done = o.done.filter(function(d){ return d.li===li; }), pend = steps.filter(function(x){ return x.li===li; });
       if(done.length || pend.length){
-        h += '<div class="tablewrap"><table class="ptable"><tr><th>#</th><th>Lokasi</th><th>QR tumpukan</th><th>Ambil (pcs)</th><th>Status</th></tr>';
+        h += '<div class="tablewrap"><table class="ptable"><tr><th>#</th><th>Lokasi</th><th>QR blok</th><th>Tumpukan</th><th>Ambil (pcs)</th><th>Status</th></tr>';
         var n = 0;
-        done.forEach(function(d){ n++; h += '<tr class="done"><td>✓</td><td>'+d.pos+'</td><td>'+d.id+'</td><td>'+fmt(d.q)+'</td><td><span class="tag '+(d.fifo?'fifo':'nofifo')+'">'+(d.fifo?'FIFO':'NO FIFO')+'</span></td></tr>'; });
-        pend.forEach(function(x){ n++; var nx = steps[0]===x; h += '<tr'+(nx?' class="next"':'')+'><td>'+n+'</td><td><b>'+x.pos+'</b></td><td>'+x.id+'</td><td>'+fmt(x.q)+'</td><td>'+(nx?'<span class="tag info">berikutnya</span>':'<span class="tag">antri</span>')+'</td></tr>'; });
+        done.forEach(function(d){ n++; h += '<tr class="done"><td>✓</td><td>'+d.pos+'</td><td>'+d.id+'</td><td>'+(d.tum||'–')+'</td><td>'+fmt(d.q)+'</td><td><span class="tag '+(d.fifo?'fifo':'nofifo')+'">'+(d.fifo?'FIFO':'NO FIFO')+'</span></td></tr>'; });
+        pend.forEach(function(x){ n++; var nx = steps[0]===x; h += '<tr'+(nx?' class="next"':'')+'><td>'+n+'</td><td><b>'+x.pos+'</b></td><td>'+x.id+'</td><td><b>'+(x.parts?partsText(x.parts):'–')+'</b></td><td>'+fmt(x.q)+'</td><td>'+(nx?'<span class="tag info">berikutnya</span>':'<span class="tag">antri</span>')+'</td></tr>'; });
         h += '</table></div>';
       }
       if(s.k==="kurang stok") h += '<div class="msg crit" style="margin:6px">Stok habis. Kurang '+fmt(rem)+' pcs, admin perlu tindak lanjut.</div>';
@@ -893,14 +1111,16 @@
     var ev = evalQr(ctx), nx = steps[0];
     if(!sc.qr && nx){
       var mn = mat(o.lines[nx.li].matId);
-      h += '<div class="target"><div class="k" style="color:var(--info)">Tugas berikutnya</div>'+kv([["Lokasi", nx.pos], ["QR tumpukan", nx.id], ["No material", mn.code], ["Nama material", bigName(mn), true], ["Ambil", fmt(nx.q)+' pcs']])+'</div>';
+      var nbp = posisi(nx.pos);
+      h += '<div class="target"><div class="k" style="color:var(--info)">Tugas berikutnya</div>'+kv([["Lokasi", nx.pos+(nbp?' · <span style="font-family:var(--body);font-weight:400">'+binHint(nbp)+'</span>':'')], ["QR blok", nx.id], ["Tumpukan", nx.parts?partsText(nx.parts):'–'], ["No material", mn.code], ["Nama material", bigName(mn), true], ["Ambil", fmt(nx.q)+' pcs']])+
+           (nbp && findCard(nx.id) ? '<div class="k" style="margin-top:4px">Letak blok di bin '+nx.pos+' (disorot)</div>'+binSvg(nbp, nx.id) : '')+'</div>';
     }
     // langkah 1
     var c1 = !ev ? '' : (ev.ok ? 'ok' : 'bad');
-    h += '<div class="stepbox '+c1+'"><div class="stephead"><span class="num">1</span>Scan QR tumpukan</div>';
+    h += '<div class="stepbox '+c1+'"><div class="stephead"><span class="num">1</span>Scan QR blok</div>';
     if(ev){
       var rows = [["QR terbaca", esc(sc.qr)]];
-      if(ev.s){ var ms = mat(ev.s.matId); rows.push(["Lokasi", ev.s.pos], ["No material", ms.code], ["Nama material", bigName(ms), true], ["Saldo", fmt(ev.s.qty)+' pcs']); }
+      if(ev.s){ var ms = mat(ev.s.matId); rows.push(["Lokasi", ev.s.pos], ["No material", ms.code], ["Nama material", bigName(ms), true], ["Saldo", fmt(ev.s.qty)+' pcs']); if(ev.s.pola) rows.push(["Pola blok", ev.s.pola]); }
       h += kv(rows);
       if(!ev.ok) h += '<div class="msg crit" style="margin-top:0">✕ '+ev.msg+'</div><button data-k="reset">Scan ulang</button>';
       else h += '<div><span class="tag '+(ev.fifo?'fifo':'nofifo')+'">'+(ev.fifo?'FIFO':'NO FIFO')+'</span> <span class="muted" style="font-size:.76rem">'+(ev.fifo?'Lot tertua, sesuai urutan.':'Ada lot lebih lama di '+ev.first.pos+' ('+ev.first.id+'). Boleh diambil, tercatat NO FIFO.')+'</span></div>';
@@ -912,8 +1132,8 @@
     if(ev && ev.ok){
       if(sc.bc){
         h += kv([["Barcode terbaca", esc(sc.bc)], ["Nama material", bcM ? bigName(bcM) : '<span class="muted">tidak dikenal</span>', true]]);
-        if(!bcOk) h += '<div class="msg crit" style="margin-top:0">✕ ISI KARTON TIDAK SESUAI. QR tumpukan '+mat(ev.s.matId).code+', barcode karton '+esc(sc.bc)+'. Diblokir, lapor admin.</div><button data-k="rebc">Scan barcode ulang</button>';
-        else h += '<div class="msg ok" style="margin-top:0">✓ Isi karton sesuai QR tumpukan.</div>';
+        if(!bcOk) h += '<div class="msg crit" style="margin-top:0">✕ ISI KARTON TIDAK SESUAI. QR blok '+mat(ev.s.matId).code+', barcode karton '+esc(sc.bc)+'. Diblokir, lapor admin.</div><button data-k="rebc">Scan barcode ulang</button>';
+        else h += '<div class="msg ok" style="margin-top:0">✓ Isi karton sesuai QR blok.</div>';
       } else h += scanInput(ctx, "bc", ev);
     }
     h += '</div>';
@@ -921,15 +1141,15 @@
     h += '<div class="stepbox '+(bcOk?'':'off')+'"><div class="stephead"><span class="num">3</span>Ambil &amp; konfirmasi</div>';
     if(bcOk){
       if(sc.gap){
-        h += '<div class="field"><label for="'+ctx.mode+'-phys">Fisik yang ada di tumpukan (pcs)</label><input type="number" id="'+ctx.mode+'-phys" min="0" max="'+ev.s.qty+'" value="'+Math.max(0, ev.s.qty-100)+'"></div>'+
+        h += '<div class="field"><label for="'+ctx.mode+'-phys">Fisik yang ada di blok (pcs)</label><input type="number" id="'+ctx.mode+'-phys" min="0" max="'+ev.s.qty+'" value="'+Math.max(0, ev.s.qty-100)+'"></div>'+
              '<button class="primary bigbtn" data-k="gapok">Simpan selisih &amp; ambil yang ada</button><button data-k="gapx">Batal</button>';
       } else {
-        h += kv([["Qty ambil", fmt(ev.q)+' pcs (otomatis dari daftar)'], ["Saldo setelah ambil", fmt(ev.s.qty-ev.q)+' pcs']]);
+        h += kv([["Qty ambil", fmt(ev.q)+' pcs (otomatis dari daftar)'], ["Ambil dari tumpukan", ev.parts?ev.parts.map(function(x){ return x.label+' · '+fmt(x.pcs)+(x.pcs===x.of?' pcs (habis)':' dari '+fmt(x.of)+' pcs'); }).join('<br>'):'–'], ["Saldo blok setelah ambil", fmt(ev.s.qty-ev.q)+' pcs']]);
         h += '<button class="primary bigbtn" data-k="take">Konfirmasi ambil '+fmt(ev.q)+' pcs</button><button data-k="gap">Lapor selisih (fisik kurang)</button>';
       }
     }
     h += '</div>';
-    if(sc.qr) h += '<button data-k="reset">Batal, scan tumpukan lain</button>';
+    if(sc.qr) h += '<button data-k="reset">Batal, scan blok lain</button>';
     if(ctx.msg) h += '<div class="msg ok">'+ctx.msg+'</div>';
     if(ctx.mode==="cam" && !FB.on) h += '<button data-k="new" style="margin-top:6px">Ganti order</button>';
     box.innerHTML = h;
@@ -957,8 +1177,8 @@
     on("[data-man]", function(b){ var k = b.dataset.man, v = $("#"+ctx.mode+"-"+k+"-in").value; onScan(ctx, k, v); });
     on("[data-cam]", function(b){
       var k = b.dataset.cam;
-      var title = k==="order" ? "Scan QR order" : k==="qr" ? "Scan QR tumpukan" : "Scan barcode karton";
-      var hint = k==="order" ? "Arahkan ke QR order di dashboard admin." : k==="qr" ? "Arahkan ke label QR yang menempel di tumpukan." : "Arahkan ke barcode di karton (garis-garis).";
+      var title = k==="order" ? "Scan QR order" : k==="qr" ? "Scan QR blok" : "Scan barcode karton";
+      var hint = k==="order" ? "Arahkan ke QR order di dashboard admin." : k==="qr" ? "Arahkan ke label QR yang menempel di blok." : "Arahkan ke barcode di karton (garis-garis).";
       openCam(title, hint, function(t){ onScan(ctx, k, t); });
     });
     on("[data-k=reset]", function(){ ctx.sc = newSc(); ctx.refresh(); });
@@ -986,130 +1206,380 @@
   }
   function renderKamera(){ renderPicker(camCtx, $("#kam-scr")); }
 
-  /* ---------- INBOUND: konfirmasi taruh oleh petugas ---------- */
-  var DEMO_IN = [
-    { id:"BC-261018-9001", pos:"A3", matId:"facial-200",   qty:700, pending:true },
-    { id:"BC-261018-9002", pos:"C2", matId:"napkin-kecil", qty:400, pending:true }
-  ];
-  function newIsc(){ return { qr:"", bc:"", loc:"" }; }
-  simCtx.tab = "out"; simCtx.isc = newIsc(); simCtx.inMsg = ""; simCtx.inDone = [];
-  simCtx.inbound = function(){ return allCards().filter(function(x){ return x.c.status==="pending"; }).map(function(x){ return { id:x.c.id, pos:x.p.id, matId:x.c.matId, qty:cardQty(x.c), pending:true }; }); };
-  simCtx.inDoneList = function(){ return simCtx.inDone; };
-  simCtx.confirmIn = function(t){
-    var f = findCard(t.id); if(!f) return; var m = mat(f.c.matId);
-    f.c.status = "ok"; simCtx.inDone.push({ id:t.id, pos:t.pos, matId:t.matId, qty:t.qty });
-    LOG.push({ t:today(), type:"KONF", id:t.id, mat:m.name, pos:t.pos, qty:0, saldo:cardQty(f.c), note:"konfirmasi taruh petugas: QR + barcode karton + lokasi cocok" });
-    selCard = t.id; selPos = t.pos;
-  };
+  /* ---------- INBOUND: transit point -> bin (petugas) ----------
+     Tugas "baru"  : blok baru (QR dicetak admin), status di transit point.
+     Tugas "gabung": tambahan qty ke blok lama (aturan 2 hari), tanpa label baru.
+     Sisa pecahan  : blok baru dengan QR asli, menunggu admin cetak label. */
+  var REASONS = ["Bin penuh (fisik)", "Susunan di bin tidak rapi", "Karton rusak / basah", "Akses terhalang"];
+  function newIsc(){ return { task:"", qr:"", bc:"", loc:"", qty:null, split:false, sq:null, reason:"", reasonTxt:"", pos:"", spot:0, pat:null, err:"" }; }
+  function inTasks(){
+    var out = [];
+    allCards().forEach(function(x){
+      var c = x.c;
+      if(c.status==="pending") out.push({ id:c.id, kind:"baru", cardId:c.id, matId:c.matId, qty:cardQty(c), pos:x.p.id, date:c.created, from:c.from||"", needLabel:!!c.needLabel, pola:blockText(c) });
+      (c.adds||[]).forEach(function(a){ out.push({ id:a.id, kind:"gabung", cardId:c.id, matId:c.matId, qty:a.qty, pos:x.p.id, date:a.date, dn:a.dn }); });
+    });
+    out.sort(function(a,b){ var pa = posisi(a.pos), pb = posisi(b.pos); return (a.needLabel?1:0)-(b.needLabel?1:0) || (pa.li-pb.li) || (pa.slot-pb.slot) || (a.id<b.id?-1:1); });
+    return out;
+  }
+  function taskById(id){ var t = inTasks(); for(var i=0;i<t.length;i++) if(t[i].id===id) return t[i]; return null; }
+  function estState(p){
+    if(p.manual==="penuh") return { k:"penuh (manual)", c:"crit" };
+    if(p.manual==="ruang") return { k:"masih ada ruang (manual)", c:"ok" };
+    var pct = posPct(p);
+    return pct<60 ? { k:"longgar", c:"ok" } : pct<85 ? { k:"mungkin masih muat", c:"warn" } : { k:"kemungkinan penuh", c:"crit" };
+  }
+  function binHint(p){ return "Line "+p.cat+" ("+cat(p.cat).name+") · bin ke-"+p.k+" dari depan"; }
+  function nearestBin(m, fromBin, qty){
+    var from = posisi(fromBin), best = null;
+    S.forEach(function(p){
+      if(p.cat!==m.cat || p.id===fromBin || p.manual==="penuh") return;
+      if(!(maxTum(p, m)>0 || p.manual==="ruang")) return;
+      var d = Math.abs(p.slot - from.slot);
+      if(!best || d < best.d) best = { p:p, d:d };
+    });
+    return best ? best.p : from;
+  }
+
+  // gambar bin dari atas: depan di bawah, kiri-kanan dilihat dari depan
+  function binSvg(p, hlId, ghost, spots, chosen){
+    var sc = Math.min(300/Math.max(p.uz, 0.1), 230/Math.max(p.ux, 0.1)), W = Math.round(p.uz*sc), H = Math.round(p.ux*sc), pad = 18;
+    function R(x, z, sx, sz){ return { x:pad + z*sc, y:pad + H - (x+sx)*sc, w:sz*sc, h:sx*sc }; }
+    var h = '<svg class="binsvg" viewBox="0 0 '+(W+pad*2)+' '+(H+pad*2+14)+'" role="img" aria-label="Gambar bin '+p.id+' dari atas">';
+    h += '<rect x="'+pad+'" y="'+pad+'" width="'+W+'" height="'+H+'" class="bs-area"/>';
+    p.cards.forEach(function(c){
+      if(ghost && ghost.cardId===c.id) return;
+      var m = mat(c.matId), r = R(c.x, c.z, c.sx, c.sz), hl = c.id===hlId;
+      h += '<rect x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" rx="2" style="fill:var('+m.token+');opacity:'+(c.status==="pending"?0.35:0.85)+'" class="'+(hl?'bs-hl':'bs-blk')+(c.est?' bs-est':'')+'"/>';
+      h += '<text x="'+(r.x+r.w/2)+'" y="'+(r.y+r.h/2)+'" class="bs-t">'+m.code.slice(-4)+'</text>';
+    });
+    (spots||[]).forEach(function(s, i){
+      var r = R(s.x, s.z, s.sx, s.sz);
+      h += '<rect x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" class="bs-spot'+(i===chosen?' on':'')+'"/>';
+      h += '<circle cx="'+(r.x+10)+'" cy="'+(r.y+r.h-10)+'" r="8" class="bs-num'+(i===chosen?' on':'')+'"/><text x="'+(r.x+10)+'" y="'+(r.y+r.h-10)+'" class="bs-numt">'+(i+1)+'</text>';
+    });
+    if(ghost){
+      var g = R(ghost.x, ghost.z, ghost.sx, ghost.sz), d = ghost.d, ox = OVERHANG*d.cx;
+      h += '<rect x="'+g.x+'" y="'+g.y+'" width="'+g.w+'" height="'+g.h+'" class="bs-ghost"/>';
+      for(var r=0;r<ghost.rows;r++) for(var cc=0;cc<ghost.cols;cc++){
+        var cell = R(ghost.x + ox + r*d.cx, ghost.z + cc*d.cz, d.cx, d.cz), fs = Math.max(5, Math.min(9, cell.w/3.4, cell.h/1.6));
+        h += '<rect x="'+cell.x+'" y="'+cell.y+'" width="'+cell.w+'" height="'+cell.h+'" class="bs-cell"/><text x="'+(cell.x+cell.w/2)+'" y="'+(cell.y+cell.h/2)+'" class="bs-tc" style="font-size:'+fs.toFixed(1)+'px">'+(r+1)+'.'+(cc+1)+'</text>';
+      }
+    }
+    h += '<text x="'+(pad+W/2)+'" y="'+(pad+H+14)+'" class="bs-front">▼ DEPAN · '+fmt2(p.uz)+' m ▼</text>';
+    h += '<text x="'+(pad-4)+'" y="'+(pad+H/2)+'" class="bs-side" transform="rotate(-90 '+(pad-6)+' '+(pad+H/2)+')">kiri</text>';
+    h += '<text x="'+(pad+W+10)+'" y="'+(pad+H/2)+'" class="bs-side" transform="rotate(90 '+(pad+W+8)+' '+(pad+H/2)+')">kanan</text>';
+    return h + '</svg>';
+  }
+  // spesifikasi blok bila ditaruh di bin p (pakai posisi saran bila bin sama)
+  function specIn(p, t, qty){
+    var m = mat(t.matId), f = t.cardId ? findCard(t.cardId) : null, c = f ? f.c : null;
+    if(c && t.kind==="baru" && posisi(t.pos)===p && c.cols*c.rows*m.maxPcs>=qty) return { ori:c.ori, cols:c.cols, rows:c.rows, x:c.x, z:c.z, sx:c.sx, sz:c.sz, over:false };
+    var tmp = { ux:p.ux, uz:p.uz, cards:p.cards.filter(function(x){ return !c || x.id!==c.id; }) };
+    var s = bestBlock(tmp, m, qty); if(s){ s.over = false; return s; }
+    var e = fallbackSpec(p, m, qty); return e;
+  }
+  // titik kosong yang muat untuk pola tertentu (untuk "posisi tidak sesuai gambar")
+  function candSpots(p, m, pat, exclId){
+    var tmp = { ux:p.ux, uz:p.uz, cards:p.cards.filter(function(x){ return x.id!==exclId; }) };
+    var s = blockSize(m, pat.ori, pat.cols, pat.rows), xs = [0], zs = [0], out = [], seen = {};
+    tmp.cards.forEach(function(c){ xs.push(c.x + c.sx); zs.push(c.z + c.sz); });
+    xs.forEach(function(x){ zs.forEach(function(z){
+      var r = { x:x, z:z, sx:s.sx, sz:s.sz }, k = x.toFixed(2)+"|"+z.toFixed(2);
+      if(!seen[k] && fits(tmp, r)){ seen[k] = 1; out.push({ x:x, z:z, sx:s.sx, sz:s.sz, ori:pat.ori, cols:pat.cols, rows:pat.rows }); }
+    }); });
+    out.sort(function(a,b){ return a.x-b.x || a.z-b.z; });
+    return out.slice(0, 6);
+  }
+
+  simCtx.tab = "out"; simCtx.isc = newIsc(); simCtx.inMsg = "";
+  simCtx.inbound = function(){ return inTasks(); };
+  simCtx.inDoneList = function(){ return LOG.filter(function(r){ return r.type==="KONF"; }).slice(-5).reverse(); };
   camCtx.tab = "out"; camCtx.isc = newIsc(); camCtx.inMsg = "";
-  camCtx.inbound = function(){ return K && K.inbound ? K.inbound.filter(function(i){ return i.pending; }) : []; };
-  camCtx.inDoneList = function(){ return K && K.inbound ? K.inbound.filter(function(i){ return !i.pending; }) : []; };
-  camCtx.confirmIn = function(t){ t.pending = false; saveK(); };
+  camCtx.inbound = simCtx.inbound; camCtx.inDoneList = simCtx.inDoneList;
+
+  // konfirmasi taruh (selalu ke state bersama)
+  function confirmIn(t, binId, qty, opt){
+    opt = opt || {};
+    var p2 = posisi(binId), m = mat(t.matId), notes = [], date = today(), src = findCard(t.cardId), reason = opt.reason || "";
+    if(t.kind==="gabung"){
+      var c = src.c, a = (c.adds||[]).filter(function(x){ return x.id===t.id; })[0];
+      c.adds = c.adds.filter(function(x){ return x.id!==t.id; });
+      var g0 = growSpec(src.p, c, cardQty(c) + addsQty(c) + qty); if(g0) applyGrow(c, g0);
+      var left = fillEven(c.tum, m, qty); if(left>0){ fillEven(c.tum, { maxPcs:Infinity, pcs:10 }, left); notes.push("melebihi perkiraan kapasitas blok"); }
+      c.lots.push({ dn:a?a.dn:"-", date:a?a.date:date, qty:qty });
+      src.p.manual = null;
+      if(opt.split) notes.push("qty masuk "+fmt(qty)+" dari "+fmt(qty+opt.split)+(reason?" · alasan: "+reason:""));
+      LOG.push({ t:date, type:"KONF", id:c.id, mat:m.name, pos:src.p.id, qty:qty, saldo:cardQty(c), note:"tambah ke blok"+(notes.length?" · "+notes.join(" · "):"") });
+    } else {
+      var c2 = src.c, p1 = src.p, spec = opt.spec || specIn(p2, t, qty);
+      p1.cards = p1.cards.filter(function(x){ return x.id!==c2.id; });
+      c2.ori = spec.ori; c2.cols = spec.cols; c2.rows = spec.rows; c2.x = spec.x; c2.z = spec.z; c2.sx = spec.sx; c2.sz = spec.sz;
+      c2.tum = []; for(var i=0;i<c2.cols*c2.rows;i++) c2.tum.push(0);
+      var lf = fillEven(c2.tum, m, qty); if(lf>0) fillEven(c2.tum, { maxPcs:Infinity, pcs:10 }, lf);
+      c2.lots = [{ dn:c2.lots[0]?c2.lots[0].dn:"-", date:c2.lots[0]?c2.lots[0].date:date, qty:qty }];
+      c2.status = "ok"; c2.needLabel = false; c2.est = !opt.posOk; p2.cards.push(c2); p2.manual = null;
+      var diff = c2.sug && c2.sug!==p2.id;
+      notes.push(diff ? "beda dari saran ("+c2.sug+" → "+p2.id+")" : "sesuai saran");
+      if(opt.posOk==="manual") notes.push("posisi di bin diubah petugas"); else if(opt.posOk) notes.push("posisi sesuai gambar"); else notes.push("posisi perkiraan");
+      if(spec.over) notes.push("menurut perkiraan bin penuh, cek fisik");
+      if(opt.split) notes.push("qty masuk "+fmt(qty)+" dari "+fmt(qty+opt.split));
+      if(reason) notes.push("alasan: "+reason);
+      c2.diff = diff ? c2.sug+"→"+p2.id : "";
+      LOG.push({ t:date, type:"KONF", id:c2.id, mat:m.name, pos:p2.id, qty:qty, saldo:qty, note:"taruh dari transit · "+notes.join(" · ") });
+    }
+    if(opt.split>0){
+      // sisa jadi blok baru dengan QR asli, saran bin terdekat, menunggu admin cetak label
+      var pt = nearestBin(m, p2.id, opt.split), sp = bestBlock(pt, m, opt.split) || fallbackSpec(pt, m, opt.split);
+      var nc = { id:"BC-"+ymd6(date)+"-"+pad4(seq++), matId:t.matId, lots:[{ dn:"sisa "+t.cardId, date:(src.c.lots[0]||{}).date||date, qty:opt.split }], created:date, status:"pending", from:t.cardId, sug:pt.id, needLabel:true, why:reason,
+                 ori:sp.ori, cols:sp.cols, rows:sp.rows, x:sp.x, z:sp.z, sx:sp.sx, sz:sp.sz, tum:[] };
+      for(var j=0;j<sp.cols*sp.rows;j++) nc.tum.push(0); fillEven(nc.tum, m, opt.split);
+      pt.cards.push(nc);
+      LOG.push({ t:date, type:"IN", id:nc.id, mat:m.name, pos:pt.id, qty:opt.split, saldo:opt.split, note:"sisa pecahan "+t.cardId+" · kembali ke transit point · menunggu cetak label · saran "+pt.id+(reason?" · alasan: "+reason:"") });
+      return nc;
+    }
+    return null;
+  }
 
   function tabsHtml(ctx){
-    var nIn = ctx.inbound().length, o = ctx.order(), nOut = o && !orderDone(ctx) ? o.lines.filter(function(L){ return L.qty-L.picked>0; }).length : 0;
+    var nIn = ctx.inbound().filter(function(x){ return !x.needLabel; }).length, o = ctx.order(), nOut = o && !orderDone(ctx) ? o.lines.filter(function(L){ return L.qty-L.picked>0; }).length : 0;
     return '<div class="ptabs" role="tablist"><button role="tab" data-tab="in" aria-selected="'+(ctx.tab==="in")+'">Inbound · taruh'+(nIn?' <span class="badge">'+nIn+'</span>':'')+'</button>'+
            '<button role="tab" data-tab="out" aria-selected="'+(ctx.tab==="out")+'">Outbound · ambil'+(nOut?' <span class="badge">'+nOut+'</span>':'')+'</button></div>';
   }
   function barTop(ctx, date){ return '<div class="bar-top"><span>Scanner · Petugas 1</span><span>'+(ctx.mode==="cam"?'kamera':'simulasi')+' · '+(date||today())+'</span></div>'; }
 
-  function evalIn(ctx){
-    var code = ctx.isc.qr; if(!code) return null;
-    var t = ctx.inbound().filter(function(x){ return x.id===code; })[0];
-    if(t) return { ok:true, t:t };
-    if(/^LOC-/.test(code)) return { ok:false, msg:'Ini QR lokasi bin '+esc(code.slice(4))+'. Scan QR tumpukan dulu, label lokasi di langkah 3.' };
-    var mm = matByCode(code); if(mm) return { ok:false, msg:'Ini barcode karton ('+mm.code+'). Scan QR tumpukan dulu, barcode karton di langkah 2.' };
-    if(ctx.inDoneList().some(function(x){ return x.id===code; })) return { ok:false, msg:'Tumpukan '+esc(code)+' sudah dikonfirmasi sebelumnya.' };
-    return { ok:false, msg:'QR "'+esc(code)+'" tidak ada di daftar barang yang perlu ditaruh.' };
+  function selectByQr(code){
+    var ts = inTasks();
+    for(var i=0;i<ts.length;i++) if(ts[i].kind==="baru" && ts[i].id===code){ if(ts[i].needLabel) return { ok:false, msg:'Label '+esc(code)+' belum dicetak admin. Tunggu label resmi dulu.' }; return { ok:true, t:ts[i] }; }
+    for(var j=0;j<ts.length;j++) if(ts[j].kind==="gabung" && ts[j].cardId===code) return { ok:true, t:ts[j] };
+    if(/^LOC-/.test(code)) return { ok:false, msg:'Ini QR lokasi bin '+esc(code.slice(4))+'. Pilih barang dulu (scan QR blok), QR lokasi di langkah 3.' };
+    var mm = matByCode(code); if(mm) return { ok:false, msg:'Ini barcode karton ('+mm.code+'). Scan QR blok dulu.' };
+    if(findCard(code)) return { ok:false, msg:'Blok '+esc(code)+' sudah ada di bin dan tidak punya barang yang perlu ditaruh.' };
+    return { ok:false, msg:'QR "'+esc(code)+'" tidak dikenal.' };
   }
-  function inInput(ctx, kind, t){
+  function inInput(ctx, kind, t, binId){
     var id = ctx.mode+"-"+kind;
     if(ctx.mode==="cam"){
       return '<div class="camrow"><button class="primary" data-cam="'+kind+'" style="flex:1 1 100%;padding:10px">Buka kamera</button>'+
              '<input id="'+id+'-in" placeholder="atau ketik kode" autocomplete="off"><button data-man="'+kind+'">OK</button></div>';
     }
     var opts, lbl;
-    if(kind==="iqr"){ lbl = "Simulasi: QR yang terbaca"; opts = '<option value="">— pilih QR yang discan —</option>'+ctx.inbound().map(function(x){ return '<option value="'+x.id+'"'+(x.id===ctx.isc.qr?' selected':'')+'>'+x.id+' · '+mat(x.matId).code+'</option>'; }).join("")+S.map(function(p){ return '<option value="LOC-'+p.id+'">label lokasi '+p.id+'</option>'; }).join(""); }
+    if(kind==="iqr"){ lbl = "Simulasi: QR yang terbaca"; var ts = inTasks().filter(function(x){ return !x.needLabel; }); opts = '<option value="">— pilih QR yang discan —</option>'+ts.map(function(x){ return '<option value="'+x.cardId+'">'+x.cardId+' · '+mat(x.matId).code+(x.kind==="gabung"?' (blok lama, tambah)':'')+'</option>'; }).join("")+'<option value="LOC-A1">label lokasi A1</option>'; }
     else if(kind==="ibc"){ lbl = "Simulasi: barcode karton yang terbaca"; opts = MATS.map(function(m){ return '<option value="'+m.code+'"'+(t&&m.id===t.matId?' selected':'')+'>'+m.code+' · '+esc(m.name)+'</option>'; }).join(""); }
-    else { lbl = "Simulasi: label lokasi yang terbaca"; opts = S.map(function(p){ return '<option value="LOC-'+p.id+'"'+(t&&p.id===t.pos?' selected':'')+'>LOC-'+p.id+' · bin '+p.id+'</option>'; }).join(""); }
+    else { lbl = "Simulasi: QR lokasi bin yang discan (bin tempat menaruh)"; opts = S.map(function(p){ return '<option value="LOC-'+p.id+'"'+(p.id===binId?' selected':'')+'>LOC-'+p.id+' · bin '+p.id+'</option>'; }).join(""); }
     return '<div class="scanrow"><div class="field" style="flex:1 1 100%"><label for="'+id+'-sel">'+lbl+'</label><select id="'+id+'-sel">'+opts+'</select></div><button class="primary" data-sim="'+kind+'" style="flex:1">Scan</button></div>';
   }
-  function renderInbound(ctx, box){
-    var tasks = ctx.inbound(), done = ctx.inDoneList(), sc = ctx.isc;
-    var h = barTop(ctx) + tabsHtml(ctx);
-    if(!tasks.length && !done.length){
-      if(ctx.mode==="cam" && !FB.on) h += '<div class="stepbox"><div class="stephead"><span class="num">0</span>Menunggu barang datang</div><p style="font-size:.84rem">Belum ada barang yang perlu ditaruh. Nanti hasil booking admin muncul otomatis di sini setelah tersambung ke database. Untuk sekarang, pakai data contoh. Label QR-nya ada di menu Label (bagian contoh inbound).</p><button class="primary bigbtn" data-k="demoin">Pakai data inbound contoh</button></div>';
-      else h += '<div class="muted" style="font-size:.88rem;margin:auto;text-align:center">Belum ada barang yang perlu ditaruh.<br>'+(FB.on?'Hasil booking admin akan muncul otomatis di sini.':'Admin input DN lalu booking posisi di dashboard.')+'</div>';
-      box.innerHTML = h; wireIn(ctx, box, null); return;
-    }
-    h += '<div class="ohead"><div><div class="k">Perlu ditaruh</div><span class="mono">'+tasks.length+'</span> tumpukan</div><div><div class="k">Sudah</div><span class="mono">'+done.length+'</span> tumpukan</div></div>';
-    h += '<div class="mblock"><div class="tablewrap"><table class="ptable"><tr><th>#</th><th>Lokasi booking</th><th>QR tumpukan</th><th>Material</th><th>Qty</th></tr>';
-    var n = 0;
-    done.forEach(function(x){ var m = mat(x.matId); n++; h += '<tr class="done"><td>✓</td><td>'+x.pos+'</td><td>'+x.id+'</td><td>'+m.code+'</td><td>'+fmt(x.qty)+'</td></tr>'; });
-    tasks.forEach(function(x, i){ var m = mat(x.matId); n++; h += '<tr'+(i===0?' class="next"':'')+'><td>'+n+'</td><td><b>'+x.pos+'</b></td><td>'+x.id+'</td><td>'+m.code+'<div style="font-family:var(--body);font-weight:400;font-size:.7rem">'+esc(m.name)+'</div></td><td>'+fmt(x.qty)+'</td></tr>'; });
-    h += '</table></div></div>';
-    if(!tasks.length){
-      h += '<div class="msg ok"><b>Semua barang sudah ditaruh dan dikonfirmasi.</b> Tumpukan sekarang bisa diambil untuk produksi.</div>';
-      if(ctx.inMsg) h += '<div class="msg ok">'+ctx.inMsg+'</div>';
-      box.innerHTML = h; wireIn(ctx, box, null); return;
-    }
-    var ev = evalIn(ctx), t = ev && ev.ok ? ev.t : null;
-    if(!sc.qr){ var nx = tasks[0], mn = mat(nx.matId); h += '<div class="target"><div class="k" style="color:var(--info)">Tugas berikutnya</div>'+kv([["Lokasi booking", nx.pos], ["QR tumpukan", nx.id], ["No material", mn.code], ["Nama material", bigName(mn), true], ["Qty", fmt(nx.qty)+' pcs']])+'</div>'; }
-    // 1 QR
-    h += '<div class="stepbox '+(!ev?'':(ev.ok?'ok':'bad'))+'"><div class="stephead"><span class="num">1</span>Scan QR tumpukan (label baru)</div>';
-    if(ev){
-      var rows = [["QR terbaca", esc(sc.qr)]];
-      if(t){ var mt = mat(t.matId); rows.push(["No material", mt.code], ["Nama material", bigName(mt), true], ["Qty", fmt(t.qty)+' pcs'], ["Lokasi booking", t.pos]); }
-      h += kv(rows);
-      if(!ev.ok) h += '<div class="msg crit" style="margin-top:0">✕ '+ev.msg+'</div><button data-k="ireset">Scan ulang</button>';
-    } else h += inInput(ctx, "iqr", null);
-    h += '</div>';
-    // 2 barcode
-    var bm = sc.bc ? matByCode(sc.bc) : null, bOk = t && bm && bm.id===t.matId;
-    h += '<div class="stepbox '+(!t?'off':(sc.bc?(bOk?'ok':'bad'):''))+'"><div class="stephead"><span class="num">2</span>Scan barcode karton</div>';
-    if(t){
-      if(sc.bc){
-        h += kv([["Barcode terbaca", esc(sc.bc)], ["Nama material", bm ? bigName(bm) : '<span class="muted">tidak dikenal</span>', true]]);
-        if(!bOk) h += '<div class="msg crit" style="margin-top:0">✕ DITOLAK. Label QR untuk '+mat(t.matId).code+', isi karton '+esc(sc.bc)+'. Label salah tempel atau barang salah. Lapor admin, cetak ulang label.</div><button data-k="irebc">Scan barcode ulang</button>';
-        else h += '<div class="msg ok" style="margin-top:0">✓ Isi karton sesuai label QR.</div>';
-      } else h += inInput(ctx, "ibc", t);
-    }
-    h += '</div>';
-    // 3 lokasi
-    var lOk = bOk && sc.loc === "LOC-"+t.pos;
-    h += '<div class="stepbox '+(!bOk?'off':(sc.loc?(lOk?'ok':'bad'):''))+'"><div class="stephead"><span class="num">3</span>Scan label lokasi bin</div>';
-    if(bOk){
-      if(sc.loc){
-        var bin = /^LOC-/.test(sc.loc) ? sc.loc.slice(4) : "";
-        h += kv([["Label terbaca", esc(sc.loc)], ["Bin", bin ? esc(bin) : '<span class="muted">bukan label lokasi</span>']]);
-        if(!lOk) h += '<div class="msg crit" style="margin-top:0">✕ LOKASI TIDAK SESUAI. Booking di '+t.pos+(bin?', yang discan '+esc(bin):'')+'. Pindahkan ke bin '+t.pos+', atau minta admin ubah booking.</div><button data-k="ireloc">Scan lokasi ulang</button>';
-        else h += '<div class="msg ok" style="margin-top:0">✓ Lokasi sesuai booking.</div>';
-      } else h += inInput(ctx, "iloc", t);
-    }
-    h += '</div>';
-    // 4 konfirmasi
-    h += '<div class="stepbox '+(lOk?'':'off')+'"><div class="stephead"><span class="num">4</span>Konfirmasi taruh</div>';
-    if(lOk) h += kv([["Tumpukan", t.id], ["Di bin", t.pos], ["Qty", fmt(t.qty)+' pcs']]) + '<button class="primary bigbtn" data-k="iok">Konfirmasi taruh</button>';
-    h += '</div>';
-    if(sc.qr) h += '<button data-k="ireset">Batal, scan tumpukan lain</button>';
-    if(ctx.inMsg) h += '<div class="msg ok">'+ctx.inMsg+'</div>';
-    box.innerHTML = h;
-    wireIn(ctx, box, t);
+  function reasonField(ctx, label){
+    var sc = ctx.isc;
+    return '<div class="field"><label for="'+ctx.mode+'-rs">'+label+'</label><select id="'+ctx.mode+'-rs"><option value="">— pilih alasan —</option>'+REASONS.map(function(r){ return '<option'+(sc.reason===r?' selected':'')+'>'+r+'</option>'; }).join("")+'<option value="_lain"'+(sc.reason==="_lain"?' selected':'')+'>Lainnya (ketik sendiri)</option></select></div>'+
+      (sc.reason==="_lain"?'<input class="txtin" id="'+ctx.mode+'-rt" placeholder="tulis alasan" value="'+esc(sc.reasonTxt||'')+'" style="width:100%">':'');
   }
-  function wireIn(ctx, box, t){
+  function reasonText(sc){ return sc.reason==="_lain" ? (sc.reasonTxt||"").trim() : sc.reason; }
+
+  function renderInbound(ctx, box){
+    var tasks = ctx.inbound(), sc = ctx.isc, t = sc.task ? taskById(sc.task) : null;
+    if(sc.task && !t){ ctx.isc = sc = newIsc(); }
+    var h = barTop(ctx) + tabsHtml(ctx);
+    if(!t){
+      if(!tasks.length){
+        h += '<div class="muted" style="font-size:.88rem;text-align:center;padding:16px 0">Tidak ada barang di transit point.<br>'+(FB.on?'Barang yang diinput admin akan muncul otomatis di sini.':'Admin input barang datang di dashboard.')+'</div>';
+        if(ctx.mode==="cam" && !FB.on) h += '<button class="primary bigbtn" data-k="demoin">Buat contoh barang datang</button>';
+      } else {
+        var ready = tasks.filter(function(x){ return !x.needLabel; }).length;
+        h += '<div class="ohead"><div><div class="k">Di transit point</div><span class="mono">'+ready+'</span> siap ditaruh</div>'+(tasks.length>ready?'<div><div class="k">Menunggu label</div><span class="mono">'+(tasks.length-ready)+'</span></div>':'')+'</div>';
+        h += '<div class="mblock"><div class="tablewrap"><table class="ptable"><tr><th>QR</th><th>Material</th><th>Qty</th><th>Saran bin</th><th></th></tr>';
+        tasks.forEach(function(x){ var m = mat(x.matId); h += '<tr'+(x.needLabel?' class="done"':'')+'><td>'+x.cardId+(x.kind==="gabung"?'<div style="font-family:var(--body);font-size:.66rem;color:var(--info)">tambah ke blok lama</div>':'')+(x.from?'<div style="font-family:var(--body);font-size:.66rem;color:var(--warn)">sisa dari '+x.from+'</div>':'')+'</td><td>'+m.code+'<div style="font-family:var(--body);font-weight:400;font-size:.68rem">'+esc(m.name)+'</div></td><td>'+fmt(x.qty)+'</td><td><b>'+x.pos+'</b></td><td>'+(x.needLabel?'<span class="tag warn">tunggu label</span>':'<button data-pick="'+x.id+'">Pilih</button>')+'</td></tr>'; });
+        h += '</table></div></div>';
+        if(ready) h += '<div class="stepbox"><div class="stephead"><span class="num">1</span>Scan QR blok di transit point</div>'+(sc.err?'<div class="msg crit" style="margin-top:0">✕ '+sc.err+'</div>':'')+inInput(ctx, "iqr", null)+'</div>';
+      }
+      if(ctx.inMsg) h += '<div class="msg ok">'+ctx.inMsg+'</div>';
+      var dn = ctx.inDoneList();
+      if(dn.length) h += '<div class="k" style="margin-top:4px">Terakhir ditaruh</div><div class="tablewrap"><table class="ptable">'+dn.map(function(r){ return '<tr class="done"><td>'+r.id+'</td><td>'+r.pos+'</td><td style="font-family:var(--body)">'+esc(r.note.replace(/^taruh dari transit · /,''))+'</td></tr>'; }).join("")+'</table></div>';
+      box.innerHTML = h; wireIn(ctx, box, null, null); return;
+    }
+
+    var m = mat(t.matId), qty = sc.qty==null ? t.qty : sc.qty;
+    var locBin = /^LOC-/.test(sc.loc) ? posisi(sc.loc.slice(4)) : null;
+    var target = locBin || posisi(t.pos);
+    var catOk = !locBin || locBin.cat===m.cat;
+    var hereQty = sc.split && sc.sq!=null ? sc.sq : qty;
+    var est = estState(target);
+    h += '<div class="target"><div class="k" style="color:var(--info)">'+(t.kind==="gabung"?'Tambah ke blok lama':'Taruh blok baru')+'</div>'+
+      kv([["QR blok", t.cardId], ["No material", m.code], ["Nama material", bigName(m), true], ["Qty", fmt(t.qty)+' pcs']])+'</div>';
+    // spesifikasi & posisi
+    var spec = null, spots = null, chosen = -1;
+    if(t.kind==="baru"){
+      spec = specIn(target, t, hereQty);
+      if(sc.pos==="tidak"){
+        var pat = sc.pat || { ori:spec.ori, cols:spec.cols, rows:spec.rows };
+        spots = candSpots(target, m, pat, t.cardId);
+        chosen = Math.min(sc.spot, spots.length-1);
+        if(chosen>=0){ var cs0 = spots[chosen]; spec = { ori:pat.ori, cols:pat.cols, rows:pat.rows, x:cs0.x, z:cs0.z, sx:cs0.sx, sz:cs0.sz, over:false }; }
+        else { var bs0 = blockSize(m, pat.ori, pat.cols, pat.rows); spec = { ori:pat.ori, cols:pat.cols, rows:pat.rows, x:0, z:0, sx:bs0.sx, sz:bs0.sz, over:true }; }
+      }
+    }
+    var ghost = spec ? { cardId:t.cardId, x:spec.x, z:spec.z, sx:spec.sx, sz:spec.sz, cols:spec.cols, rows:spec.rows, d:dims(m, spec.ori) } : null;
+    var dd = spec ? dims(m, spec.ori) : null;
+    h += '<div class="stepbox"><div class="stephead">Tujuan: '+target.id+(locBin && locBin.id!==t.pos?' <span class="tag warn">bin pilihan petugas</span>':' <span class="tag info">saran</span>')+'</div>'+
+      '<div class="muted" style="font-size:.76rem">'+binHint(target)+' · perkiraan ruang: <span class="tag '+est.c+'">'+est.k+'</span></div>'+
+      binSvg(target, t.kind==="gabung" ? t.cardId : null, ghost, spots, chosen);
+    if(spec){
+      var n = spec.cols*spec.rows, per = Math.ceil(hereQty/n);
+      h += kv([["Posisi", spec.over?'<span style="color:var(--crit)">menurut perkiraan tidak ada ruang kosong, taruh di ruang yang tersedia</span>':(sc.pos==="tidak"?'titik '+(chosen+1)+' di gambar':(spec.x<0.01&&spec.z<0.01?'pojok depan-kiri area susun':'kotak putus-putus di gambar'))],
+               ["Pola", spec.cols+' ke samping × '+spec.rows+' ke belakang ('+n+' tumpukan)'],
+               ["Arah karton", 'sisi '+Math.round(dd.cz*100)+' cm ke samping, sisi '+Math.round(dd.cx*100)+' cm ke belakang'],
+               ["Isi per tumpukan", '± '+fmt(per)+' pcs (maks 560)'+(per>MAX_PCS_TUM?' <span style="color:var(--crit)">pola terlalu kecil</span>':'')],
+               ["Susun", 'level ganjil rata kiri-belakang, level genap geser ke depan-kanan'],
+               ["Label QR", 'tempel di sisi depan tumpukan 1.1']]);
+    } else {
+      var oc = findCard(t.cardId).c;
+      h += kv([["Posisi", 'tambahkan ke blok yang disorot ('+oc.cols+'×'+oc.rows+')'], ["Label", 'tidak perlu label baru, pakai QR blok lama']]);
+    }
+    h += '<div class="camrow" style="margin-top:4px"><button data-bin="ruang">Tandai: masih ada ruang</button><button data-bin="penuh">Tandai: bin penuh</button></div></div>';
+
+    // 1 QR blok
+    var qOk = sc.qr && (sc.qr===t.cardId);
+    h += '<div class="stepbox '+(sc.qr?(qOk?'ok':'bad'):'')+'"><div class="stephead"><span class="num">1</span>'+(t.kind==="gabung"?'Scan QR blok lama di bin':'Scan QR blok (label dari admin)')+'</div>';
+    if(sc.qr){ h += kv([["QR terbaca", esc(sc.qr)]]); if(!qOk) h += '<div class="msg crit" style="margin-top:0">✕ QR tidak sesuai tugas ini ('+t.cardId+').</div><button data-k="i-rq">Scan ulang</button>'; }
+    else h += inInput(ctx, "iqr", t);
+    h += '</div>';
+    // 2 barcode karton
+    var bm = sc.bc ? matByCode(sc.bc) : null, bOk = qOk && bm && bm.id===t.matId;
+    h += '<div class="stepbox '+(!qOk?'off':(sc.bc?(bOk?'ok':'bad'):''))+'"><div class="stephead"><span class="num">2</span>Scan barcode karton</div>';
+    if(qOk){
+      if(sc.bc){ h += kv([["Barcode terbaca", esc(sc.bc)], ["Nama material", bm?bigName(bm):'<span class="muted">tidak dikenal</span>', true]]);
+        if(!bOk) h += '<div class="msg crit" style="margin-top:0">✕ DITOLAK. QR untuk '+m.code+', isi karton '+esc(sc.bc)+'. Lapor admin.</div><button data-k="i-rb">Scan barcode ulang</button>';
+        else h += '<div class="msg ok" style="margin-top:0">✓ Isi karton sesuai.</div>'; }
+      else h += inInput(ctx, "ibc", t);
+    }
+    h += '</div>';
+    // 3 QR lokasi bin
+    var gabDiff = t.kind==="gabung" && locBin && locBin.id!==t.pos;
+    var lOk = bOk && locBin && catOk && !gabDiff;
+    var binDiff = lOk && locBin.id!==t.pos;
+    h += '<div class="stepbox '+(!bOk?'off':(sc.loc?(lOk?'ok':'bad'):''))+'"><div class="stephead"><span class="num">3</span>Scan QR lokasi bin tempat menaruh</div>';
+    if(bOk){
+      if(!sc.loc){ h += '<div class="muted" style="font-size:.76rem">Sesuai saran: scan QR lokasi '+t.pos+'. Mau taruh di bin lain? Scan QR lokasi bin tersebut (harus line '+m.cat+').</div>'+inInput(ctx, "iloc", t, t.pos); }
+      else {
+        h += kv([["QR terbaca", esc(sc.loc)], ["Bin", locBin?locBin.id+' · '+binHint(locBin):'<span class="muted">bukan QR lokasi</span>']]);
+        if(!locBin) h += '<div class="msg crit" style="margin-top:0">✕ Bukan QR lokasi bin.</div><button data-k="i-rl">Scan ulang</button>';
+        else if(!catOk) h += '<div class="msg crit" style="margin-top:0">✕ DITOLAK. Bin '+locBin.id+' line '+locBin.cat+' ('+cat(locBin.cat).name+'). '+m.code+' harus di line '+m.cat+' ('+cat(m.cat).name+').</div><button data-k="i-rl">Scan ulang</button>';
+        else if(gabDiff) h += '<div class="msg warn" style="margin-top:0">Blok lama '+t.cardId+' ada di '+t.pos+'. Kalau barang ini mau ditaruh di '+locBin.id+', harus jadi blok baru dengan label baru dari admin.</div><button data-k="i-newlbl">Kembalikan ke transit point &amp; minta label baru</button><button data-k="i-rl">Scan lokasi lain</button>';
+        else {
+          h += '<div class="msg '+(binDiff?'warn':'ok')+'" style="margin-top:0">'+(binDiff?'Bin pilihan petugas ('+t.pos+' → '+locBin.id+'), tercatat beda dari saran.':'✓ Sesuai saran.')+(estState(locBin).c==="crit"?' Perkiraan sistem: bin ini kemungkinan penuh. Tetap boleh, admin akan cek.':'')+'</div>';
+          if(binDiff) h += reasonField(ctx, "Alasan beda dari saran");
+          h += '<button data-k="i-rl">Scan lokasi lain</button>';
+        }
+      }
+    }
+    h += '</div>';
+    // 4 posisi di dalam bin
+    var posDone = t.kind==="gabung" || sc.pos==="ya" || (sc.pos==="tidak" && chosen>=0);
+    if(t.kind==="baru"){
+      h += '<div class="stepbox '+(lOk?(sc.pos==="ya"||(sc.pos==="tidak"&&chosen>=0)?'ok':''):'off')+'"><div class="stephead"><span class="num">4</span>Posisi di dalam bin sesuai gambar?</div>';
+      if(lOk){
+        h += '<div class="camrow"><button data-pos="ya"'+(sc.pos==="ya"?' aria-pressed="true"':'')+'>Ya, sesuai</button><button data-pos="tidak"'+(sc.pos==="tidak"?' aria-pressed="true"':'')+'>Tidak</button></div>';
+        if(sc.pos==="tidak"){
+          var pt0 = sc.pat || { ori:spec.ori, cols:spec.cols, rows:spec.rows };
+          h += '<div class="muted" style="font-size:.76rem">Ketuk nomor titik tempat blok ditaruh (lihat gambar di atas). Ubah pola bila beda.</div>';
+          h += spots && spots.length ? '<div class="camrow">'+spots.map(function(s,i){ return '<button data-spot="'+i+'"'+(i===chosen?' aria-pressed="true"':'')+'>Titik '+(i+1)+'</button>'; }).join("")+'</div>' : '<div class="msg warn" style="margin-top:0">Pola ini tidak muat di ruang kosong menurut perkiraan. Coba ubah pola, atau tandai posisi tetap perkiraan.</div>';
+          h += '<div class="camrow"><button data-pat="c-">Kolom −</button><button data-pat="c+">Kolom +</button><button data-pat="r-">Baris −</button><button data-pat="r+">Baris +</button><button data-pat="rot">Putar karton</button></div>';
+          h += '<div class="mono" style="font-size:.74rem">Pola sekarang: '+pt0.cols+' × '+pt0.rows+(pt0.ori?' · diputar':'')+'</div>';
+        }
+        if(!sc.pos) h += '<div class="muted" style="font-size:.72rem">Boleh dilewati: posisi akan tercatat sebagai perkiraan.</div>';
+      }
+      h += '</div>';
+    }
+    // 5 qty & konfirmasi
+    var nStep = t.kind==="baru" ? 5 : 4;
+    var sqOk = !sc.split || (sc.sq!=null && sc.sq>0 && sc.sq<qty);
+    var rsNeed = (binDiff || sc.split), rsOk = !rsNeed || !!reasonText(sc);
+    var patOk = !spec || Math.ceil(hereQty/(spec.cols*spec.rows)) <= MAX_PCS_TUM || sc.pos!=="tidak";
+    h += '<div class="stepbox '+(lOk?'':'off')+'"><div class="stephead"><span class="num">'+nStep+'</span>Qty &amp; konfirmasi</div>';
+    if(lOk){
+      h += '<div class="scanrow"><div class="field"><label for="'+ctx.mode+'-iq">Qty aktual (pcs)</label><input type="number" id="'+ctx.mode+'-iq" min="1" value="'+qty+'" style="width:120px"></div></div>';
+      if(!sc.split) h += '<button data-k="i-split">Tidak muat semua? Masukkan sebagian</button>';
+      else {
+        h += '<div class="scanrow"><div class="field"><label for="'+ctx.mode+'-isq">Qty yang benar-benar masuk bin ini</label><input type="number" id="'+ctx.mode+'-isq" min="1" max="'+(qty-1)+'" value="'+(sc.sq!=null?sc.sq:Math.round(qty/2))+'" style="width:120px"></div><button data-k="i-sq">Hitung</button></div>';
+        if(sc.sq!=null){ var nb = nearestBin(m, locBin.id, qty-sc.sq); h += '<div class="msg warn" style="margin-top:0">Sisa <b>'+fmt(qty-sc.sq)+' pcs</b> jadi blok baru dengan QR baru, saran bin terdekat <b>'+nb.id+'</b>. Kembalikan sisa ke transit point. Admin akan mencetak labelnya.</div>'; }
+        if(!binDiff) h += reasonField(ctx, "Alasan tidak masuk semua");
+        h += '<button data-k="i-nosplit">Batal, masuk semua</button>';
+      }
+      if(sqOk && rsOk && patOk) h += '<button class="primary bigbtn" data-k="i-ok">Konfirmasi taruh '+fmt(sc.split?sc.sq:qty)+' pcs di '+locBin.id+'</button>';
+      else if(!rsOk) h += '<div class="muted" style="font-size:.74rem">Pilih atau tulis alasan dulu.</div>';
+    }
+    h += '</div>';
+    h += '<button data-k="i-back">← Kembali ke daftar transit point</button>';
+    box.innerHTML = h;
+    wireIn(ctx, box, t, locBin, spec);
+  }
+
+  function onScanIn(ctx, kind, text){
+    var sc = ctx.isc; text = String(text||"").trim(); if(!text) return;
+    if(kind==="iqr"){
+      if(!sc.task){ var r = selectByQr(text); if(r.ok){ ctx.isc = newIsc(); ctx.isc.task = r.t.id; ctx.isc.qr = text; ctx.inMsg = ""; buzz(true); } else { sc.err = r.msg; buzz(false); } }
+      else { sc.qr = text; buzz(text===taskById(sc.task).cardId); }
+    }
+    if(kind==="ibc") sc.bc = text;
+    if(kind==="iloc"){ sc.loc = text; sc.pos = ""; sc.spot = 0; sc.pat = null; }
+    ctx.refresh();
+  }
+  function wireIn(ctx, box, t, locBin, spec){
     function on(sel, fn){ Array.prototype.forEach.call(box.querySelectorAll(sel), function(b){ b.addEventListener("click", function(){ fn(b); }); }); }
+    function keep(){
+      var el = $("#"+ctx.mode+"-iq"); if(el){ var v = parseInt(el.value||"0",10); if(v>0) ctx.isc.qty = v; }
+      var rs = $("#"+ctx.mode+"-rs"); if(rs) ctx.isc.reason = rs.value;
+      var rt = $("#"+ctx.mode+"-rt"); if(rt) ctx.isc.reasonTxt = rt.value;
+    }
+    var rsel = $("#"+ctx.mode+"-rs"); if(rsel) rsel.addEventListener("change", function(){ keep(); ctx.refresh(); });
+    var rtx = $("#"+ctx.mode+"-rt"); if(rtx) rtx.addEventListener("change", function(){ keep(); ctx.refresh(); });
     on("[data-tab]", function(b){ ctx.tab = b.dataset.tab; ctx.refresh(); });
-    on("[data-sim]", function(b){ var k = b.dataset.sim; onScan(ctx, k, $("#"+ctx.mode+"-"+k+"-sel").value); });
-    on("[data-man]", function(b){ var k = b.dataset.man; onScan(ctx, k, $("#"+ctx.mode+"-"+k+"-in").value); });
+    on("[data-pick]", function(b){ ctx.isc = newIsc(); ctx.isc.task = b.dataset.pick; ctx.inMsg = ""; ctx.refresh(); });
+    on("[data-sim]", function(b){ keep(); var k = b.dataset.sim; onScanIn(ctx, k, $("#"+ctx.mode+"-"+k+"-sel").value); });
+    on("[data-man]", function(b){ keep(); var k = b.dataset.man; onScanIn(ctx, k, $("#"+ctx.mode+"-"+k+"-in").value); });
     on("[data-cam]", function(b){
-      var k = b.dataset.cam, T = { iqr:["Scan QR tumpukan","Arahkan ke label QR yang baru ditempel di tumpukan."], ibc:["Scan barcode karton","Arahkan ke barcode di karton (garis-garis)."], iloc:["Scan label lokasi","Arahkan ke label lokasi permanen di bin."] }[k];
-      openCam(T[0], T[1], function(x){ onScan(ctx, k, x); });
+      keep();
+      var k = b.dataset.cam, T = { iqr:["Scan QR blok","Arahkan ke label QR blok."], ibc:["Scan barcode karton","Arahkan ke barcode di karton (garis-garis)."], iloc:["Scan QR lokasi bin","Arahkan ke label lokasi di bin tempat menaruh."] }[k];
+      openCam(T[0], T[1], function(x){ onScanIn(ctx, k, x); });
     });
-    on("[data-k=ireset]", function(){ ctx.isc = newIsc(); ctx.refresh(); });
-    on("[data-k=irebc]", function(){ ctx.isc.bc = ""; ctx.refresh(); });
-    on("[data-k=ireloc]", function(){ ctx.isc.loc = ""; ctx.refresh(); });
-    on("[data-k=iok]", function(){ ctx.confirmIn(t); ctx.inMsg = 'Tercatat: '+t.id+' ('+mat(t.matId).code+') terkonfirmasi di bin '+t.pos+'.'; ctx.isc = newIsc(); buzz(true); ctx.refresh(); });
-    on("[data-k=demoin]", function(){ K = K || { order:null, stacks:[] }; K.inbound = JSON.parse(JSON.stringify(DEMO_IN)); camCtx.isc = newIsc(); camCtx.inMsg = ""; saveK(); renderKamera(); });
+    on("[data-k=i-rq]", function(){ ctx.isc.qr = ""; ctx.refresh(); });
+    on("[data-k=i-rb]", function(){ ctx.isc.bc = ""; ctx.refresh(); });
+    on("[data-k=i-rl]", function(){ ctx.isc.loc = ""; ctx.isc.pos = ""; ctx.refresh(); });
+    on("[data-pos]", function(b){ keep(); ctx.isc.pos = b.dataset.pos; ctx.isc.spot = 0; ctx.refresh(); });
+    on("[data-spot]", function(b){ keep(); ctx.isc.spot = +b.dataset.spot; ctx.refresh(); });
+    on("[data-pat]", function(b){
+      keep();
+      var p = ctx.isc.pat || { ori:spec.ori, cols:spec.cols, rows:spec.rows }, a = b.dataset.pat;
+      if(a==="c+") p.cols++; if(a==="c-") p.cols = Math.max(1, p.cols-1); if(a==="r+") p.rows++; if(a==="r-") p.rows = Math.max(1, p.rows-1); if(a==="rot") p.ori = p.ori ? 0 : 1;
+      ctx.isc.pat = p; ctx.isc.spot = 0; ctx.refresh();
+    });
+    on("[data-k=i-split]", function(){ keep(); ctx.isc.split = true; ctx.refresh(); });
+    on("[data-k=i-nosplit]", function(){ keep(); ctx.isc.split = false; ctx.isc.sq = null; ctx.refresh(); });
+    on("[data-k=i-sq]", function(){ keep(); var el = $("#"+ctx.mode+"-isq"), q = ctx.isc.qty==null ? t.qty : ctx.isc.qty; var v = parseInt(el.value||"0",10); ctx.isc.sq = Math.max(1, Math.min(q-1, v)); ctx.refresh(); });
+    on("[data-k=i-back]", function(){ ctx.isc = newIsc(); ctx.refresh(); });
+    on("[data-bin]", function(b){ var p = posisi(/^LOC-/.test(ctx.isc.loc) ? ctx.isc.loc.slice(4) : t.pos); if(p){ p.manual = b.dataset.bin; LOG.push({ t:today(), type:"BIN", id:p.id, mat:"-", pos:p.id, qty:0, saldo:null, note:"status bin ditandai petugas: "+(b.dataset.bin==="penuh"?"penuh":"masih ada ruang") }); } ctx.refresh(); if(ctx.mode==="cam" && !FB.on) renderAll(); });
+    on("[data-k=i-newlbl]", function(){
+      // barang untuk blok lama mau ditaruh di bin lain -> jadi blok baru, label dicetak admin
+      var f = findCard(t.cardId), m = mat(t.matId), a = (f.c.adds||[]).filter(function(x){ return x.id===t.id; })[0], pb = locBin, sp = bestBlock(pb, m, t.qty) || fallbackSpec(pb, m, t.qty);
+      f.c.adds = f.c.adds.filter(function(x){ return x.id!==t.id; });
+      var nc = { id:"BC-"+ymd6(today())+"-"+pad4(seq++), matId:t.matId, lots:[{ dn:a?a.dn:"-", date:a?a.date:today(), qty:t.qty }], created:today(), status:"pending", sug:pb.id, from:"", needLabel:true,
+                 ori:sp.ori, cols:sp.cols, rows:sp.rows, x:sp.x, z:sp.z, sx:sp.sx, sz:sp.sz, tum:[] };
+      for(var j=0;j<sp.cols*sp.rows;j++) nc.tum.push(0); fillEven(nc.tum, m, t.qty); pb.cards.push(nc);
+      LOG.push({ t:today(), type:"IN", id:nc.id, mat:m.name, pos:pb.id, qty:t.qty, saldo:t.qty, note:"batal gabung ke "+t.cardId+", jadi blok baru di "+pb.id+" · menunggu cetak label" });
+      ctx.inMsg = 'Barang dikembalikan ke transit point. Blok baru '+nc.id+' menunggu label dari admin.'; ctx.isc = newIsc(); ctx.refresh();
+    });
+    on("[data-k=i-ok]", function(){
+      keep();
+      var sc = ctx.isc, q = sc.qty==null ? t.qty : sc.qty, here = sc.split ? sc.sq : q;
+      var opt = { reason:reasonText(sc), split: sc.split ? q - sc.sq : 0, posOk: t.kind==="gabung" ? true : (sc.pos==="ya" ? true : (sc.pos==="tidak" ? "manual" : false)) };
+      if(t.kind==="baru" && sc.pos==="tidak" && spec) opt.spec = spec;
+      if(t.kind==="baru" && sc.pos==="ya" && spec) opt.spec = specIn(locBin, t, here);
+      var nc = confirmIn(t, locBin.id, here, opt);
+      ctx.inMsg = 'Tercatat: '+t.cardId+' di bin '+locBin.id+' ('+fmt(here)+' pcs).'+(nc?' Sisa '+fmt(opt.split)+' pcs jadi blok '+nc.id+' (saran '+nc.sug+'), kembalikan ke transit point. Menunggu label dari admin.':'');
+      selCard = t.cardId; selPos = locBin.id;
+      ctx.isc = newIsc(); buzz(true); ctx.refresh();
+    });
+    on("[data-k=demoin]", function(){ autoInbound([{ matId:"facial-200", qty:700 }, { matId:"napkin-kecil", qty:400 }], "DN-contoh"); renderAll(); renderKamera(); });
   }
 
 
@@ -1240,9 +1710,10 @@
   var IN_FRAME = true; try{ IN_FRAME = window.self !== window.top; }catch(e){ IN_FRAME = true; }
   var PR = { type:"stack", sel:null };
   function prItems(type){
-    if(type==="stack" || type==="pending") return allCards().filter(function(x){ return type==="stack" || x.c.status==="pending"; }).map(function(x){ var m = mat(x.c.matId); return { key:x.c.id, kind:"qr", code:x.c.id, t:m.code, c:x.c.id, n:[m.name, "Bin "+x.p.id+" · "+fmt(cardQty(x.c))+" pcs · masuk "+x.c.lots[0].date] }; });
+    if(type==="stack" || type==="pending") return allCards().filter(function(x){ return type==="stack" || x.c.status==="pending"; }).map(function(x){ var m = mat(x.c.matId); return { key:x.c.id, kind:"qr", code:x.c.id, t:m.code, c:x.c.id, n:[m.name, "Bin "+x.p.id+" · pola "+x.c.cols+"×"+x.c.rows+" · "+fmt(cardQty(x.c))+" pcs", "masuk "+x.c.lots[0].date] }; });
     if(type==="loc") return S.map(function(p){ return { key:p.id, kind:"qr", code:"LOC-"+p.id, t:p.id, big:true, c:"LOC-"+p.id, n:["Line "+p.cat+" · "+cat(p.cat).name, "Label lokasi permanen"] }; });
-    if(type==="demoin") return DEMO_IN.map(function(x){ var m = mat(x.matId); return { key:x.id, kind:"qr", code:x.id, t:m.code, c:x.id, n:[m.name, "Booking bin "+x.pos+" · "+fmt(x.qty)+" pcs"] }; });
+    if(type==="needlabel") return allCards().filter(function(x){ return x.c.needLabel; }).map(function(x){ var m = mat(x.c.matId); return { key:x.c.id, kind:"qr", code:x.c.id, t:m.code, c:x.c.id, n:[m.name, "Saran bin "+x.p.id+" · "+fmt(cardQty(x.c))+" pcs", x.c.from?"sisa dari "+x.c.from:"blok baru"] }; });
+    if(type==="demoin_old") return [].map(function(x){ var m = mat(x.matId); return { key:x.id, kind:"qr", code:x.id, t:m.code, c:x.id, n:[m.name, "Booking bin "+x.pos+" · "+fmt(x.qty)+" pcs"] }; });
     return MATS.map(function(m){ return { key:m.code, kind:"bar", code:m.code, t:m.name, n:["Contoh barcode karton"] }; });
   }
   function prCell(it){
@@ -1269,42 +1740,52 @@
     renderPrint();
     var o = ORDER && !ORDER.posted && !orderDone(simCtx) ? ORDER : null;
     $("#lbl-order").innerHTML = "";
-    $("#bin-table").innerHTML = '<tr><th>Kode bin</th><th>Line</th><th>Kategori</th><th>Ukuran</th><th>Tinggi maks</th><th>Isi QR lokasi</th><th>Tumpukan aktif</th></tr>' +
-      S.map(function(p){ return '<tr><td class="mono"><b>'+p.id+'</b></td><td>'+p.cat+'</td><td>'+cat(p.cat).name+'</td><td class="mono">4,2 × 3,0 m</td><td class="mono">2,5 m</td><td class="mono">LOC-'+p.id+'</td><td class="mono">'+p.cards.length+'</td></tr>'; }).join("");
+    $("#bin-table").innerHTML = '<tr><th>Kode bin</th><th>Line</th><th>Kategori</th><th>Slot</th><th>Ukuran</th><th>Area susun</th><th>Batas tinggi</th><th>Isi QR lokasi</th><th>Blok aktif</th></tr>' +
+      S.map(function(p){ return '<tr><td class="mono"><b>'+p.id+'</b></td><td>'+p.cat+'</td><td>'+cat(p.cat).name+'</td><td class="mono">'+p.slot+'</td><td class="mono">8,1 × 6,0 m</td><td class="mono">8,1 × '+fmt2(p.uz)+' m</td><td class="mono">560 pcs/tumpukan</td><td class="mono">LOC-'+p.id+'</td><td class="mono">'+p.cards.length+'</td></tr>'; }).join("");
     $("#bin-labels").innerHTML = S.map(function(p){ return '<div class="label" style="border-style:solid"><div class="qr">'+qrSvg("LOC-"+p.id)+'</div><b style="font-size:1.3rem">'+p.id+'</b>Line '+p.cat+' · '+cat(p.cat).name+'</div>'; }).join("");
-    $("#stack-labels").innerHTML = allCards().map(function(x){ var m = mat(x.c.matId); return '<div class="label"><div class="qr">'+qrSvg(x.c.id)+'</div><b>'+x.c.id+'</b><b style="font-size:.95rem">'+m.code+'</b>'+esc(m.name)+'<br>Bin '+x.p.id+' · '+fmt(cardQty(x.c))+' pcs'+(x.c.status==="pending"?'<br>(belum dikonfirmasi)':'')+'</div>'; }).join("") || '<div class="muted">Tidak ada tumpukan.</div>';
-    $("#demo-in-labels").innerHTML = DEMO_IN.map(function(x){ var m = mat(x.matId); return '<div class="label"><div class="qr">'+qrSvg(x.id)+'</div><b>'+x.id+'</b><b style="font-size:.95rem">'+m.code+'</b>'+esc(m.name)+'<br>Booking bin '+x.pos+' · '+fmt(x.qty)+' pcs</div>'; }).join("");
+    $("#stack-labels").innerHTML = allCards().map(function(x){ var m = mat(x.c.matId); return '<div class="label"><div class="qr">'+qrSvg(x.c.id)+'</div><b>'+x.c.id+'</b><b style="font-size:.95rem">'+m.code+'</b>'+esc(m.name)+'<br>Bin '+x.p.id+' · pola '+x.c.cols+'×'+x.c.rows+' · '+fmt(cardQty(x.c))+' pcs'+(x.c.status==="pending"?'<br>(belum dikonfirmasi)':'')+'</div>'; }).join("") || '<div class="muted">Tidak ada blok.</div>';
     $("#carton-labels").innerHTML = MATS.map(function(m){ return '<div class="label" style="border-style:solid">'+barcodeSvg(m.code)+'<b style="font-size:.85rem">'+esc(m.name)+'</b></div>'; }).join("");
   }
 
-  var LT = { IN:["ok","MASUK","+"], OUT:["info","KELUAR","-"], KONF:["ok","KONFIRMASI",""], SELISIH:["crit","SELISIH","-"], SAP:["warn","POSTING SAP",""] };
+  var LT = { IN:["ok","MASUK","+"], OUT:["info","KELUAR","-"], KONF:["ok","DITARUH",""], SELISIH:["crit","SELISIH","-"], SAP:["warn","POSTING SAP",""], BIN:["","STATUS BIN",""] };
   function renderLog(){
     var rows = LOG.slice(-14).reverse();
     $("#log").innerHTML = '<tr><th>Tanggal</th><th>Jenis</th><th>QR / order</th><th>Material</th><th>Posisi</th><th>Qty</th><th>Saldo</th><th>FIFO</th><th>Ket.</th></tr>' +
-      rows.map(function(r){ var t = LT[r.type]; return '<tr><td class="mono">'+r.t+'</td><td><span class="tag '+t[0]+'">'+t[1]+'</span></td><td class="mono">'+r.id+'</td><td>'+r.mat+'</td><td class="mono">'+r.pos+'</td><td class="mono">'+(r.qty?t[2]+fmt(r.qty):'–')+'</td><td class="mono">'+(r.type==="SAP"?'–':fmt(r.saldo))+'</td><td>'+(r.type==="OUT"?'<span class="tag '+(r.fifo?'fifo':'nofifo')+'">'+(r.fifo?'FIFO':'NO FIFO')+'</span>':'')+'</td><td class="muted">'+r.note+'</td></tr>'; }).join("");
+      rows.map(function(r){ var t = LT[r.type]; return '<tr><td class="mono">'+r.t+'</td><td><span class="tag '+t[0]+'">'+t[1]+'</span></td><td class="mono">'+r.id+'</td><td>'+r.mat+'</td><td class="mono">'+r.pos+'</td><td class="mono">'+(r.qty?t[2]+fmt(r.qty):'–')+'</td><td class="mono">'+(r.type==="SAP"||r.saldo==null?'–':fmt(r.saldo))+'</td><td>'+(r.type==="OUT"?'<span class="tag '+(r.fifo?'fifo':'nofifo')+'">'+(r.fifo?'FIFO':'NO FIFO')+'</span>':'')+'</td><td class="muted">'+r.note+'</td></tr>'; }).join("");
   }
   function renderStats(){
-    var used = 0, n = 0, piles = 0;
-    S.forEach(function(p){ used += usedDepth(p); n += p.cards.length; p.cards.forEach(function(c){ piles += c.piles.length; }); });
+    var used = 0, area = 0, n = 0, tum = 0;
+    S.forEach(function(p){ used += binUsed(p); area += p.ux*p.uz; n += p.cards.length; p.cards.forEach(function(c){ tum += nonEmptyTum(c); }); });
     $("#stats").innerHTML =
-      '<div class="stat"><div class="n">'+S.length+'</div><div class="l">Posisi (3 line)</div></div>'+
-      '<div class="stat"><div class="n">'+n+'</div><div class="l">Tumpukan aktif (QR)</div></div>'+
-      '<div class="stat"><div class="n">'+piles+'</div><div class="l">Pile terisi</div></div>'+
-      '<div class="stat"><div class="n">'+Math.round(used/(S.length*USABLE_D)*100)+'%</div><div class="l">Okupansi lantai</div></div>';
-    $("#legend").innerHTML = MATS.map(function(m){ return '<span><span class="sw" style="background:var('+m.token+')"></span>'+m.name+' · '+(m.flat[0])+'×'+m.flat[1]+' cm</span>'; }).join("") + '<span><span class="sw" style="background:var(--line)"></span>transparan = belum dikonfirmasi</span>';
+      '<div class="stat"><div class="n">'+S.length+'</div><div class="l">Bin (A 19 · B 18 · C 18)</div></div>'+
+      '<div class="stat"><div class="n">'+n+'</div><div class="l">Blok aktif (QR)</div></div>'+
+      '<div class="stat"><div class="n">'+tum+'</div><div class="l">Tumpukan terisi</div></div>'+
+      '<div class="stat"><div class="n">'+Math.round(used/area*100)+'%</div><div class="l">Lantai terpakai</div></div>';
+    $("#legend").innerHTML = MATS.map(function(m){ return '<span><span class="sw" style="background:var('+m.token+')"></span>'+m.code+' · '+esc(m.name)+' · '+m.flat[0]+'×'+m.flat[1]+' cm</span>'; }).join("") + '<span><span class="sw" style="background:var(--line)"></span>transparan = belum dikonfirmasi</span>';
   }
   function candState(){
     var r = {};
-    if(plan) plan.lines.forEach(function(L){ L.opts.forEach(function(o){ if(o.q>0) r[o.pid]="chosen"; else if(!r[o.pid]) r[o.pid]="cand"; }); });
+    if(plan) plan.lines.forEach(function(L){ L.opts.forEach(function(o){ if(o.q>0) r[o.pid]="chosen"; else if(!r[o.pid] && o.show) r[o.pid]="cand"; }); });
     return r;
   }
+  function binAt(li, slot){ for(var i=0;i<S.length;i++) if(S[i].li===li && S[i].slot===slot) return S[i]; return null; }
   function renderChips(){
-    var cs = candState();
-    $("#chips").innerHTML = S.map(function(p){
-      var tag = cs[p.id]==="chosen" ? " ✔" : (cs[p.id]==="cand" ? " ·" : "");
-      return '<button class="chip" data-p="'+p.id+'" aria-pressed="'+(p.id===selPos)+'">'+p.id+' · '+posPct(p)+'%'+tag+'</button>';
-    }).join("");
-    Array.prototype.forEach.call(document.querySelectorAll("#chips .chip"), function(b){
+    var cs = candState(), h = '<div class="denah" role="group" aria-label="Denah bin">';
+    h += '<div class="dh"></div>' + CATS.map(function(c){ return '<div class="dh">'+c.id+' · '+c.name+'</div>'; }).join("") + '<div class="dh">Rak</div>';
+    function cell(p){
+      if(!p) return '<div></div>';
+      var pct = posPct(p), es = estState(p), st = (cs[p.id]==="chosen" ? " chosen" : (cs[p.id]==="cand" ? " cand" : "")) + " est-"+es.c + (p.manual?" manual":"");
+      return '<button class="dcell'+st+'" data-p="'+p.id+'" aria-pressed="'+(p.id===selPos)+'" title="'+p.id+' · '+pct+'% lantai terpakai · '+es.k+' · '+p.cards.length+' blok"><span class="dfill" style="width:'+Math.min(100,pct)+'%"></span><span class="dlbl">'+p.id+'</span></button>';
+    }
+    for(var s=SLOTS; s>=1; s--){
+      h += '<div class="ds">'+s+'</div>';
+      if(s===EMERGENCY_SLOT){ h += cell(binAt(0, s)) + '<div class="demg" style="grid-column:span '+CATS.length+'">jalur darurat → pintu</div>'; continue; }
+      CATS.forEach(function(c, li){ h += cell(binAt(li, s)); });
+      h += '<div class="drak"></div>';
+    }
+    h += '</div><div class="muted" style="font-size:.7rem;margin-top:6px">Depan di bawah. Isi = persen lantai terpakai (perkiraan). Garis kiri: hijau longgar · kuning mungkin muat · merah kemungkinan penuh. Bertitik = status manual.</div>';
+    $("#chips").innerHTML = h;
+    Array.prototype.forEach.call(document.querySelectorAll("#chips .dcell"), function(b){
       b.addEventListener("click", function(){ selPos = b.dataset.p; selCard = null; renderAll(); if(G) focusPos(selPos); });
     });
   }
@@ -1328,44 +1809,51 @@
   function seqOf(id){ var m = /(\d+)$/.exec(id||""); return m ? +m[1] : 0; }
   function cardDoc(c, p){
     var m = mat(c.matId);
-    return { idQr:c.id, noMaterial:m.code, nama:m.name, bin:p.id, qty:cardQty(c), status:c.status==="pending"?"BOOKING":"TERKONFIRMASI",
-             lots:c.lots.map(function(l){ return { noDn:l.dn, tanggal:l.date, qty:l.qty }; }), dibuat:c.created, urut:seqOf(c.id) };
+    return { idQr:c.id, noMaterial:m.code, nama:m.name, bin:p.id, qty:cardQty(c), status:c.status==="pending"?"TRANSIT":"TERKONFIRMASI",
+             saranBin:c.sug||null, asal:c.from||null, bedaSaran:c.diff||null, perluLabel:!!c.needLabel, posisiPerkiraan:!!c.est, alasan:c.why||null,
+             masuk:(c.adds||[]).map(function(a){ return { id:a.id, qty:a.qty, noDn:a.dn, tanggal:a.date }; }),
+             lots:c.lots.map(function(l){ return { noDn:l.dn, tanggal:l.date, qty:l.qty }; }), dibuat:c.created, urut:seqOf(c.id),
+             pola:{ kolom:c.cols, baris:c.rows, diputar:!!c.ori, x:+c.x.toFixed(3), z:+c.z.toFixed(3), panjangX:+c.sx.toFixed(3), lebarZ:+c.sz.toFixed(3) },
+             tumpukan:c.tum.slice() };
   }
   function orderDoc(o){
     var st = o.posted ? "TERPOSTING" : (o===ORDER && orderDone(simCtx) ? "SIAP_POSTING" : "DI_PETUGAS");
     return { noOrder:o.no, tanggal:o.date, ts:o.ts||0, status:st, noDokSap:o.doc||null,
              baris:o.lines.map(function(L){ var m = mat(L.matId); return { noMaterial:m.code, nama:m.name, qtyDiminta:L.qty, qtyDiambil:L.picked }; }),
-             ambil:o.done.map(function(d){ return { baris:d.li, idQr:d.id, bin:d.pos, qty:d.q, fifo:!!d.fifo }; }) };
+             ambil:o.done.map(function(d){ return { baris:d.li, idQr:d.id, bin:d.pos, qty:d.q, fifo:!!d.fifo, tumpukan:d.tum||"" }; }) };
   }
   function logDoc(r){
     return { waktu:r.t, ts:r.ts||0, jenis:r.type, idQr:r.id, nama:r.mat, bin:r.pos, qty:r.qty||0, saldoSetelah:(r.saldo==null?null:r.saldo),
              fifo:(r.fifo===undefined?null:!!r.fifo), catatan:r.note||"", oleh:r.oleh||"" };
   }
-  function metaDoc(){ return { seq:seq, orderSeq:orderSeq }; }
+  function metaDoc(){ var bs = {}; S.forEach(function(p){ if(p.manual) bs[p.id] = p.manual; }); return { seq:seq, orderSeq:orderSeq, cadSeq:cadSeq, statusBin:bs }; }
 
   /* ---------- data remote -> state lokal ---------- */
   function rebuildFromRemote(){
     FB.applying = true;
     var keepSel = selCard;
-    S = newPosisi();
+    S = newBins(); FB.legacy = false;
     var docs = Object.keys(FB.raw.tumpukan).map(function(k){ return FB.raw.tumpukan[k]; });
     docs.sort(function(a,b){ return (a.dibuat||"")<(b.dibuat||"") ? -1 : (a.dibuat||"")>(b.dibuat||"") ? 1 : (a.urut||0)-(b.urut||0); });
     docs.forEach(function(d){
       var m = matByCode(d.noMaterial), p = posisi(d.bin); if(!m || !p) return;
-      var c = { id:d.idQr, matId:m.id, piles:[], lots:(d.lots||[]).map(function(l){ return { dn:l.noDn, date:l.tanggal, qty:l.qty }; }), created:d.dibuat, status:d.status==="BOOKING"?"pending":"ok" };
+      if(!d.pola || !Array.isArray(d.tumpukan)){ FB.legacy = true; return; }
+      var c = { id:d.idQr, matId:m.id, lots:(d.lots||[]).map(function(l){ return { dn:l.noDn, date:l.tanggal, qty:l.qty }; }), created:d.dibuat, status:(d.status==="BOOKING"||d.status==="TRANSIT")?"pending":"ok",
+                sug:d.saranBin||null, from:d.asal||"", diff:d.bedaSaran||"", needLabel:!!d.perluLabel, est:!!d.posisiPerkiraan, why:d.alasan||"", adds:(d.masuk||[]).map(function(a){ return { id:a.id, qty:a.qty, dn:a.noDn, date:a.tanggal }; }),
+                ori:d.pola.diputar?1:0, cols:d.pola.kolom, rows:d.pola.baris, x:d.pola.x, z:d.pola.z, sx:d.pola.panjangX, sz:d.pola.lebarZ, tum:d.tumpukan.slice() };
       if(!c.lots.length) c.lots.push({ dn:"-", date:d.dibuat||today(), qty:d.qty });
-      addQty(c, m, Math.max(0, d.qty||0)); if(cardQty(c)>0) p.cards.push(c);
+      if(cardQty(c)>0 || c.status==="pending" || c.adds.length) p.cards.push(c);
     });
     ORDERS = Object.keys(FB.raw.order).map(function(k){ var d = FB.raw.order[k]; return {
       no:d.noOrder, date:d.tanggal, ts:d.ts||0, posted:d.status==="TERPOSTING", doc:d.noDokSap||null,
       lines:(d.baris||[]).map(function(b){ var m = matByCode(b.noMaterial); return m ? { matId:m.id, qty:b.qtyDiminta, picked:b.qtyDiambil||0 } : null; }).filter(Boolean),
-      done:(d.ambil||[]).map(function(a){ return { li:a.baris, id:a.idQr, pos:a.bin, q:a.qty, fifo:!!a.fifo }; }) }; });
+      done:(d.ambil||[]).map(function(a){ return { li:a.baris, id:a.idQr, pos:a.bin, q:a.qty, fifo:!!a.fifo, tum:a.tumpukan||"" }; }) }; });
     ORDERS.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
     ORDER = ORDERS.length ? ORDERS[ORDERS.length-1] : null;
     LOG = Object.keys(FB.raw.transaksi).map(function(k){ var d = FB.raw.transaksi[k]; return {
       _id:k, ts:d.ts||0, t:d.waktu, type:d.jenis, id:d.idQr, mat:d.nama, pos:d.bin, qty:d.qty, saldo:d.saldoSetelah, fifo:(d.fifo===null||d.fifo===undefined)?undefined:d.fifo, note:d.catatan, oleh:d.oleh }; });
     LOG.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
-    if(FB.meta){ seq = Math.max(1, FB.meta.seq||1); orderSeq = Math.max(1, FB.meta.orderSeq||1); }
+    if(FB.meta){ seq = Math.max(1, FB.meta.seq||1); orderSeq = Math.max(1, FB.meta.orderSeq||1); cadSeq = Math.max(0, FB.meta.cadSeq||10); var bs = FB.meta.statusBin||{}; S.forEach(function(p){ p.manual = bs[p.id] || null; }); }
     selCard = keepSel && findCard(keepSel) ? keepSel : null;
     plan = null; lastAlloc = {};
     snapSynced();
@@ -1417,8 +1905,8 @@
     var ops = [];
     ["tumpukan","order","transaksi"].forEach(function(cn){ Object.keys(FB.raw[cn]).forEach(function(id){ ops.push(["del", fcol(cn).doc(id)]); }); });
     FB.applying = true; seedAll(); FB.applying = false;
-    MATS.forEach(function(m){ ops.push(["set", fcol("material").doc(m.code), { noMaterial:m.code, nama:m.name, kategori:cat(m.cat).name, panjangCm:m.flat[0], lebarCm:m.flat[1], tebalIkatCm:m.ikatCm, pcsPerIkat:m.pcs, aktif:true }]); });
-    S.forEach(function(p){ ops.push(["set", fcol("bin").doc(p.id), { kodeBin:p.id, line:p.cat, kategori:cat(p.cat).name, panjangM:PW, lebarM:PD, tinggiMaksM:SAFE_H/100, aktif:true }]); });
+    MATS.forEach(function(m){ ops.push(["set", fcol("material").doc(m.code), { noMaterial:m.code, nama:m.name, kategori:cat(m.cat).name, panjangCm:m.flat[0], lebarCm:m.flat[1], maksPcsPerTumpukan:MAX_PCS_TUM, aktif:true }]); });
+    S.forEach(function(p){ ops.push(["set", fcol("bin").doc(p.id), { kodeBin:p.id, line:p.cat, kategori:cat(p.cat).name, slot:p.slot, panjangM:BIN_X, lebarM:BIN_Z, areaSusunPanjangM:p.ux, areaSusunLebarM:+p.uz.toFixed(2), berdempetanDepan:p.nbBefore, berdempetanBelakang:p.nbAfter, ruangAmbilM:SPACE, maksPcsPerTumpukan:MAX_PCS_TUM, aktif:true }]); });
     allCards().forEach(function(x){ ops.push(["set", fcol("tumpukan").doc(x.c.id), cardDoc(x.c, x.p)]); });
     var base = Date.now();
     LOG.forEach(function(r, i){ r._id = base.toString(36)+"-s"+i; r.ts = base + i; r.oleh = "admin"; ops.push(["set", fcol("transaksi").doc(r._id), logDoc(r)]); });
@@ -1436,7 +1924,8 @@
     el.className = "fbst "+t[0]; el.textContent = t[1]; el.title = FB.msg || "";
     var box = $("#fb-panel"); if(!box) return;
     var h = '';
-    if(FB.state==="on" && FB.empty) h = '<div class="msg warn"><b>Database masih kosong.</b> Isi data awal (material, bin, stok contoh) supaya admin dan petugas bisa mulai. <button class="primary" id="fb-seed">Isi data awal</button></div>';
+    if(FB.state==="on" && FB.legacy && !FB.empty) h = '<div class="msg warn"><b>Data di database masih struktur lama</b> (sebelum ada pola blok dan denah 55 bin). Klik <b>Reset demo</b> di bagian Barang datang (dua kali) supaya database diisi ulang dengan struktur baru.</div>';
+    else if(FB.state==="on" && FB.empty) h = '<div class="msg warn"><b>Database masih kosong.</b> Isi data awal (material, bin, stok contoh) supaya admin dan petugas bisa mulai. <button class="primary" id="fb-seed">Isi data awal</button></div>';
     else if(FB.state==="on") h = '<div class="msg ok">Tersambung ke database. Order dan stok tersinkron dengan scanner petugas di HP.</div>';
     else if(FB.state==="err") h = '<div class="msg crit">Tidak bisa tersambung ke database. '+esc(FB.msg)+' Halaman jalan dengan data lokal.</div>';
     else if(FB.state==="off" && IN_FRAME) h = '<div class="msg">Mode offline (data lokal di perangkat ini). Buka dari link Netlify agar tersambung ke database dan tersinkron dengan HP petugas.</div>';
@@ -1486,20 +1975,24 @@
 
   function renderAll(){ fillSelects(); renderStats(); renderChips(); renderPickInfo(); renderSearch(); renderPutaway(); renderOrderForm(); renderOrderAdmin(); renderOrderList(); renderPicker(simCtx, $("#sim-scr")); renderLog(); update3D(); if(VIEW==="label") renderLabels(); if(VIEW==="kamera") renderKamera(); flush(); }
 
-  /* ---------- 3D ---------- */
+  /* ---------- 3D (denah lapangan: 3 line karton + racking plastik) ---------- */
   function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888888"; }
   function webglOK(){ try{ var c=document.createElement("canvas"); return !!(window.WebGLRenderingContext && (c.getContext("webgl")||c.getContext("experimental-webgl"))); }catch(e){ return false; } }
   function col(hex){ return new G.T.Color(hex).convertSRGBToLinear(); }
-  function themeColors(){ return { bg:cssVar("--bg"), floor:cssVar("--floor"), paint:cssVar("--paint"), ink:cssVar("--ink"), dim:cssVar("--ink-dim"), accent:cssVar("--accent"), ok:cssVar("--ok"), info:cssVar("--info"), top:cssVar("--top") }; }
-  function origin(p){ return { x0: -TOTAL_W/2 + p.li*(PW+LGAP), z0: -p.pi*(PD+PGAP) }; }
+  function themeColors(){ return { bg:cssVar("--bg"), floor:cssVar("--floor"), paint:cssVar("--paint"), ink:cssVar("--ink"), dim:cssVar("--ink-dim"), accent:cssVar("--accent"), ok:cssVar("--ok"), info:cssVar("--info"), top:cssVar("--top"), warn:cssVar("--warn"), line:cssVar("--line"), crit:cssVar("--crit") }; }
+  var WORLD_W = 3*(BIN_X+CORR) + RACK_W, X_OFF = -WORLD_W/2;
+  function lineX(li){ return X_OFF + li*(BIN_X+CORR); }
+  function slotZ(slot){ return -(slot-1)*BIN_Z; }
+  function binCenter(p){ return { x:lineX(p.li)+BIN_X/2, z:slotZ(p.slot)-BIN_Z/2 }; }
+  function toWorld(p, lx, lz){ return { x:lineX(p.li)+lx, z:slotZ(p.slot)-p.z0-lz }; }
 
   function textPlane(text, w, h, color, px, weight){
-    var T = G.T, res = 160;
+    var T = G.T, res = 128;
     var cv = document.createElement("canvas"); cv.width = Math.round(w*res); cv.height = Math.round(h*res);
     var x = cv.getContext("2d"); var lines = Array.isArray(text) ? text : [text];
     x.textAlign="center"; x.textBaseline="middle"; x.fillStyle=color;
     lines.forEach(function(line, i){
-      var size = i===0 ? px : Math.round(px*0.78), wt = i===0 ? weight : "500";
+      var size = i===0 ? px : Math.round(px*0.7), wt = i===0 ? weight : "500";
       x.font = wt+" "+size+'px "IBM Plex Mono", ui-monospace, monospace';
       var maxW = cv.width*0.96, w0 = x.measureText(line).width;
       if(w0>maxW){ size = Math.floor(size*maxW/w0); x.font = wt+" "+size+'px "IBM Plex Mono", ui-monospace, monospace'; }
@@ -1510,37 +2003,7 @@
     m.rotation.x = -Math.PI/2; return m;
   }
   function disposeGroup(g){
-    while(g.children.length){ var o = g.children[0]; g.remove(o); if(o.geometry && !o.userData.shared) o.geometry.dispose(); if(o.material){ if(o.material.map) o.material.map.dispose(); o.material.dispose(); } }
-  }
-  function sideTexture(m){
-    var T = G.T, cv = document.createElement("canvas"); cv.width = 32; cv.height = 256;
-    var x = cv.getContext("2d"), base = cssVar(m.token);
-    x.fillStyle = base; x.fillRect(0,0,32,256);
-    x.fillStyle = "rgba(255,255,255,.10)"; x.fillRect(0,0,32,256);
-    var step = 256/m.layers;
-    for(var i=0;i<=m.layers;i++){
-      var y = 256 - i*step;
-      x.fillStyle = "rgba(0,0,0,.30)"; x.fillRect(0, y-0.6, 32, 1.2);
-      x.fillStyle = "rgba(255,255,255,.12)"; x.fillRect(0, y+0.6, 32, 0.8);
-    }
-    x.fillStyle = "rgba(60,40,10,.35)"; x.fillRect(14,0,3,256); // tali ikat
-    var tex = new T.CanvasTexture(cv); tex.encoding = T.sRGBEncoding; return tex;
-  }
-  function pileGeo(m, h){
-    var key = m.id+"|"+Math.round(h*100);
-    if(G.geo[key]) return G.geo[key];
-    var T = G.T, g = new T.BoxGeometry(m.L-0.02, h, m.Wd-0.02), uv = g.attributes.uv, frac = h/m.fullH;
-    for(var f=0; f<6; f++){ if(f===2 || f===3) continue; for(var v=0; v<4; v++){ var i = f*4+v; uv.setY(i, uv.getY(i)*frac); } }
-    uv.needsUpdate = true; G.geo[key] = g; return g;
-  }
-  function pileMats(m, pend){
-    var T = G.T, k = m.id+(pend?"|p":"");
-    if(!G.mat[k]){
-      var side = new T.MeshStandardMaterial({ map:sideTexture(m), roughness:0.9, transparent:!!pend, opacity:pend?0.4:1 });
-      var top = new T.MeshStandardMaterial({ color:col(G.colors.top), roughness:0.95, transparent:!!pend, opacity:pend?0.4:1 });
-      G.mat[k] = [side, side, top, top, side, side];
-    }
-    return G.mat[k];
+    while(g.children.length){ var o = g.children[0]; g.remove(o); if(o.isInstancedMesh && o.dispose) o.dispose(); if(o.geometry && !o.userData.shared) o.geometry.dispose(); if(o.material && !o.userData.sharedMat){ if(o.material.map && !o.userData.sharedMap) o.material.map.dispose(); o.material.dispose(); } }
   }
   function qrTexture(id){
     var T = G.T;
@@ -1553,67 +2016,110 @@
     }catch(e){}
     var tex = new T.CanvasTexture(cv); tex.encoding = T.sRGBEncoding; G.qr[id] = tex; return tex;
   }
+  function slabMat(pend){
+    var k = pend ? "slab|p" : "slab";
+    if(!G.mat[k]) G.mat[k] = new G.T.MeshStandardMaterial({ color:0xffffff, roughness:0.88, transparent:!!pend, opacity:pend?0.38:1 });
+    return G.mat[k];
+  }
 
   function buildStatic(){
     var T = G.T, c = G.colors, g = G.staticGroup;
-    while(g.children.length) g.remove(g.children[0]);
+    disposeGroup(g);
     G.hitPlanes = {};
-    var floor = new T.Mesh(new T.PlaneGeometry(TOTAL_W+30, 3*(PD+PGAP)+30), new T.MeshStandardMaterial({ color:col(c.floor), roughness:0.96 }));
-    floor.rotation.x = -Math.PI/2; floor.position.set(0,0,-6); floor.receiveShadow = true; g.add(floor);
-    var paint = new T.MeshBasicMaterial({ color:col(c.paint) });
-    function strip(x,z,w,d){ var m = new T.Mesh(new T.PlaneGeometry(w,d), paint); m.rotation.x = -Math.PI/2; m.position.set(x, 0.012, z); g.add(m); }
+    var ZL = SLOTS*BIN_Z;
+    var floor = new T.Mesh(new T.PlaneGeometry(WORLD_W+24, ZL+30), new T.MeshStandardMaterial({ color:col(c.floor), roughness:0.96 }));
+    floor.rotation.x = -Math.PI/2; floor.position.set(0, 0, -ZL/2); floor.receiveShadow = true; g.add(floor);
+    var paint = new T.MeshBasicMaterial({ color:col(c.paint) }), spaceMat = new T.MeshBasicMaterial({ color:col(c.line), transparent:true, opacity:0.55, depthWrite:false });
+    function flat(mat, x, z, w, d, y){ var m = new T.Mesh(new T.PlaneGeometry(w,d), mat); m.rotation.x = -Math.PI/2; m.position.set(x, y||0.012, z); g.add(m); return m; }
     S.forEach(function(p){
-      var o = origin(p), cx = o.x0+PW/2, cz = o.z0-PD/2;
-      strip(o.x0, cz, 0.07, PD); strip(o.x0+PW, cz, 0.07, PD); strip(cx, o.z0, PW+0.07, 0.07); strip(cx, o.z0-PD, PW+0.07, 0.07);
-      var hp = new T.Mesh(new T.PlaneGeometry(PW-0.1, PD-0.1), new T.MeshBasicMaterial({ color:col(c.accent), transparent:true, opacity:0, depthWrite:false }));
+      var x0 = lineX(p.li), zf = slotZ(p.slot), cx = x0+BIN_X/2, cz = zf-BIN_Z/2;
+      flat(paint, x0, cz, 0.08, BIN_Z); flat(paint, x0+BIN_X, cz, 0.08, BIN_Z); flat(paint, cx, zf, BIN_X+0.08, 0.08); flat(paint, cx, zf-BIN_Z, BIN_X+0.08, 0.08);
+      if(p.nbBefore) flat(spaceMat, cx, zf-SPACE/2, BIN_X, SPACE, 0.01);
+      if(p.nbAfter) flat(spaceMat, cx, zf-BIN_Z+SPACE/2, BIN_X, SPACE, 0.01);
+      var hp = new T.Mesh(new T.PlaneGeometry(BIN_X-0.1, BIN_Z-0.1), new T.MeshBasicMaterial({ color:col(c.accent), transparent:true, opacity:0, depthWrite:false }));
       hp.rotation.x = -Math.PI/2; hp.position.set(cx, 0.008, cz); hp.userData.posId = p.id; g.add(hp); G.hitPlanes[p.id] = hp;
+      var t = textPlane(p.id, 1.6, 0.8, c.dim, 70, "700"); t.position.set(x0+0.95, 0.02, zf-(p.nbBefore?SPACE:0)-0.45); g.add(t);
     });
     CATS.forEach(function(ct, li){
-      var lbl = textPlane("LINE "+ct.id+" · "+ct.name.toUpperCase(), 4.2, 0.7, c.dim, 62, "600");
-      lbl.position.set(-TOTAL_W/2 + li*(PW+LGAP)+PW/2, 0.02, 2.0); g.add(lbl);
+      var lbl = textPlane("LINE "+ct.id+" · "+ct.name.toUpperCase()+" · "+ct.n+" BIN", 7.6, 0.9, c.ink, 64, "700");
+      lbl.position.set(lineX(li)+BIN_X/2, 0.02, 2.2); g.add(lbl);
     });
+    // jalur darurat (slot 6) dari line B sampai racking
+    var ez = slotZ(EMERGENCY_SLOT)-BIN_Z/2, ex0 = lineX(1)-CORR*0.5, ex1 = X_OFF+WORLD_W+6;
+    flat(new T.MeshBasicMaterial({ color:col(c.ok), transparent:true, opacity:0.22, depthWrite:false }), (ex0+ex1)/2, ez, ex1-ex0, BIN_Z-0.6, 0.011);
+    for(var sx=ex0+1; sx<ex1-1; sx+=2.2){ var ar = textPlane("→", 1.2, 1.2, c.ok, 110, "700"); ar.position.set(sx, 0.02, ez); g.add(ar); }
+    var el = textPlane("JALUR DARURAT → PINTU", 7, 0.9, c.ok, 60, "700"); el.position.set(lineX(1)+BIN_X/2, 0.03, ez+1.6); g.add(el);
+    // racking plastik (gambaran saja)
+    var rx = lineX(3), rackMat = new T.MeshStandardMaterial({ color:col(c.dim), roughness:0.6, metalness:0.3 }), shelfMat = new T.MeshStandardMaterial({ color:col(c.line), roughness:0.8 });
+    for(var s=1; s<=SLOTS; s++){
+      if(s===EMERGENCY_SLOT) continue;
+      var zf = slotZ(s);
+      [[0,0.05],[RACK_W,0.05],[0,BIN_Z-0.05],[RACK_W,BIN_Z-0.05]].forEach(function(pp){ var post = new T.Mesh(new T.BoxGeometry(0.08, 3.2, 0.08), rackMat); post.position.set(rx+pp[0], 1.6, zf-pp[1]); g.add(post); });
+      [0.15, 1.2, 2.25].forEach(function(hy){ var sh = new T.Mesh(new T.BoxGeometry(RACK_W, 0.05, BIN_Z-0.1), shelfMat); sh.position.set(rx+RACK_W/2, hy, zf-BIN_Z/2); sh.castShadow = true; g.add(sh); });
+    }
+    var rl = textPlane("RACKING PLASTIK", 5, 0.8, c.dim, 60, "700"); rl.position.set(rx+RACK_W/2, 0.02, 2.2); g.add(rl);
   }
 
   function update3D(){
     if(!G) return;
-    var g = G.pilesGroup, cs = candState(), stepIdx = {};
+    var T = G.T, g = G.pilesGroup, cs = candState(), stepIdx = {};
     orderSteps().forEach(function(st, i){ if(!stepIdx[st.cardId]) stepIdx[st.cardId] = i+1; });
-    while(g.children.length) g.remove(g.children[0]);
-    disposeGroup(G.labelsGroup);
+    disposeGroup(g); disposeGroup(G.labelsGroup);
+    var inst = {}; // key -> { pend, items:[{m4,color,cardId,posId}] }
+    var mtx = new T.Matrix4(), q0 = new T.Quaternion(), v = new T.Vector3(), sc = new T.Vector3();
     S.forEach(function(p){
-      var o = origin(p), cx = o.x0+PW/2, hp = G.hitPlanes[p.id];
+      var hp = G.hitPlanes[p.id];
       if(cs[p.id]==="chosen"){ hp.material.color.copy(col(G.colors.info)); hp.material.opacity = 0.42; }
       else if(p.id===selPos){ hp.material.color.copy(col(G.colors.accent)); hp.material.opacity = 0.22; }
       else if(cs[p.id]==="cand"){ hp.material.color.copy(col(G.colors.info)); hp.material.opacity = 0.14; }
       else if(lastAlloc[p.id]){ hp.material.color.copy(col(G.colors.ok)); hp.material.opacity = 0.28; }
       else hp.material.opacity = 0;
-      var t = textPlane([p.id, posPct(p)+"% terpakai"], 2.6, 0.9, G.colors.ink, 64, "700");
-      t.position.set(cx, 0.02, o.z0+0.62); G.labelsGroup.add(t);
-
-      var cursor = 0;
       p.cards.forEach(function(card){
-        var m = mat(card.matId), rowsC = Math.ceil(card.piles.length/m.cols);
+        var m = mat(card.matId), d = dims(m, card.ori), ox = OVERHANG*d.cx, oz = OVERHANG*d.cz, pend = card.status==="pending";
+        var base = new T.Color(cssVar(m.token)).convertSRGBToLinear(), shade = base.clone().multiplyScalar(0.8);
+        var center = toWorld(p, card.x+card.sx/2, card.z+card.sz/2);
         if(card.id===selCard || stepIdx[card.id] || searchHit[card.id]){
           var hc = card.id===selCard ? G.colors.accent : (stepIdx[card.id] ? G.colors.info : G.colors.ok);
-          var hl = new G.T.Mesh(new G.T.PlaneGeometry(m.cols*m.L+0.1, rowsC*m.rd+0.1), new G.T.MeshBasicMaterial({ color:col(hc), transparent:true, opacity:0.55, depthWrite:false }));
-          hl.rotation.x = -Math.PI/2; hl.position.set(o.x0+MARGIN+m.cols*m.L/2, 0.02, o.z0-FRONT_M-cursor-rowsC*m.rd/2); g.add(hl);
+          var hl = new T.Mesh(new T.PlaneGeometry(card.sx+0.1, card.sz+0.1), new T.MeshBasicMaterial({ color:col(hc), transparent:true, opacity:0.55, depthWrite:false }));
+          hl.rotation.x = -Math.PI/2; hl.position.set(center.x, 0.02, center.z); g.add(hl);
         }
-        card.piles.forEach(function(q, i){
-          var r = Math.floor(i/m.cols), cc = i%m.cols, h = Math.max(0.06, q/m.qpp*m.fullH);
-          var mesh = new G.T.Mesh(pileGeo(m, h), pileMats(m, card.status==="pending"));
-          mesh.userData.shared = true; mesh.userData.cardId = card.id; mesh.userData.posId = p.id;
-          var zc = o.z0 - FRONT_M - cursor - r*m.rd - m.rd/2, xc = o.x0 + MARGIN + cc*m.L + m.L/2;
-          mesh.position.set(xc, h/2, zc); mesh.castShadow = true; mesh.receiveShadow = true;
-          g.add(mesh);
-          if(r===0 && cc===0){
-            if(stepIdx[card.id]){ var nl = textPlane([String(stepIdx[card.id])], 0.6, 0.6, G.colors.accent, 100, "700"); nl.position.set(xc, h+0.03, zc); G.labelsGroup.add(nl); }
-            var tag = new G.T.Mesh(new G.T.PlaneGeometry(0.3,0.3), new G.T.MeshBasicMaterial({ map:qrTexture(card.id) }));
-            tag.position.set(xc, Math.min(1.0, h*0.55), zc + (m.Wd-0.02)/2 + 0.004);
-            tag.userData.cardId = card.id; tag.userData.posId = p.id; tag.userData.shared = true; g.add(tag);
+        var key = pend ? "p" : "s"; inst[key] = inst[key] || [];
+        var ikatH = m.pcs*HPP;
+        var firstTop = null;
+        card.tum.forEach(function(qp, i){
+          if(qp<=0) return;
+          var r = Math.floor(i/card.cols), cc = i%card.cols;
+          // level 1, 3, 5, ... : posisi dasar (paling luar di sisi kiri & belakang)
+          // level 2, 4, 6, ... : bergeser 10% ke depan (arah koridor) dan ke kanan
+          var lx = card.x + ox + r*d.cx + d.cx/2, lz = card.z + cc*d.cz + d.cz/2;
+          var ikat = Math.ceil(qp/m.pcs);
+          for(var j=0;j<ikat;j++){
+            var even = j%2===1, w = toWorld(p, lx - (even?ox:0), lz + (even?oz:0));
+            v.set(w.x, j*ikatH + ikatH/2, w.z); sc.set(d.cx*0.985, ikatH*0.9, d.cz*0.985);
+            mtx.compose(v, q0, sc);
+            inst[key].push({ m:mtx.clone(), c:(even?shade:base), cardId:card.id, posId:p.id });
           }
+          var top = toWorld(p, lx, lz);
+          if(!firstTop) firstTop = { x:top.x, z:top.z, y:ikat*ikatH };
         });
-        cursor += rowsC*m.rd;
+        if(firstTop){
+          if(stepIdx[card.id]){ var nl = textPlane([String(stepIdx[card.id])], 0.7, 0.7, G.colors.accent, 100, "700"); nl.position.set(firstTop.x, firstTop.y+0.04, firstTop.z); G.labelsGroup.add(nl); }
+          var front = toWorld(p, card.x, card.z + d.cz/2);
+          var tag = new T.Mesh(new T.PlaneGeometry(0.32,0.32), new T.MeshBasicMaterial({ map:qrTexture(card.id) }));
+          tag.rotation.y = -Math.PI/2; tag.position.set(front.x - 0.01, Math.min(1.1, firstTop.y*0.5), front.z);
+          tag.userData.cardId = card.id; tag.userData.posId = p.id; tag.userData.sharedMap = true; g.add(tag);
+        }
       });
+    });
+    var unit = G.geo.unit || (G.geo.unit = new T.BoxGeometry(1,1,1));
+    Object.keys(inst).forEach(function(key){
+      var items = inst[key]; if(!items.length) return;
+      var im = new T.InstancedMesh(unit, slabMat(key==="p"), items.length);
+      items.forEach(function(it, i){ im.setMatrixAt(i, it.m); im.setColorAt(i, it.c); });
+      im.instanceMatrix.needsUpdate = true; if(im.instanceColor) im.instanceColor.needsUpdate = true;
+      im.castShadow = key!=="p"; im.receiveShadow = true;
+      im.userData.shared = true; im.userData.sharedMat = true; im.userData.items = items.map(function(it){ return { cardId:it.cardId, posId:it.posId }; });
+      g.add(im);
     });
   }
 
@@ -1621,20 +2127,25 @@
   function flyTo(pos, tgt, instant){
     var T = G.T, p1 = new T.Vector3(pos[0],pos[1],pos[2]), t1 = new T.Vector3(tgt[0],tgt[1],tgt[2]);
     if(instant || reduceMotion){ G.camera.position.copy(p1); G.controls.target.copy(t1); G.controls.update(); G.anim=null; return; }
-    var p0 = G.camera.position.clone(), t0 = G.controls.target.clone(), start = performance.now(), dur = 700;
+    var p0 = G.camera.position.clone(), t0 = G.controls.target.clone(), start = performance.now(), dur = 800;
     G.anim = function(now){ var k = Math.min(1,(now-start)/dur), e = k<0.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2; G.camera.position.lerpVectors(p0,p1,e); G.controls.target.lerpVectors(t0,t1,e); if(k>=1) G.anim=null; };
   }
-  function viewOverview(instant){ var f = viewFactor(); flyTo([0, 4+8*f, 9+8*f], [0, 0.4, -5.0], instant); }
-  function viewFront(){ var f = viewFactor(); flyTo([0, 3.2, 8+15*f], [0, 1.2, -4.5]); }
-  function focusPos(id){ var p = posisi(id), o = origin(p); flyTo([o.x0+PW/2+3.2, 5.2, o.z0+6.2], [o.x0+PW/2, 0.9, o.z0-PD/2]); }
+  function viewOverview(instant){ var f = viewFactor(); flyTo([0, 78*f, 30*f], [0, 0, -40], instant); }
+  function viewFront(){ var f = viewFactor(); flyTo([0, 7*f, 20*f], [0, 1.5, -14]); }
+  function focusLine(li){ var x = lineX(li)+BIN_X/2, f = viewFactor(); flyTo([x+10*f, 14*f, 14*f], [x, 0.8, -22]); }
+  function focusPos(id){ var p = posisi(id); if(!p) return; var c = binCenter(p), f = viewFactor(); flyTo([c.x+8*f, 8.5*f, c.z+9*f], [c.x, 0.9, c.z]); }
 
   function pick(e){
     var rect = G.renderer.domElement.getBoundingClientRect();
     G.ndc.set(((e.clientX-rect.left)/rect.width)*2-1, -((e.clientY-rect.top)/rect.height)*2+1);
     G.ray.setFromCamera(G.ndc, G.camera);
-    var objs = Object.keys(G.hitPlanes).map(function(k){ return G.hitPlanes[k]; }).concat([G.pilesGroup]);
-    var hits = G.ray.intersectObjects(objs, true);
-    for(var i=0;i<hits.length;i++){ var o = hits[i].object; while(o && !o.userData.posId) o = o.parent; if(o) return o.userData; }
+    var objs = G.pilesGroup.children.concat(Object.keys(G.hitPlanes).map(function(k){ return G.hitPlanes[k]; }));
+    var hits = G.ray.intersectObjects(objs, false);
+    for(var i=0;i<hits.length;i++){
+      var o = hits[i].object;
+      if(o.isInstancedMesh && hits[i].instanceId!=null) return o.userData.items[hits[i].instanceId];
+      if(o.userData.posId) return o.userData;
+    }
     return null;
   }
 
@@ -1649,17 +2160,17 @@
       renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.outputEncoding = T.sRGBEncoding;
       el.appendChild(renderer.domElement);
       var scene = new T.Scene();
-      var camera = new T.PerspectiveCamera(38, (el.clientWidth||800)/(el.clientHeight||500), 0.1, 400);
+      var camera = new T.PerspectiveCamera(40, (el.clientWidth||800)/(el.clientHeight||500), 0.1, 600);
       var controls = new T.OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI*0.48; controls.minDistance = 4; controls.maxDistance = 90;
+      controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI*0.48; controls.minDistance = 3; controls.maxDistance = 200;
       G = { T:T, renderer:renderer, scene:scene, camera:camera, controls:controls, el:el, staticGroup:new T.Group(), pilesGroup:new T.Group(), labelsGroup:new T.Group(),
             hitPlanes:{}, geo:{}, mat:{}, qr:{}, ray:new T.Raycaster(), ndc:new T.Vector2(), anim:null, colors:themeColors() };
       scene.add(G.staticGroup); scene.add(G.pilesGroup); scene.add(G.labelsGroup);
-      scene.background = col(G.colors.bg); scene.fog = new T.Fog(col(G.colors.bg), 60, 130);
-      scene.add(new T.HemisphereLight(0xffffff, 0x6f6a60, 0.7));
-      var dir = new T.DirectionalLight(0xffffff, 0.95);
-      dir.position.set(10, 22, 14); dir.target.position.set(0,0,-5); dir.castShadow = true; dir.shadow.mapSize.set(2048,2048);
-      var sc = dir.shadow.camera; sc.left=-20; sc.right=20; sc.top=16; sc.bottom=-16; sc.near=1; sc.far=70; dir.shadow.bias = -0.0006;
+      scene.background = col(G.colors.bg); scene.fog = new T.Fog(col(G.colors.bg), 110, 260);
+      scene.add(new T.HemisphereLight(0xffffff, 0x6f6a60, 0.75));
+      var dir = new T.DirectionalLight(0xffffff, 0.9);
+      dir.position.set(18, 45, 12); dir.target.position.set(0,0,-50); dir.castShadow = true; dir.shadow.mapSize.set(4096,4096);
+      var sc = dir.shadow.camera; sc.left=-45; sc.right=45; sc.top=75; sc.bottom=-75; sc.near=1; sc.far=200; dir.shadow.bias = -0.0008;
       scene.add(dir); scene.add(dir.target);
       buildStatic(); update3D(); viewOverview(true);
       var down = null;
@@ -1676,11 +2187,11 @@
   function onTheme(){
     if(!G) return;
     G.colors = themeColors(); G.scene.background = col(G.colors.bg); G.scene.fog.color.copy(col(G.colors.bg));
-    G.mat = {}; G.geo = G.geo; buildStatic(); update3D();
+    buildStatic(); update3D();
   }
 
   /* ---------- wiring ---------- */
-  $("#dn-sel").addEventListener("change", function(){ plan = null; renderDnLines(); renderOptions(); renderChips(); update3D(); });
+  
   $("#btn-search").addEventListener("click", startSearch);
   $("#btn-confirm").addEventListener("click", confirmPlan);
   var resetArm = 0;
@@ -1697,6 +2208,7 @@
   $("#view-overview").addEventListener("click", function(){ if(G) viewOverview(); });
   $("#view-front").addEventListener("click", function(){ if(G) viewFront(); });
   $("#view-focus").addEventListener("click", function(){ if(G) focusPos(selPos); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-line]"), function(b){ b.addEventListener("click", function(){ if(G) focusLine(+b.dataset.line); }); });
   try{ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", onTheme); }catch(e){}
   try{ new MutationObserver(onTheme).observe(document.documentElement, { attributes:true, attributeFilter:["data-theme"] }); }catch(e){}
 
@@ -1721,6 +2233,7 @@
   $("#cam-ok").addEventListener("click", function(){ var v = $("#cam-in").value, cb = CAM.cb; closeCam(); if(cb) cb(v); });
   $("#cam-in").addEventListener("keydown", function(e){ if(e.key==="Enter") $("#cam-ok").click(); });
 
+  $("#arr-date").value = isoToday();
   seedAll(); loadK();
   fillSelects(); renderDnLines();
   init3D();
