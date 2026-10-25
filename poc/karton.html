@@ -248,6 +248,12 @@
   .binsvg .bs-num{fill:var(--warn)} .binsvg .bs-num.on{fill:var(--info)}
   .binsvg .bs-numt{font-size:9px; font-weight:700; fill:var(--surface)}
   .binview{margin-top:10px; max-width:320px}
+  .binsvg.big{max-width:100%}
+  .binsvg[data-drag]{touch-action:none}
+  .binsvg .bs-drag{fill:color-mix(in srgb, var(--info) 22%, transparent); stroke:var(--info); stroke-dasharray:none; stroke-width:2.5; cursor:grab}
+  .binsvg .bs-drag.bad{fill:color-mix(in srgb, var(--crit) 22%, transparent); stroke:var(--crit)}
+  .binsvg.dragging .bs-dc, .binsvg.dragging .bs-tc{display:none}
+  .binsvg .bs-dc, .binsvg .bs-tc{pointer-events:none}
   .camov{position:fixed; inset:0; z-index:60; background:#0d0d0c; color:#f2f0ea; display:flex; flex-direction:column; gap:10px; padding:calc(12px + env(safe-area-inset-top,0px)) max(14px, env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(14px, env(safe-area-inset-left,0px))}
   .camtop{display:flex; justify-content:space-between; align-items:center}
   .camtop button{background:#2a2925; color:#f2f0ea; border-color:#45423a}
@@ -516,7 +522,7 @@
     p.cards.forEach(function(c){ xs.push(c.x + c.sx); zs.push(c.z + c.sz); });
     xs.forEach(function(x){ zs.forEach(function(z){
       var r = { x:x, z:z, sx:sx, sz:sz };
-      if(fits(p, r) && (!best || x < best.x - 1e-9 || (Math.abs(x-best.x) < 1e-9 && z < best.z))) best = r;
+      if(fits(p, r) && (!best || z < best.z - 1e-9 || (Math.abs(z-best.z) < 1e-9 && x < best.x))) best = r;
     }); });
     return best;
   }
@@ -539,7 +545,7 @@
         var r0 = Math.ceil(n/c); if(r0 > mx.r) continue;
         for(var r=r0; r<=Math.min(mx.r, r0+1); r++){
           var s = blockSize(m, ori, c, r), pos = placeAt(p, s.sx, s.sz); if(!pos) continue;
-          var score = 2*(s.sx + s.sz) + (c*r - n) + pos.x*0.01 + pos.z*0.001;
+          var score = 2*(s.sx + s.sz) + 0.3*(c*r - n) + pos.z*0.01 + pos.x*0.001;
           if(!best || score < best.score) best = { ori:ori, cols:c, rows:r, x:pos.x, z:pos.z, sx:s.sx, sz:s.sz, score:score };
         }
       }
@@ -571,7 +577,7 @@
     function s(pid, matId, qty, date){
       var p = posisi(pid), m = mat(matId), spec = bestBlock(p, m, qty); if(!spec) return;
       var c = mkBlock(S, p, matId, date, "DN-awal", qty, spec);
-      LOG.push({ t:date, type:"IN", id:c.id, mat:m.name, pos:pid, qty:qty, saldo:qty, note:"stok awal · pola "+c.cols+"×"+c.rows });
+      LOG.push({ t:date, type:"IN", id:c.id, mat:m.name, pos:pid, qty:qty, saldo:qty, note:"stok awal · pola "+c.rows+"×"+c.cols });
     }
     s("A1","facial-200",900,"2026-10-02"); s("A1","facial-mini",2000,"2026-10-08");
     s("A2","facial-200",6120,"2026-10-10"); s("A2","facial-200-mt",2400,"2026-10-11"); s("A3","facial-200",1800,"2026-10-15");
@@ -580,13 +586,13 @@
     s("A4","facial-200-mt",1600,"2026-10-13"); s("A7","facial-mini",4000,"2026-10-06"); s("A9","facial-200",3000,"2026-10-16");
     s("B3","toilet-12",5000,"2026-10-12"); s("B4","toilet-24",3000,"2026-10-09"); s("B6","toilet-12",2000,"2026-10-14");
     s("C2","napkin-besar",5000,"2026-10-11"); s("C3","napkin-kecil",3600,"2026-10-13"); s("C7","napkin-besar",2400,"2026-10-16");
-    autoInbound([{ matId:"facial-200", qty:2400 }, { matId:"napkin-kecil", qty:800 }], "DN-80012345");
   }
 
   /* ---------- model kapasitas ---------- */
   function cardQty(c){ var t = 0; c.tum.forEach(function(q){ t += q; }); return t; }
   function nonEmptyTum(c){ return c.tum.filter(function(q){ return q>0; }).length; }
-  function tumLabel(c, i){ return (Math.floor(i/c.cols)+1)+"."+(i%c.cols+1); }
+  function tumLabel(c, i){ return (i%c.cols+1)+"."+(Math.floor(i/c.cols)+1); }
+  function pickOrder(cols, n){ var rows = Math.round(n/cols), o = []; for(var b=0;b<cols;b++) for(var k=0;k<rows;k++) o.push(k*cols+b); return o; }
   function binUsed(p){ return p.cards.reduce(function(s,c){ return s + c.sx*c.sz; }, 0); }
   function posPct(p){ return Math.round(binUsed(p)/(p.ux*p.uz)*100); }
   function addsQty(c){ return (c.adds||[]).reduce(function(s,a){ return s + a.qty; }, 0); }
@@ -624,23 +630,23 @@
   function growFor(p, c, extra){ var g = growSpec(p, c, cardQty(c) + addsQty(c) + extra); if(g) applyGrow(c, g); return g; }
   function fallbackSpec(p, m, q){ var e = bestBlock({ ux:p.ux, uz:p.uz, cards:[] }, m, q) || { ori:0, cols:1, rows:1, sx:1, sz:1 }; e.x = 0; e.z = 0; e.over = true; return e; }
   function takeQty(c, q){
-    var left = q;
-    for(var i=0;i<c.tum.length && left>0;i++){ var t = Math.min(c.tum[i], left); c.tum[i] -= t; left -= t; }
+    var left = q, ord = pickOrder(c.cols, c.tum.length);
+    for(var j=0;j<ord.length && left>0;j++){ var i = ord[j], t = Math.min(c.tum[i], left); c.tum[i] -= t; left -= t; }
     return q - left;
   }
   function pickParts(tum, cols, q){
-    var out = [], left = q;
-    for(var i=0;i<tum.length && left>0;i++){ if(tum[i]<=0) continue; var t = Math.min(tum[i], left); out.push({ label:(Math.floor(i/cols)+1)+"."+(i%cols+1), pcs:t, of:tum[i] }); left -= t; }
+    var out = [], left = q, ord = pickOrder(cols, tum.length);
+    for(var j=0;j<ord.length && left>0;j++){ var i = ord[j]; if(tum[i]<=0) continue; var t = Math.min(tum[i], left); out.push({ label:(i%cols+1)+"."+(Math.floor(i/cols)+1), pcs:t, of:tum[i] }); left -= t; }
     return out;
   }
   function partsText(parts){ return parts.map(function(x){ return x.label+(parts.length>1?" ("+fmt(x.pcs)+")":""); }).join(" → "); }
   function blockText(c){
     var n = c.cols*c.rows, mx = Math.max.apply(null, c.tum);
-    return c.cols+"×"+c.rows+" · "+n+" tumpukan · maks "+fmt(mx)+" pcs/tumpukan";
+    return c.rows+"×"+c.cols+" · "+n+" tumpukan · maks "+fmt(mx)+" pcs/tumpukan";
   }
   function specText(m, spec, q){
     var n = spec.cols*spec.rows;
-    return spec.cols+"×"+spec.rows+" = "+n+" tumpukan · ± "+fmt(Math.ceil(q/n))+" pcs/tumpukan"+(spec.ori?" · karton diputar":"");
+    return spec.rows+"×"+spec.cols+" = "+n+" tumpukan · ± "+fmt(Math.ceil(q/n))+" pcs/tumpukan"+(spec.ori?" · karton diputar":"");
   }
   function findCard(id){
     for(var i=0;i<S.length;i++) for(var j=0;j<S[i].cards.length;j++) if(S[i].cards[j].id===id) return { p:S[i], c:S[i].cards[j] };
@@ -717,7 +723,7 @@
     if(o.kind==="gabung"){
       var f = findCard(o.cardId); if(!f) return '–';
       var g = o.q>0 ? growSpec(f.p, f.c, cardQty(f.c) + addsQty(f.c) + o.q) : null;
-      return g ? 'blok '+f.c.cols+'×'+f.c.rows+' → <b>'+g.cols+'×'+g.rows+'</b> (diperbesar ke ruang kosong di sebelahnya)' : 'blok '+f.c.cols+'×'+f.c.rows+' (cukup, pola tetap)';
+      return g ? 'blok '+f.c.rows+'×'+f.c.cols+' → <b>'+g.rows+'×'+g.cols+'</b> (diperbesar ke ruang kosong di sebelahnya)' : 'blok '+f.c.rows+'×'+f.c.cols+' (cukup, pola tetap)';
     }
     if(o.q<=0) return '<span class="muted">–</span>';
     var spec = o.spec || bestBlock(posisi(o.pid), m, o.q);
@@ -790,7 +796,7 @@
         var r = applyAlloc(S, m, o.pid, o.cardId, q, plan.date, plan.dn); if(!r) return;
         if(r.isNew){ r.c.status = "pending"; r.c.sug = o.pid; }
         lastAlloc[o.pid] = true;
-        LOG.push({ t:plan.date, type:"IN", id:r.c.id, mat:m.name, pos:o.pid, qty:r.q, saldo:cardQty(r.c), note:plan.dn+" · di transit point · "+(r.isNew?"QR baru dicetak, saran "+o.pid+" pola "+r.c.cols+"×"+r.c.rows:"tambah ke blok "+r.c.id+" (gabung 2 hari, tanpa label baru)") });
+        LOG.push({ t:plan.date, type:"IN", id:r.c.id, mat:m.name, pos:o.pid, qty:r.q, saldo:cardQty(r.c), note:plan.dn+" · di transit point · "+(r.isNew?"QR baru dicetak, saran "+o.pid+" pola "+r.c.rows+"×"+r.c.cols:"tambah ke blok "+r.c.id+" (gabung 2 hari, tanpa label baru)") });
         created.push({ r:r, q:r.q, m:m });
       });
     });
@@ -799,7 +805,7 @@
       html += '<div class="msg ok"><b>Tersimpan, barang di transit point.</b> <a href="#label" data-pr="pending">Cetak label QR (A4)</a>, tempel di barang. Petugas shift berikutnya menaruh ke bin lewat menu Petugas · Inbound. Sebelum dikonfirmasi, barang belum bisa diambil.</div><div class="labels">';
       created.forEach(function(x){
         if(x.r.isNew){
-          html += '<div class="label"><div class="qr">'+qrSvg(x.r.c.id)+'</div><b>'+x.r.c.id+'</b><b style="font-size:.9rem">'+x.m.code+'</b>'+esc(x.m.name)+'<br>Bin '+x.r.p.id+' · pola '+x.r.c.cols+'×'+x.r.c.rows+'<br>'+fmt(x.q)+' pcs · '+plan.dn+' · '+plan.date+'</div>';
+          html += '<div class="label"><div class="qr">'+qrSvg(x.r.c.id)+'</div><b>'+x.r.c.id+'</b><b style="font-size:.9rem">'+x.m.code+'</b>'+esc(x.m.name)+'<br>Bin '+x.r.p.id+' · pola '+x.r.c.rows+'×'+x.r.c.cols+'<br>'+fmt(x.q)+' pcs · '+plan.dn+' · '+plan.date+'</div>';
         } else {
           html += '<div class="label" style="border-style:solid"><b>'+x.r.c.id+'</b>tambah ke blok lama di '+x.r.p.id+'<br>tidak cetak label<br>'+esc(x.m.name)+' · +'+fmt(x.q)+' pcs</div>';
         }
@@ -875,14 +881,14 @@
   /* ---------- info bin / blok terpilih ---------- */
   function ikatText(q, m){ return fmt(q)+" pcs"; }
   function tumGrid(c){
-    var m = mat(c.matId), first = -1;
-    for(var i=0;i<c.tum.length;i++) if(c.tum[i]>0){ first = i; break; }
-    var h = '<div class="k" style="margin-top:6px">Tumpukan (baris 1 = depan, urutan ambil 1.1 → 1.2 → …)</div><div class="tgrid" style="grid-template-columns:repeat('+c.cols+',minmax(0,1fr))">';
-    for(var j=0;j<c.tum.length;j++){
-      var q = c.tum[j];
-      h += '<div class="tcell'+(q<=0?' empty':'')+(j===first?' next':'')+'"><b>'+tumLabel(c,j)+'</b><span>'+(q>0?ikatText(q,m):'kosong')+'</span></div>';
+    var m = mat(c.matId), ord = pickOrder(c.cols, c.tum.length), first = -1;
+    for(var j=0;j<ord.length;j++) if(c.tum[ord[j]]>0){ first = ord[j]; break; }
+    var h = '<div class="k" style="margin-top:6px">Tumpukan dilihat dari depan-atas (baris 1 = depan, urutan ambil 1.1 → 1.2 → … ke kanan)</div><div class="tgrid" style="grid-template-columns:repeat('+c.rows+',minmax(0,1fr))">';
+    for(var bz=c.cols-1; bz>=0; bz--) for(var kx=0; kx<c.rows; kx++){
+      var i = kx*c.cols + bz, q = c.tum[i];
+      h += '<div class="tcell'+(q<=0?' empty':'')+(i===first?' next':'')+'"><b>'+tumLabel(c,i)+'</b><span>'+(q>0?ikatText(q,m):'kosong')+'</span></div>';
     }
-    return h+'</div>';
+    return h+'</div><div class="muted" style="font-size:.68rem">▼ depan</div>';
   }
   function renderPickInfo(){
     var box = $("#pick-info"), f = selCard ? findCard(selCard) : null;
@@ -1242,10 +1248,10 @@
   }
 
   // gambar bin dari atas: depan di bawah, kiri-kanan dilihat dari depan
-  function binSvg(p, hlId, ghost, spots, chosen){
-    var sc = Math.min(300/Math.max(p.uz, 0.1), 230/Math.max(p.ux, 0.1)), W = Math.round(p.uz*sc), H = Math.round(p.ux*sc), pad = 18;
-    function R(x, z, sx, sz){ return { x:pad + z*sc, y:pad + H - (x+sx)*sc, w:sz*sc, h:sx*sc }; }
-    var h = '<svg class="binsvg" viewBox="0 0 '+(W+pad*2)+' '+(H+pad*2+14)+'" role="img" aria-label="Gambar bin '+p.id+' dari atas">';
+  function binSvg(p, hlId, ghost, spots, chosen, drag){
+    var sc = Math.min(300/Math.max(p.ux, 0.1), 230/Math.max(p.uz, 0.1)), W = Math.round(p.ux*sc), H = Math.round(p.uz*sc), pad = 18;
+    function R(x, z, sx, sz){ return { x:pad + x*sc, y:pad + H - (z+sz)*sc, w:sx*sc, h:sz*sc }; }
+    var h = '<svg class="binsvg'+(drag?' big':'')+'" viewBox="0 0 '+(W+pad*2)+' '+(H+pad*2+14)+'" role="img" aria-label="Gambar bin '+p.id+' dari atas"'+(drag?' data-drag="1" data-sc="'+sc+'" data-pad="'+pad+'" data-h="'+H+'"':'')+'>';
     h += '<rect x="'+pad+'" y="'+pad+'" width="'+W+'" height="'+H+'" class="bs-area"/>';
     p.cards.forEach(function(c){
       if(ghost && ghost.cardId===c.id) return;
@@ -1259,14 +1265,14 @@
       h += '<circle cx="'+(r.x+10)+'" cy="'+(r.y+r.h-10)+'" r="8" class="bs-num'+(i===chosen?' on':'')+'"/><text x="'+(r.x+10)+'" y="'+(r.y+r.h-10)+'" class="bs-numt">'+(i+1)+'</text>';
     });
     if(ghost){
-      var g = R(ghost.x, ghost.z, ghost.sx, ghost.sz), d = ghost.d, ox = OVERHANG*d.cx;
-      h += '<rect x="'+g.x+'" y="'+g.y+'" width="'+g.w+'" height="'+g.h+'" class="bs-ghost"/>';
+      var g = R(ghost.x, ghost.z, ghost.sx, ghost.sz), d = ghost.d, oz = OVERHANG*d.cz;
+      h += '<rect x="'+g.x+'" y="'+g.y+'" width="'+g.w+'" height="'+g.h+'" class="bs-ghost'+(drag?' bs-drag'+(ghost.bad?' bad':''):'')+'"/>';
       for(var r=0;r<ghost.rows;r++) for(var cc=0;cc<ghost.cols;cc++){
-        var cell = R(ghost.x + ox + r*d.cx, ghost.z + cc*d.cz, d.cx, d.cz), fs = Math.max(5, Math.min(9, cell.w/3.4, cell.h/1.6));
-        h += '<rect x="'+cell.x+'" y="'+cell.y+'" width="'+cell.w+'" height="'+cell.h+'" class="bs-cell"/><text x="'+(cell.x+cell.w/2)+'" y="'+(cell.y+cell.h/2)+'" class="bs-tc" style="font-size:'+fs.toFixed(1)+'px">'+(r+1)+'.'+(cc+1)+'</text>';
+        var cell = R(ghost.x + r*d.cx, ghost.z + oz + cc*d.cz, d.cx, d.cz), fs = Math.max(5, Math.min(9, cell.w/3.4, cell.h/1.6));
+        h += '<rect x="'+cell.x+'" y="'+cell.y+'" width="'+cell.w+'" height="'+cell.h+'" class="bs-cell'+(drag?' bs-dc':'')+'"/><text x="'+(cell.x+cell.w/2)+'" y="'+(cell.y+cell.h/2)+'" class="bs-tc" style="font-size:'+fs.toFixed(1)+'px">'+(cc+1)+'.'+(r+1)+'</text>';
       }
     }
-    h += '<text x="'+(pad+W/2)+'" y="'+(pad+H+14)+'" class="bs-front">▼ DEPAN · '+fmt2(p.uz)+' m ▼</text>';
+    h += '<text x="'+(pad+W/2)+'" y="'+(pad+H+14)+'" class="bs-front">▼ DEPAN · '+fmt2(p.ux)+' m ▼</text>';
     h += '<text x="'+(pad-4)+'" y="'+(pad+H/2)+'" class="bs-side" transform="rotate(-90 '+(pad-6)+' '+(pad+H/2)+')">kiri</text>';
     h += '<text x="'+(pad+W+10)+'" y="'+(pad+H/2)+'" class="bs-side" transform="rotate(90 '+(pad+W+8)+' '+(pad+H/2)+')">kanan</text>';
     return h + '</svg>';
@@ -1288,7 +1294,7 @@
       var r = { x:x, z:z, sx:s.sx, sz:s.sz }, k = x.toFixed(2)+"|"+z.toFixed(2);
       if(!seen[k] && fits(tmp, r)){ seen[k] = 1; out.push({ x:x, z:z, sx:s.sx, sz:s.sz, ori:pat.ori, cols:pat.cols, rows:pat.rows }); }
     }); });
-    out.sort(function(a,b){ return a.x-b.x || a.z-b.z; });
+    out.sort(function(a,b){ return a.z-b.z || a.x-b.x; });
     return out.slice(0, 6);
   }
 
@@ -1413,27 +1419,31 @@
       if(sc.pos==="tidak"){
         var pat = sc.pat || { ori:spec.ori, cols:spec.cols, rows:spec.rows };
         spots = candSpots(target, m, pat, t.cardId);
-        chosen = Math.min(sc.spot, spots.length-1);
-        if(chosen>=0){ var cs0 = spots[chosen]; spec = { ori:pat.ori, cols:pat.cols, rows:pat.rows, x:cs0.x, z:cs0.z, sx:cs0.sx, sz:cs0.sz, over:false }; }
-        else { var bs0 = blockSize(m, pat.ori, pat.cols, pat.rows); spec = { ori:pat.ori, cols:pat.cols, rows:pat.rows, x:0, z:0, sx:bs0.sx, sz:bs0.sz, over:true }; }
+        var bs0 = blockSize(m, pat.ori, pat.cols, pat.rows);
+        if(!sc.drag){ var s0 = spots[0] || { x:spec.x, z:spec.z }; sc.drag = { x:s0.x, z:s0.z }; }
+        var dx = Math.max(0, Math.min(target.ux - bs0.sx, sc.drag.x)), dz = Math.max(0, Math.min(target.uz - bs0.sz, sc.drag.z));
+        var tmpP = { ux:target.ux, uz:target.uz, cards:target.cards.filter(function(x){ return x.id!==t.cardId; }) };
+        var okFit = fits(tmpP, { x:dx, z:dz, sx:bs0.sx, sz:bs0.sz });
+        spec = { ori:pat.ori, cols:pat.cols, rows:pat.rows, x:dx, z:dz, sx:bs0.sx, sz:bs0.sz, over:!okFit };
+        spots.forEach(function(sp, i){ if(Math.abs(sp.x-dx)<0.01 && Math.abs(sp.z-dz)<0.01) chosen = i; });
       }
     }
-    var ghost = spec ? { cardId:t.cardId, x:spec.x, z:spec.z, sx:spec.sx, sz:spec.sz, cols:spec.cols, rows:spec.rows, d:dims(m, spec.ori) } : null;
+    var ghost = spec ? { cardId:t.cardId, x:spec.x, z:spec.z, sx:spec.sx, sz:spec.sz, cols:spec.cols, rows:spec.rows, d:dims(m, spec.ori), bad:spec.over } : null;
     var dd = spec ? dims(m, spec.ori) : null;
     h += '<div class="stepbox"><div class="stephead">Tujuan: '+target.id+(locBin && locBin.id!==t.pos?' <span class="tag warn">bin pilihan petugas</span>':' <span class="tag info">saran</span>')+'</div>'+
       '<div class="muted" style="font-size:.76rem">'+binHint(target)+' · perkiraan ruang: <span class="tag '+est.c+'">'+est.k+'</span></div>'+
-      binSvg(target, t.kind==="gabung" ? t.cardId : null, ghost, spots, chosen);
+      (sc.pos==="tidak" ? '<div class="msg" style="margin-top:4px">Atur posisi blok di peta pada langkah 4 di bawah ↓</div>' : binSvg(target, t.kind==="gabung" ? t.cardId : null, ghost));
     if(spec){
       var n = spec.cols*spec.rows, per = Math.ceil(hereQty/n);
-      h += kv([["Posisi", spec.over?'<span style="color:var(--crit)">menurut perkiraan tidak ada ruang kosong, taruh di ruang yang tersedia</span>':(sc.pos==="tidak"?'titik '+(chosen+1)+' di gambar':(spec.x<0.01&&spec.z<0.01?'pojok depan-kiri area susun':'kotak putus-putus di gambar'))],
-               ["Pola", spec.cols+' ke samping × '+spec.rows+' ke belakang ('+n+' tumpukan)'],
-               ["Arah karton", 'sisi '+Math.round(dd.cz*100)+' cm ke samping, sisi '+Math.round(dd.cx*100)+' cm ke belakang'],
+      h += kv([["Posisi", spec.over?'<span style="color:var(--crit)">menurut perkiraan tidak ada ruang kosong, taruh di ruang yang tersedia</span>':(sc.pos==="tidak"?fmt2(spec.x)+' m dari kiri, '+fmt2(spec.z)+' m dari depan':(spec.x<0.01&&spec.z<0.01?'pojok depan-kiri area susun':'kotak putus-putus di gambar'))],
+               ["Pola", spec.rows+' ke samping × '+spec.cols+' ke belakang ('+n+' tumpukan)'],
+               ["Arah karton", 'sisi '+Math.round(dd.cx*100)+' cm ke samping (menghadap depan), sisi '+Math.round(dd.cz*100)+' cm ke belakang'],
                ["Isi per tumpukan", '± '+fmt(per)+' pcs (maks 560)'+(per>MAX_PCS_TUM?' <span style="color:var(--crit)">pola terlalu kecil</span>':'')],
                ["Susun", 'level ganjil rata kiri-belakang, level genap geser ke depan-kanan'],
                ["Label QR", 'tempel di sisi depan tumpukan 1.1']]);
     } else {
       var oc = findCard(t.cardId).c;
-      h += kv([["Posisi", 'tambahkan ke blok yang disorot ('+oc.cols+'×'+oc.rows+')'], ["Label", 'tidak perlu label baru, pakai QR blok lama']]);
+      h += kv([["Posisi", 'tambahkan ke blok yang disorot ('+oc.rows+'×'+oc.cols+')'], ["Label", 'tidak perlu label baru, pakai QR blok lama']]);
     }
     h += '<div class="camrow" style="margin-top:4px"><button data-bin="ruang">Tandai: masih ada ruang</button><button data-bin="penuh">Tandai: bin penuh</button></div></div>';
 
@@ -1474,17 +1484,19 @@
     }
     h += '</div>';
     // 4 posisi di dalam bin
-    var posDone = t.kind==="gabung" || sc.pos==="ya" || (sc.pos==="tidak" && chosen>=0);
+
     if(t.kind==="baru"){
-      h += '<div class="stepbox '+(lOk?(sc.pos==="ya"||(sc.pos==="tidak"&&chosen>=0)?'ok':''):'off')+'"><div class="stephead"><span class="num">4</span>Posisi di dalam bin sesuai gambar?</div>';
+      h += '<div class="stepbox '+(lOk?(sc.pos==="ya"?'ok':(sc.pos==="tidak"?(spec.over?'bad':'ok'):'')):'off')+'"><div class="stephead"><span class="num">4</span>Posisi di dalam bin sesuai gambar?</div>';
       if(lOk){
         h += '<div class="camrow"><button data-pos="ya"'+(sc.pos==="ya"?' aria-pressed="true"':'')+'>Ya, sesuai</button><button data-pos="tidak"'+(sc.pos==="tidak"?' aria-pressed="true"':'')+'>Tidak</button></div>';
         if(sc.pos==="tidak"){
           var pt0 = sc.pat || { ori:spec.ori, cols:spec.cols, rows:spec.rows };
-          h += '<div class="muted" style="font-size:.76rem">Ketuk nomor titik tempat blok ditaruh (lihat gambar di atas). Ubah pola bila beda.</div>';
-          h += spots && spots.length ? '<div class="camrow">'+spots.map(function(s,i){ return '<button data-spot="'+i+'"'+(i===chosen?' aria-pressed="true"':'')+'>Titik '+(i+1)+'</button>'; }).join("")+'</div>' : '<div class="msg warn" style="margin-top:0">Pola ini tidak muat di ruang kosong menurut perkiraan. Coba ubah pola, atau tandai posisi tetap perkiraan.</div>';
-          h += '<div class="camrow"><button data-pat="c-">Kolom −</button><button data-pat="c+">Kolom +</button><button data-pat="r-">Baris −</button><button data-pat="r+">Baris +</button><button data-pat="rot">Putar karton</button></div>';
-          h += '<div class="mono" style="font-size:.74rem">Pola sekarang: '+pt0.cols+' × '+pt0.rows+(pt0.ori?' · diputar':'')+'</div>';
+          h += '<div class="muted" style="font-size:.76rem">Geser kotak biru ke tempat blok sebenarnya. Kotak menempel otomatis ke tepi bin dan blok lain. Atau ketuk titik cepat.</div>';
+          h += binSvg(target, null, ghost, spots, chosen, true);
+          h += '<div class="'+(spec.over?'msg crit':'msg ok')+'" style="margin-top:0">'+(spec.over?'Menabrak blok lain / keluar area menurut perkiraan. Tetap boleh, dicatat untuk dicek.':'✓ Muat')+' · '+fmt2(spec.x)+' m dari kiri, '+fmt2(spec.z)+' m dari depan</div>';
+          if(spots && spots.length) h += '<div class="camrow">'+spots.map(function(sp,i){ return '<button data-spot="'+i+'"'+(i===chosen?' aria-pressed="true"':'')+'>Titik '+(i+1)+'</button>'; }).join("")+'</div>';
+          h += '<div class="camrow"><button data-pat="r-">Samping −</button><button data-pat="r+">Samping +</button><button data-pat="c-">Belakang −</button><button data-pat="c+">Belakang +</button><button data-pat="rot">Putar karton</button></div>';
+          h += '<div class="mono" style="font-size:.74rem">Pola: '+pt0.rows+' ke samping × '+pt0.cols+' ke belakang'+(pt0.ori?' · karton diputar':'')+'</div>';
         }
         if(!sc.pos) h += '<div class="muted" style="font-size:.72rem">Boleh dilewati: posisi akan tercatat sebagai perkiraan.</div>';
       }
@@ -1521,7 +1533,7 @@
       else { sc.qr = text; buzz(text===taskById(sc.task).cardId); }
     }
     if(kind==="ibc") sc.bc = text;
-    if(kind==="iloc"){ sc.loc = text; sc.pos = ""; sc.spot = 0; sc.pat = null; }
+    if(kind==="iloc"){ sc.loc = text; sc.pos = ""; sc.spot = 0; sc.pat = null; sc.drag = null; }
     ctx.refresh();
   }
   function wireIn(ctx, box, t, locBin, spec){
@@ -1545,15 +1557,44 @@
     on("[data-k=i-rq]", function(){ ctx.isc.qr = ""; ctx.refresh(); });
     on("[data-k=i-rb]", function(){ ctx.isc.bc = ""; ctx.refresh(); });
     on("[data-k=i-rl]", function(){ ctx.isc.loc = ""; ctx.isc.pos = ""; ctx.refresh(); });
-    on("[data-pos]", function(b){ keep(); ctx.isc.pos = b.dataset.pos; ctx.isc.spot = 0; ctx.refresh(); });
-    on("[data-spot]", function(b){ keep(); ctx.isc.spot = +b.dataset.spot; ctx.refresh(); });
+    on("[data-pos]", function(b){ keep(); ctx.isc.pos = b.dataset.pos; ctx.isc.drag = null; ctx.refresh(); });
+    on("[data-spot]", function(b){ keep(); var p0 = posisi(/^LOC-/.test(ctx.isc.loc)?ctx.isc.loc.slice(4):t.pos), pt = ctx.isc.pat || { ori:spec.ori, cols:spec.cols, rows:spec.rows }, sp = candSpots(p0, mat(t.matId), pt, t.cardId)[+b.dataset.spot]; if(sp) ctx.isc.drag = { x:sp.x, z:sp.z }; ctx.refresh(); });
     on("[data-pat]", function(b){
       keep();
       var p = ctx.isc.pat || { ori:spec.ori, cols:spec.cols, rows:spec.rows }, a = b.dataset.pat;
       if(a==="c+") p.cols++; if(a==="c-") p.cols = Math.max(1, p.cols-1); if(a==="r+") p.rows++; if(a==="r-") p.rows = Math.max(1, p.rows-1); if(a==="rot") p.ori = p.ori ? 0 : 1;
-      ctx.isc.pat = p; ctx.isc.spot = 0; ctx.refresh();
+      ctx.isc.pat = p; ctx.refresh();
     });
     on("[data-k=i-split]", function(){ keep(); ctx.isc.split = true; ctx.refresh(); });
+    // geser blok di peta (drag & drop dengan snap)
+    var dsvg = box.querySelector('svg[data-drag]');
+    if(dsvg && spec){
+      var gr = dsvg.querySelector('.bs-drag'), sc0 = +dsvg.dataset.sc, pd = +dsvg.dataset.pad, H0 = +dsvg.dataset.h;
+      var pb = posisi(/^LOC-/.test(ctx.isc.loc)?ctx.isc.loc.slice(4):t.pos), others = pb.cards.filter(function(x){ return x.id!==t.cardId; });
+      var dragging = null;
+      function toSvg(e){ var pt = dsvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(dsvg.getScreenCTM().inverse()); }
+      function snap(v, size, max, edges){
+        v = Math.max(0, Math.min(max - size, v)); var best = Math.round(v*10)/10, bd = 0.22;
+        edges.forEach(function(e){ [e, e - size].forEach(function(c){ if(c>=-1e-6 && c<=max-size+1e-6 && Math.abs(c - v) < bd){ bd = Math.abs(c - v); best = c; } }); });
+        return Math.max(0, Math.min(max - size, best));
+      }
+      var ex = [0, pb.ux], ez = [0, pb.uz]; others.forEach(function(c){ ex.push(c.x, c.x + c.sx); ez.push(c.z, c.z + c.sz); });
+      function place(e){
+        var p = toSvg(e), x = (p.x - pd)/sc0 - dragging.ox, z = (pd + H0 - p.y)/sc0 - dragging.oz;
+        x = snap(x, spec.sx, pb.ux, ex); z = snap(z, spec.sz, pb.uz, ez);
+        var ok = fits({ ux:pb.ux, uz:pb.uz, cards:others }, { x:x, z:z, sx:spec.sx, sz:spec.sz });
+        gr.setAttribute("x", pd + x*sc0); gr.setAttribute("y", pd + H0 - (z + spec.sz)*sc0);
+        gr.classList.toggle("bad", !ok); dragging.x = x; dragging.z = z;
+      }
+      gr.addEventListener("pointerdown", function(e){
+        e.preventDefault(); var p = toSvg(e);
+        dragging = { ox:(p.x - pd)/sc0 - spec.x, oz:(pd + H0 - p.y)/sc0 - spec.z, x:spec.x, z:spec.z };
+        dsvg.classList.add("dragging"); try{ gr.setPointerCapture(e.pointerId); }catch(er){}
+      });
+      gr.addEventListener("pointermove", function(e){ if(dragging) place(e); });
+      function end(){ if(!dragging) return; keep(); ctx.isc.drag = { x:dragging.x, z:dragging.z }; dragging = null; ctx.refresh(); }
+      gr.addEventListener("pointerup", end); gr.addEventListener("pointercancel", end);
+    }
     on("[data-k=i-nosplit]", function(){ keep(); ctx.isc.split = false; ctx.isc.sq = null; ctx.refresh(); });
     on("[data-k=i-sq]", function(){ keep(); var el = $("#"+ctx.mode+"-isq"), q = ctx.isc.qty==null ? t.qty : ctx.isc.qty; var v = parseInt(el.value||"0",10); ctx.isc.sq = Math.max(1, Math.min(q-1, v)); ctx.refresh(); });
     on("[data-k=i-back]", function(){ ctx.isc = newIsc(); ctx.refresh(); });
@@ -1710,7 +1751,7 @@
   var IN_FRAME = true; try{ IN_FRAME = window.self !== window.top; }catch(e){ IN_FRAME = true; }
   var PR = { type:"stack", sel:null };
   function prItems(type){
-    if(type==="stack" || type==="pending") return allCards().filter(function(x){ return type==="stack" || x.c.status==="pending"; }).map(function(x){ var m = mat(x.c.matId); return { key:x.c.id, kind:"qr", code:x.c.id, t:m.code, c:x.c.id, n:[m.name, "Bin "+x.p.id+" · pola "+x.c.cols+"×"+x.c.rows+" · "+fmt(cardQty(x.c))+" pcs", "masuk "+x.c.lots[0].date] }; });
+    if(type==="stack" || type==="pending") return allCards().filter(function(x){ return type==="stack" || x.c.status==="pending"; }).map(function(x){ var m = mat(x.c.matId); return { key:x.c.id, kind:"qr", code:x.c.id, t:m.code, c:x.c.id, n:[m.name, "Bin "+x.p.id+" · pola "+x.c.rows+"×"+x.c.cols+" · "+fmt(cardQty(x.c))+" pcs", "masuk "+x.c.lots[0].date] }; });
     if(type==="loc") return S.map(function(p){ return { key:p.id, kind:"qr", code:"LOC-"+p.id, t:p.id, big:true, c:"LOC-"+p.id, n:["Line "+p.cat+" · "+cat(p.cat).name, "Label lokasi permanen"] }; });
     if(type==="needlabel") return allCards().filter(function(x){ return x.c.needLabel; }).map(function(x){ var m = mat(x.c.matId); return { key:x.c.id, kind:"qr", code:x.c.id, t:m.code, c:x.c.id, n:[m.name, "Saran bin "+x.p.id+" · "+fmt(cardQty(x.c))+" pcs", x.c.from?"sisa dari "+x.c.from:"blok baru"] }; });
     if(type==="demoin_old") return [].map(function(x){ var m = mat(x.matId); return { key:x.id, kind:"qr", code:x.id, t:m.code, c:x.id, n:[m.name, "Booking bin "+x.pos+" · "+fmt(x.qty)+" pcs"] }; });
@@ -1743,7 +1784,7 @@
     $("#bin-table").innerHTML = '<tr><th>Kode bin</th><th>Line</th><th>Kategori</th><th>Slot</th><th>Ukuran</th><th>Area susun</th><th>Batas tinggi</th><th>Isi QR lokasi</th><th>Blok aktif</th></tr>' +
       S.map(function(p){ return '<tr><td class="mono"><b>'+p.id+'</b></td><td>'+p.cat+'</td><td>'+cat(p.cat).name+'</td><td class="mono">'+p.slot+'</td><td class="mono">8,1 × 6,0 m</td><td class="mono">8,1 × '+fmt2(p.uz)+' m</td><td class="mono">560 pcs/tumpukan</td><td class="mono">LOC-'+p.id+'</td><td class="mono">'+p.cards.length+'</td></tr>'; }).join("");
     $("#bin-labels").innerHTML = S.map(function(p){ return '<div class="label" style="border-style:solid"><div class="qr">'+qrSvg("LOC-"+p.id)+'</div><b style="font-size:1.3rem">'+p.id+'</b>Line '+p.cat+' · '+cat(p.cat).name+'</div>'; }).join("");
-    $("#stack-labels").innerHTML = allCards().map(function(x){ var m = mat(x.c.matId); return '<div class="label"><div class="qr">'+qrSvg(x.c.id)+'</div><b>'+x.c.id+'</b><b style="font-size:.95rem">'+m.code+'</b>'+esc(m.name)+'<br>Bin '+x.p.id+' · pola '+x.c.cols+'×'+x.c.rows+' · '+fmt(cardQty(x.c))+' pcs'+(x.c.status==="pending"?'<br>(belum dikonfirmasi)':'')+'</div>'; }).join("") || '<div class="muted">Tidak ada blok.</div>';
+    $("#stack-labels").innerHTML = allCards().map(function(x){ var m = mat(x.c.matId); return '<div class="label"><div class="qr">'+qrSvg(x.c.id)+'</div><b>'+x.c.id+'</b><b style="font-size:.95rem">'+m.code+'</b>'+esc(m.name)+'<br>Bin '+x.p.id+' · pola '+x.c.rows+'×'+x.c.cols+' · '+fmt(cardQty(x.c))+' pcs'+(x.c.status==="pending"?'<br>(belum dikonfirmasi)':'')+'</div>'; }).join("") || '<div class="muted">Tidak ada blok.</div>';
     $("#carton-labels").innerHTML = MATS.map(function(m){ return '<div class="label" style="border-style:solid">'+barcodeSvg(m.code)+'<b style="font-size:.85rem">'+esc(m.name)+'</b></div>'; }).join("");
   }
 
@@ -2085,28 +2126,29 @@
         }
         var key = pend ? "p" : "s"; inst[key] = inst[key] || [];
         var ikatH = m.pcs*HPP;
-        var firstTop = null;
+        var firstTop = null, ordF = pickOrder(card.cols, card.tum.length), firstIdx = -1;
+        for(var fi=0; fi<ordF.length; fi++) if(card.tum[ordF[fi]]>0){ firstIdx = ordF[fi]; break; }
         card.tum.forEach(function(qp, i){
           if(qp<=0) return;
           var r = Math.floor(i/card.cols), cc = i%card.cols;
           // level 1, 3, 5, ... : posisi dasar (paling luar di sisi kiri & belakang)
           // level 2, 4, 6, ... : bergeser 10% ke depan (arah koridor) dan ke kanan
-          var lx = card.x + ox + r*d.cx + d.cx/2, lz = card.z + cc*d.cz + d.cz/2;
+          var lx = card.x + r*d.cx + d.cx/2, lz = card.z + oz + cc*d.cz + d.cz/2;
           var ikat = Math.ceil(qp/m.pcs);
           for(var j=0;j<ikat;j++){
-            var even = j%2===1, w = toWorld(p, lx - (even?ox:0), lz + (even?oz:0));
+            var even = j%2===1, w = toWorld(p, lx + (even?ox:0), lz - (even?oz:0));
             v.set(w.x, j*ikatH + ikatH/2, w.z); sc.set(d.cx*0.985, ikatH*0.9, d.cz*0.985);
             mtx.compose(v, q0, sc);
             inst[key].push({ m:mtx.clone(), c:(even?shade:base), cardId:card.id, posId:p.id });
           }
           var top = toWorld(p, lx, lz);
-          if(!firstTop) firstTop = { x:top.x, z:top.z, y:ikat*ikatH };
+          if(i===firstIdx) firstTop = { x:top.x, z:top.z, y:ikat*ikatH };
         });
         if(firstTop){
           if(stepIdx[card.id]){ var nl = textPlane([String(stepIdx[card.id])], 0.7, 0.7, G.colors.accent, 100, "700"); nl.position.set(firstTop.x, firstTop.y+0.04, firstTop.z); G.labelsGroup.add(nl); }
-          var front = toWorld(p, card.x, card.z + d.cz/2);
+          var front = toWorld(p, card.x + d.cx/2, card.z);
           var tag = new T.Mesh(new T.PlaneGeometry(0.32,0.32), new T.MeshBasicMaterial({ map:qrTexture(card.id) }));
-          tag.rotation.y = -Math.PI/2; tag.position.set(front.x - 0.01, Math.min(1.1, firstTop.y*0.5), front.z);
+          tag.position.set(front.x, Math.min(1.1, firstTop.y*0.5), front.z + 0.01);
           tag.userData.cardId = card.id; tag.userData.posId = p.id; tag.userData.sharedMap = true; g.add(tag);
         }
       });
@@ -2193,7 +2235,7 @@
   /* ---------- wiring ---------- */
   
   $("#btn-search").addEventListener("click", startSearch);
-  $("#btn-confirm").addEventListener("click", confirmPlan);
+  $("#btn-confirm").addEventListener("click", function(){ confirmPlan(false); });
   var resetArm = 0;
   $("#btn-reset").addEventListener("click", function(){
     if(FB.on){
