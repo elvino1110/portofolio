@@ -3,7 +3,7 @@
 //   AZURE_OPENAI_API_KEY             (wajib)
 //   AZURE_OPENAI_API_INSTANCE_NAME   (nama resource, contoh: "ppic-openai")  — atau —
 //   AZURE_OPENAI_ENDPOINT            (URL lengkap, contoh: "https://ppic-openai.openai.azure.com")
-//   AZURE_OPENAI_API_DEPLOYMENT_NAME (nama deployment, contoh: "gpt-4.1")
+//   AZURE_OPENAI_API_DEPLOYMENT_NAME (nama deployment model di Azure)
 //   AZURE_OPENAI_API_VERSION         (opsional, default 2024-10-21)
 //   ACCESS_CODE                      (opsional, kode akses supaya link publik tidak dipakai orang lain)
 
@@ -89,8 +89,8 @@ export default async (req) => {
 
   const opts = {
     azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
-    azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME || "gpt-4o-mini",
-    azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-10-21",
+    azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
+    azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
     temperature: 0.2,
     maxTokens: 600,
     timeout: 20000,
