@@ -1,4 +1,10 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Simulator Agent Call Sopir</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -77,7 +83,7 @@
   .fstep b{display:block; margin-top:6px; font-size:.9rem}
   .fstep p{font-size:.8rem; color:var(--ink-dim); margin-top:4px}
 
-  /*  telepon  */
+  /* telepon */
   .callgrid{display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1.1fr); gap:14px; align-items:start}
   @media (max-width:920px){ .callgrid{grid-template-columns:1fr} }
   .phone{display:flex; flex-direction:column; height:600px}
@@ -101,6 +107,8 @@
   .chips{display:flex; gap:6px; flex-wrap:wrap; padding:8px 0}
   .chip{font-size:.76rem; padding:4px 9px; border-radius:99px}
   .inputrow{display:flex; gap:6px}
+  .msg.think{background:var(--agent); align-self:flex-start; opacity:.7; font-style:italic}
+  .llmtag{display:inline-block; font-family:var(--mono); font-size:.66rem; padding:1px 6px; border-radius:99px; background:var(--accent-soft); color:var(--accent); margin-left:6px; vertical-align:1px}
   .inputrow input{flex:1}
   .steps{display:flex; flex-wrap:wrap; gap:4px; margin-top:6px}
   .step{font-family:var(--mono); font-size:.68rem; padding:3px 8px; border-radius:4px; border:1px solid var(--line); color:var(--ink-dim)}
@@ -223,7 +231,7 @@
     <h1>Simulator AI Agent Call Sopir</h1>
     <p class="lede">AI menelepon sopir pada hari yang sudah dijadwalkan, menanyakan posisi, kendala, dan perkiraan tiba, lalu mencatat hasilnya otomatis ke dashboard per zona dan depo. Order tracking cukup menangani kasus yang ditandai perlu tindakan.</p>
   </header>
-  <div class="banner"><b>Ini simulasi untuk menunjukkan mekanisme.</b> Data shipment, zona, depo, nama sopir, dan no polisi hanya contoh. Suara memakai suara bawaan browser, jadi logat dan kualitasnya belum seperti sistem nyata. Jawaban yang diketik sendiri dipahami dengan aturan sederhana; di sistem nyata AI bisa memahami kalimat yang lebih bebas.</div>
+  <div class="banner"><b>Ini simulasi untuk menunjukkan mekanisme.</b> Data shipment, zona, depo, nama sopir, dan no polisi hanya contoh. Suara memakai suara bawaan browser, jadi logat dan kualitasnya belum seperti sistem nyata. Pilih skenario <b>AI asli</b> untuk mengetik jawaban sopir dengan bebas: percakapannya dijawab model AI sungguhan (Azure OpenAI) dan hasilnya langsung tercatat ke dashboard. Skenario lain memakai contoh jawaban tetap.</div>
 
   <section>
     <div class="shead"><h2>1 · Cara kerjanya</h2></div>
@@ -252,6 +260,7 @@
         <div class="bar" style="padding-top:10px">
           <select id="c-ship" aria-label="Shipment" style="flex:1;min-width:160px"></select>
           <select id="c-scen" aria-label="Skenario">
+            <option value="llm">AI asli · ketik bebas</option>
             <option value="normal">Normal, lancar</option>
             <option value="kendala">Ban pecah di jalan</option>
             <option value="menginap">Depo penuh, menginap</option>
@@ -269,6 +278,7 @@
           <button id="c-stop" disabled>Akhiri</button>
           <label style="display:inline-flex;gap:6px;align-items:center;font-size:.8rem"><input type="checkbox" id="c-voice" checked> Suara</label>
           <label style="display:inline-flex;gap:6px;align-items:center;font-size:.8rem" class="muted"><input type="checkbox" id="c-noise"> Sinyal buruk</label>
+          <input type="password" id="c-code" placeholder="Kode akses AI" aria-label="Kode akses AI" autocomplete="off" style="width:130px">
         </div>
         <div class="muted" style="font-size:.72rem;margin-top:4px" id="voice-note"></div>
         <div class="chat" id="chat" aria-live="polite"></div>
@@ -361,7 +371,7 @@
   var esc = function(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); };
   var reduce = false; try{ reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
   var DELAY = reduce ? 0 : 600;
-  var TODAY = "2026-10-20";
+  var TODAY = (function(){ var d = new Date(); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); })();
 
   /* ---------- tanggal ---------- */
   function addDays(d, n){ var t = new Date(d+"T00:00:00Z"); t.setUTCDate(t.getUTCDate()+n); return t.toISOString().slice(0,10); }
@@ -528,7 +538,7 @@
   }
   function isSun(date){ return new Date(date+"T00:00:00Z").getUTCDay()===0; }
   // contoh hari libur per depo; di sistem nyata diambil dari kalender libur yang sudah ada
-  var HOLI = { "Z7-D1":["2026-10-26"], "Z1-D1":["2026-10-28"], "Z2A-D1":["2026-10-29"] };
+  var HOLI = { "Z7-D1":[addDays(TODAY,6)], "Z1-D1":[addDays(TODAY,8)], "Z2A-D1":[addDays(TODAY,9)] };
   function isHol(d, date){ return (HOLI[d.id]||[]).indexOf(date) > -1; }
   function isClosed(d, date){ return isSun(date) || isHol(d, date); }
   function holdOn(d, date){ var h = null; HOLDS.forEach(function(x){ if(x.depo===d.id && date>=x.from && date<=x.to) h = x; }); return h; }
@@ -942,7 +952,7 @@
     ];
     $("#pipe").innerHTML = cards.map(function(c){ return '<div class="pcard"><div class="t">'+c[0]+'</div><div class="v">'+c[1]+'</div></div>'; }).join("");
   }
-  var LABEL = { barang:"Kondisi barang", sesuai_jadwal:"Sesuai tanggal tiba", sudah_sampai:"Sudah sampai", sudah_bongkar:"Sudah dibongkar", tiba_kemarin:"Tiba sejak kemarin", aman_bicara:"Aman bicara", posisi:"Posisi", status:"Status", kendala:"Kendala", detail:"Detail", eta:"Perkiraan tiba", bagian_hari:"Waktu", terlambat:"Lewat target", dikonfirmasi:"Dibenarkan sopir", minta_manusia:"Minta bicara dengan orang" };
+  var LABEL = { barang:"Kondisi barang", sesuai_jadwal:"Sesuai tanggal tiba", sudah_sampai:"Sudah sampai", sudah_bongkar:"Sudah dibongkar", tiba_kemarin:"Tiba sejak kemarin", aman_bicara:"Aman bicara", posisi:"Posisi", status:"Status", kendala:"Kendala", detail:"Detail", eta:"Perkiraan tiba", bagian_hari:"Waktu", terlambat:"Lewat target", dikonfirmasi:"Dibenarkan sopir", minta_manusia:"Minta bicara dengan orang", eta_date:"Perkiraan tiba", eta_part:"Waktu", kendala_serius:"Kendala serius" };
   function fmtVal(v){ if(v===true) return "ya"; if(v===false) return "tidak"; if(v===null || v===undefined) return "belum tertangkap"; if(/^\d{4}-\d\d-\d\d/.test(v)) return fmtD(v.slice(0,10))+v.slice(10); return v; }
   function renderKv(){
     if(!call){ $("#kv").innerHTML = '<tr><td class="muted" colspan="2">Belum ada.</td></tr>'; return; }
@@ -956,7 +966,8 @@
   }
   function renderChips(){
     var el = $("#chips");
-    if(!call || call.ended || call.scen!=="manual"){ el.innerHTML = ""; return; }
+    if(!call || call.ended || (call.scen!=="manual" && call.scen!=="llm")){ el.innerHTML = ""; return; }
+    if(call.scen==="llm"){ el.innerHTML = '<span class="muted" style="font-size:.74rem">Ketik bebas seperti sopir sungguhan, misalnya "lagi di Cipali pak, macet parah, kayaknya Kamis sore baru nyampe".</span>'; return; }
     el.innerHTML = (SUGG[call.state]||[]).concat(["Mau bicara sama orang saja"]).map(function(t){ return '<button class="chip" data-t="'+esc(t)+'">'+esc(t)+'</button>'; }).join("");
     Array.prototype.forEach.call(el.querySelectorAll("button"), function(b){ b.addEventListener("click", function(){ driverSay(b.dataset.t, false); }); });
   }
@@ -965,7 +976,7 @@
     token++; var my = token; stopSpeech();
     var s = shipById($("#c-ship").value), scen = $("#c-scen").value, due = dueToday(s);
     var callNo = due ? "ke-"+due : "tambahan", type = callType(s);
-    call = { s:s, scen:scen, type:type, path:PATHS[type].slice(), idx:0, state:"SAFE", ended:false, reprompt:0, corrected:false, turns:0, conf:1, sttMin:1, queue:scenLines(scen, s, type).slice(), token:my,
+    call = { s:s, scen:scen, type:type, path:PATHS[type].slice(), idx:0, state:"SAFE", ended:false, reprompt:0, corrected:false, turns:0, conf:1, sttMin:1, queue:scen==="llm" ? [] : scenLines(scen, s, type).slice(), token:my, history:[], llmMs:[],
              rec:{ shipment:s.id, no_polisi:s.nopol, sopir:s.sopir, telepon:callNo, diangkat:null, posisi:null, status:null, kendala:null, eta:null, terlambat:null, dikonfirmasi:false, keyakinan:null, eskalasi:[] } };
     $("#chat").innerHTML = ""; $("#timer").textContent = "";
     $("#c-who").textContent = s.sopir+" · "+s.nopol;
@@ -983,12 +994,13 @@
   }
   function agentSay(t){
     var my = call.token;
-    addMsg("agent", t, "AI (suara)");
+    call.history.push({ role:"agent", text:t });
+    addMsg("agent", t, call.scen==="llm" ? (call.fb ? "AI · aturan cadangan" : "AI · Azure OpenAI") : "AI (suara)"); call.fb = false;
     renderSteps(); renderKv();
     speak(t, "agent").then(function(){
       if(my!==token) return;
       if(call.ended){ endCall(); return; }
-      if(call.scen==="manual"){ setInput(true); renderChips(); try{ $("#c-input").focus({preventScroll:true}); }catch(e){} }
+      if(call.scen==="manual" || call.scen==="llm"){ setInput(true); renderChips(); try{ $("#c-input").focus({preventScroll:true}); }catch(e){} }
       else if(call.queue.length){ wait(DELAY*0.6).then(function(){ if(my===token) driverSay(call.queue.shift(), true); }); }
       else { call.scen = "manual"; setInput(true); renderChips(); }
     });
@@ -1012,6 +1024,7 @@
     var my = call.token;
     setInput(false); $("#chips").innerHTML = "";
     addMsg("driver", text, "Sopir"+(voiced?" (suara)":""));
+    call.history.push({ role:"driver", text:text });
     $("#c-input").value = "";
     (voiced ? speak(text, "driver") : Promise.resolve()).then(function(){
       if(my!==token) return;
@@ -1019,6 +1032,7 @@
       var conf = $("#c-noise").checked ? 0.62 + Math.random()*0.12 : 0.9 + Math.random()*0.08;
       if(RE_UNCLEAR.test(text.toLowerCase())) conf = Math.min(conf, 0.45);
       call.sttMin = Math.min(call.sttMin, conf);
+      if(call.scen==="llm"){ llmTurn(text, conf, my); return; }
       var r = step(text);
       renderPipe({ heard:text, conf:conf, extract:r.extract, decision:r.decision, reply:r.reply });
       wait(DELAY*0.5).then(function(){ if(my===token) agentSay(r.reply); });
@@ -1161,6 +1175,82 @@
     return { extract:{}, decision:"-", reply:"..." };
   }
 
+  /* ---------- mode AI asli: Azure OpenAI lewat Netlify Function ---------- */
+  var LLM_URL = "/api/agent-call";
+  function getCode(){ try{ return localStorage.getItem("agentcall-code") || ""; }catch(e){ return ""; } }
+  function saveCode(v){ try{ localStorage.setItem("agentcall-code", v); }catch(e){} }
+  function llmContext(){
+    var s = call.s, z = zone(s.zone), r = call.rec, tg = targetDate(s);
+    return { today:TODAY, todayName:wdName(TODAY), sopir:s.sopir, nopol:s.nopol, mobil:s.mobil||"", zona:z.code+" ("+z.name+")", via:z.via, depo:depo(s.depo).name,
+      target:tg, targetName:fmtD(tg), typeLabel:TYPE_LBL[call.type], path:PATHS[call.type],
+      rec:{ posisi:r.posisi, status:r.status, kendala:r.kendala, eta:r.eta, barang:r.barang||null, dikonfirmasi:r.dikonfirmasi, eskalasi:r.eskalasi } };
+  }
+  function llmTurn(text, conf, my){
+    var th = document.createElement("div"); th.className = "msg think"; th.textContent = "AI sedang memahami jawaban...";
+    $("#chat").appendChild(th); $("#chat").scrollTop = $("#chat").scrollHeight;
+    var ctl = new AbortController(), to = setTimeout(function(){ ctl.abort(); }, 25000);
+    fetch(LLM_URL, { method:"POST", headers:{ "content-type":"application/json" }, signal:ctl.signal,
+      body: JSON.stringify({ code:$("#c-code").value.trim(), context:llmContext(), history:call.history }) })
+    .then(function(res){ return res.json().catch(function(){ return { error:"Server tidak mengembalikan JSON (HTTP "+res.status+")" }; }).then(function(j){ if(!res.ok || j.error) throw new Error(j.error || ("HTTP "+res.status)); return j; }); })
+    .then(function(o){
+      clearTimeout(to); th.remove(); if(my!==token || !call || call.ended) return;
+      var ex = applyLlm(o);
+      call.llmMs.push(o.ms||0);
+      var c2 = typeof o.clarity==="number" ? Math.min(conf, Math.max(0.3, o.clarity)) : conf;
+      call.sttMin = Math.min(call.sttMin, c2);
+      renderPipe({ heard:text, conf:c2, extract:ex, decision:(o.decision||"-")+(o.ms ? " · "+(o.ms/1000).toFixed(1)+" dtk" : ""), reply:o.reply });
+      agentSay(o.reply || "Baik Pak.");
+    })
+    .catch(function(err){
+      clearTimeout(to); th.remove(); if(my!==token || !call || call.ended) return;
+      var msg = err && err.name==="AbortError" ? "AI tidak menjawab dalam 25 detik" : String(err && err.message || err);
+      addMsg("sys", "AI asli tidak tersambung ("+msg+") · giliran ini dijawab aturan sederhana");
+      var r = step(text);
+      renderPipe({ heard:text, conf:conf, extract:r.extract, decision:"[cadangan] "+r.decision, reply:r.reply });
+      call.fb = true; agentSay(r.reply);
+    });
+  }
+  var END_LBL = { SELESAI:"Selesai", JADWAL_ULANG:"Dijadwal ulang", ESKALASI:"Eskalasi segera" };
+  function applyLlm(o){
+    var rec = call.rec, u = o.understood || {}, ex = {};
+    Object.keys(u).forEach(function(k){ if(u[k]!==null && u[k]!==undefined && u[k]!=="") ex[k] = u[k]; });
+    if(u.posisi) rec.posisi = u.posisi;
+    if(u.kendala) rec.kendala = u.kendala;
+    if(u.barang) rec.barang = u.barang;
+    if(u.tiba_kemarin) rec.tiba_kemarin = true;
+    if(u.status) rec.status = u.status;
+    else if(u.sudah_bongkar) rec.status = "sudah bongkar";
+    else if(u.sudah_sampai) rec.status = "sudah tiba";
+    if((u.sudah_sampai || u.sudah_bongkar) && !rec.posisi) rec.posisi = depo(call.s.depo).name;
+    if(u.kendala && u.kendala!=="tidak ada" && !u.status && !/sudah/.test(rec.status||"")) rec.status = "kendala";
+    if(u.eta_date && /^\d{4}-\d\d-\d\d$/.test(u.eta_date)) setEta(u.eta_date, u.eta_part);
+    if(typeof u.dikonfirmasi==="boolean") rec.dikonfirmasi = u.dikonfirmasi;
+    if(u.kendala && u.kendala!=="tidak ada" && !rec.eskalasi.some(function(x){ return x==="kendala: "+u.kendala; })) rec.eskalasi.push("kendala: "+u.kendala);
+    if(u.barang && u.barang!=="lengkap") rec.eskalasi.push("barang bermasalah saat bongkar: "+u.barang);
+    if(u.minta_manusia) rec.eskalasi.push("sopir minta bicara dengan orang");
+    if(u.kendala_serius) rec.eskalasi.push("kendala serius, segera hubungi sopir");
+    (o.eskalasi||[]).forEach(function(x){ x = String(x).slice(0,120); if(x && !/terlambat|mundur|perkiraan|kendala:/i.test(x) && rec.eskalasi.indexOf(x)<0) rec.eskalasi.push(x); });
+    rec.eskalasi = rec.eskalasi.filter(function(x, i, a){ return a.indexOf(x)===i; });
+    var st = o.state;
+    if(SLBL[st]){
+      var at = call.path.indexOf(st, call.idx);
+      if(at<0){ call.path.splice(call.idx+1, 0, st); at = call.idx+1; }
+      call.idx = at; call.state = st;
+    }
+    if(o.end && o.end!=="none"){
+      var lbl = o.end==="ESKALASI" && u.minta_manusia ? "Minta bicara dengan orang" : END_LBL[o.end];
+      if(o.end==="ESKALASI" && !u.kendala_serius) rec.status = rec.status || "perlu dicek";
+      if(o.end==="JADWAL_ULANG") rec.status = "dijadwal ulang";
+      if(o.end==="SELESAI"){ var si = call.path.indexOf("SELESAI"); if(si>-1) call.idx = si; }
+      finish(o.end, lbl, !!u.kendala_serius);
+    }
+    return ex;
+  }
+  $("#c-code").value = getCode();
+  $("#c-code").addEventListener("change", function(){ saveCode(this.value.trim()); });
+  function syncScen(){ $("#c-code").hidden = $("#c-scen").value!=="llm"; }
+  $("#c-scen").addEventListener("change", syncScen); syncScen();
+
   function finish(kind, label, critical){
     var rec = call.rec;
     call.ended = true; call.endKind = kind; call.endLabel = label; call.critical = !!critical;
@@ -1248,4 +1338,5 @@
 })();
 </script>
 
-</body></html>
+</body>
+</html>
