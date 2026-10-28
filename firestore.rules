@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Demo WMS karton + JRT: hanya halaman yang sudah login anonim yang boleh baca/tulis,
+    // dan hanya ke koleksi yang dipakai simulator.
+    match /{koleksi}/{id} {
+      allow read, write: if request.auth != null
+        && koleksi in ['material', 'bin', 'tumpukan', 'order', 'transaksi', 'meta',
+                       'jrt_meta', 'jrt_line', 'jrt_task'];
+    }
+  }
+}

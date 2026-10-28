@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Simulator JRT Petugas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="jrt.css">
+<style>
+  .wrap{max-width:640px}
+  .pt-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:10px}
+  .pt-big{font-family:var(--display); font-size:2.2rem; line-height:1; letter-spacing:.02em}
+  .pt-label{font-family:var(--mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-dim)}
+  .pt-row{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; justify-content:space-between}
+  .chips{display:flex; gap:6px; flex-wrap:wrap}
+  .chips button{min-width:44px; font-family:var(--mono); font-size:1rem; padding:9px 0}
+  .chips button.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  .pt-steps{display:flex; gap:6px; flex-wrap:wrap}
+  .pt-steps span{font-family:var(--mono); font-size:.72rem; padding:3px 9px; border-radius:20px; border:1px solid var(--line); color:var(--ink-dim)}
+  .pt-steps span.now{border-color:var(--accent); color:var(--accent); font-weight:600}
+  .pt-steps span.done{border-color:var(--ok); color:var(--ok)}
+  .su-list button{width:100%; display:flex; justify-content:space-between; gap:8px; text-align:left; font-weight:400; margin-top:6px}
+  .su-list .mono{font-weight:600}
+  .modebar{display:flex; gap:6px; margin-bottom:12px}
+  .modebar button{flex:1}
+  .modebar button.on{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+  .sim{border:1px dashed var(--line); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px; background:var(--surface-2)}
+  .sim .t{font-family:var(--mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-dim)}
+  .sim .row{display:flex; gap:6px; flex-wrap:wrap}
+  .sim .row > *{flex:1 1 auto}
+  .sim input{font-family:var(--mono); font-size:.95rem; padding:9px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); min-width:0}
+  .scanlog{font-family:var(--mono); font-size:.74rem; color:var(--ink-dim)}
+  .pt-card select{font-family:var(--body); font-size:.95rem; padding:9px; border-radius:8px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav"><a href="jrt-admin.html">Admin</a><a href="jrt-petugas.html" class="on">Petugas (kamera)</a><a href="jrt-master.html">Master data</a><span id="store-st"></span></nav>
+  <header class="top">
+    <span class="eyebrow">Petugas &middot; peletakan jumbo roll</span>
+    <h1>Scan SU &rarr; scan lokasi bin</h1>
+    <p class="lede"><b>Taruh barang datang:</b> scan SU, cek isi bundle, scan lokasi bin (beda dari booking &rarr; pilih alasan). <b>Pindah stok:</b> scan SU / lokasi asal, scan lokasi tujuan, pilih alasan &mdash; seperti LT10.</p>
+  </header>
+  <div class="modebar" role="group" aria-label="Menu"><button type="button" data-tab="taruh">Taruh barang datang</button><button type="button" data-tab="pindah">Pindah stok</button></div>
+  <div class="modebar" role="group" aria-label="Mode scan"><button type="button" data-mode="cam">Kamera</button><button type="button" data-mode="sim">Simulasi tanpa kamera</button></div>
+  <div id="pt-main"></div>
+  <section style="margin-top:22px" id="sec-transit">
+    <div class="section-head"><h2>SU di transit</h2><h3>Sudah dibooking admin, belum ditaruh</h3></div>
+    <div class="pt-card su-list" id="pt-list"></div>
+  </section>
+  <footer>Kamera butuh link HTTPS (Netlify) dan izin kamera di HP. Tanpa kamera, kode bisa diketik atau pilih dari daftar.</footer>
+</div>
+
+<div class="camov" id="camov" hidden>
+  <div class="camtop"><b id="cam-title">Scan</b><button id="cam-x" type="button">Tutup</button></div>
+  <div class="camhint" id="cam-hint"></div>
+  <div id="cam-reader"></div>
+  <div class="cam-msg" id="cam-msg"></div>
+  <div class="cam-manual"><input id="cam-in" placeholder="atau ketik kode" autocomplete="off" autocapitalize="characters"><button id="cam-ok" type="button">OK</button></div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js"></script>
+<script src="jrt-core.js"></script>
+<script>
+(function(){
+  "use strict";
+  /* ---------- kamera ---------- */
+  var CAM = { inst:null, cb:null };
+  function camFormats(){ var F = window.Html5QrcodeSupportedFormats; if(!F) return undefined; return [F.QR_CODE, F.CODE_128, F.CODE_39, F.EAN_13, F.EAN_8, F.UPC_A, F.ITF, F.DATA_MATRIX]; }
+  function openCam(title, hint, cb){
+    CAM.cb = cb;
+    $("#cam-title").textContent = title; $("#cam-hint").textContent = hint; $("#cam-msg").textContent = ""; $("#cam-in").value = "";
+    $("#camov").hidden = false;
+    if(IN_FRAME || !window.Html5Qrcode){ $("#cam-msg").textContent = IN_FRAME ? "Kamera tidak tersedia di jendela pratinjau. Ketik kode di bawah, atau buka link Netlify di HP." : "Pustaka scanner tidak termuat. Ketik kode di bawah."; return; }
+    try{
+      CAM.inst = new window.Html5Qrcode("cam-reader", { formatsToSupport:camFormats(), verbose:false, experimentalFeatures:{ useBarCodeDetectorIfSupported:true } });
+      CAM.inst.start({ facingMode:"environment" }, { fps:10, qrbox:function(w,h){ var s = Math.min(w,h); return { width:Math.floor(Math.min(w*0.9, s*1.2)), height:Math.floor(s*0.6) }; } },
+        function(text){ var cb2 = CAM.cb; closeCam(); if(cb2) cb2(text); }, function(){})
+      .catch(function(){ $("#cam-msg").textContent = "Kamera tidak bisa dibuka. Buka link HTTPS di HP dan izinkan kamera. Sementara bisa ketik kode di bawah."; CAM.inst = null; });
+    }catch(e){ $("#cam-msg").textContent = "Kamera tidak tersedia. Ketik kode di bawah."; CAM.inst = null; }
+  }
+  function closeCam(){ var inst = CAM.inst; CAM.inst = null; $("#camov").hidden = true; if(inst){ try{ inst.stop().then(function(){ try{ inst.clear(); }catch(e){} }).catch(function(){}); }catch(e){} } }
+  $("#cam-x").addEventListener("click", closeCam);
+  function camManual(){ var v = $("#cam-in").value.trim(); if(!v) return; var cb = CAM.cb; closeCam(); if(cb) cb(v); }
+  $("#cam-ok").addEventListener("click", camManual);
+  $("#cam-in").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); camManual(); } });
+
+  /* ---------- alur petugas ---------- */
+  // PT.step: "su" (belum scan) -> "bin" (SU discan, cek isi, scan bin) -> "beda" (bin beda, pilih alasan) -> "done"
+  var PT = { step:"su" }, LOG = [];
+  var MODE = (function(){ try{ var v = localStorage.getItem("jrt-pt-mode"); if(v) return v; }catch(e){} return (IN_FRAME || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) ? "sim" : "cam"; })();
+  var TAB = (function(){ try{ return localStorage.getItem("jrt-pt-tab") || "taruh"; }catch(e){ return "taruh"; } })();
+  var MV = { step:"asal" };
+  function setTab(v){ TAB = v; try{ localStorage.setItem("jrt-pt-tab", v); }catch(e){} MV = { step:"asal" }; render(); }
+  function setMode(v){ MODE = v; try{ localStorage.setItem("jrt-pt-mode", v); }catch(e){} render(); }
+  function logScan(kind, code){ LOG.unshift(new Date().toTimeString().slice(0,8)+" · scan "+kind+": "+code); LOG.length = Math.min(LOG.length, 6); }
+  function waiting(){ return TASKS.filter(function(t){ return t.status==="booking"; }); }
+  function scanSU(code){
+    logScan("SU", code);
+    var t = taskByIdCode(code);
+    if(!t){ PT = { step:"su", err:"SU "+code+" tidak ada di daftar booking. Cek ke admin." }; return render(); }
+    if(t.status!=="booking"){ PT = { step:"su", err:"SU "+t.id+" sudah ditaruh di "+t.bin+"." }; return render(); }
+    PT = { step:"bin", t:t, n:t.nEst };
+    render();
+  }
+  function scanBin(code){
+    logScan("lokasi", code);
+    var t = PT.t, pb = parseBinCode(code);
+    if(!pb){ PT.err = "Kode lokasi \""+code+"\" tidak dikenali. Contoh format: B13 atau B13A."; return render(); }
+    var l = locateTask(t);
+    var same = l && pb.b===l.b && (!pb.sub || pb.sub===colLabel(l.b, l.ci).slice(-1) || !/[AB]$/.test(colLabel(l.b, l.ci)));
+    if(same){
+      var r = placeSame(t, PT.n);
+      if(r.ok){ saveState(); PT = { step:"done", t:t, res:r }; return render(); }
+      PT.err = r.err; return render();
+    }
+    var opts = optionsForTask(t, PT.n).filter(function(o){ return o.b===pb.b; });
+    if(pb.sub) opts = opts.filter(function(o){ return o.label.indexOf(pb.b.line.id+pb.b.no+pb.sub)===0 || o.label===pb.b.line.id+pb.b.no+(pb.sub==="A" ? "" : "B (baru)") || o.label.indexOf(pb.b.line.id+pb.b.no+"A/B")===0; });
+    if(!opts.length){
+      var why = pb.b.cols.some(function(c){ return c.mat!==t.mat; }) ? "berisi no material lain" : "tidak muat";
+      PT.err = "Bin "+pb.b.line.id+pb.b.no+pb.sub+" "+why+" untuk SU ini. Scan bin booking ("+taskLabel(t)+") atau bin lain yang kosong / berisi "+t.mat+".";
+      return render();
+    }
+    PT.step = "beda"; PT.opt = opts[0]; PT.code = pb.b.line.id+pb.b.no+pb.sub; PT.err = ""; render();
+  }
+  /* ---------- pindah stok ---------- */
+  var MV_WHY = ["Merapikan / menyatukan no material sama","Mengosongkan bin","Bin tidak sesuai peruntukan line","Tidak muat di bin asal","Instruksi kepala shift","Lainnya"];
+  function scanAsal(code){
+    logScan("asal", code);
+    var l = locateSU(code);
+    if(l){
+      if(!isFront(l)){ MV.err = "SU "+code.toUpperCase()+" ada di "+colLabel(l.b, l.ci)+" posisi ke-"+(l.si+1)+" dari depan"+(l.k<l.s.units.length-1 ? ", tertindih SU lain" : "")+". Forklift harus memindahkan yang di depan / di atasnya dulu."; return render(); }
+      MV = { step:"tujuan", l:l }; return render();
+    }
+    if(taskByIdCode(code)){ MV.err = "SU "+code.toUpperCase()+" masih booking (belum ditaruh). Pakai menu Taruh barang datang."; return render(); }
+    var pb = parseBinCode(code);
+    if(pb){
+      if(!pb.b.cols.length){ MV.err = "Bin "+pb.b.line.id+pb.b.no+" kosong."; return render(); }
+      MV = { step:"pilih", b:pb.b, sub:pb.sub }; return render();
+    }
+    MV.err = "Kode \""+code+"\" tidak dikenali sebagai SU yang sudah ditaruh maupun lokasi bin."; render();
+  }
+  function scanTujuan(code){
+    logScan("tujuan", code);
+    var pb = parseBinCode(code);
+    if(!pb){ MV.err = "Kode lokasi \""+code+"\" tidak dikenali."; return render(); }
+    if(pb.b===MV.l.b){ MV.err = "Itu bin asal. Scan lokasi tujuan yang lain."; return render(); }
+    var opts = moveOptions(MV.l).filter(function(o){ return o.b===pb.b; });
+    if(!opts.length){ MV.err = "Bin "+pb.b.line.id+pb.b.no+(pb.b.cols.some(function(c){ return c.mat!==MV.l.c.mat; }) ? " berisi no material lain." : " tidak muat."); return render(); }
+    MV.step = "alasan"; MV.opt = opts[0]; MV.code = pb.b.line.id+pb.b.no+pb.sub; MV.err = ""; render();
+  }
+  function moveSamples(){
+    var su = [], bins = [];
+    TASKS.slice().reverse().forEach(function(t){ if(su.length>=3 || t.kind==="move" || t.status==="booking") return; var l = locateSU(t.id); if(l && isFront(l)) su.push(t.id); });
+    ["B","H","G","A","C"].forEach(function(id){ var L = lineById(id); for(var i=0;i<L.bins.length && bins.length<5;i++){ var b = L.bins[i]; if(b.cols.length && frontUnits(b).some(function(f){ return !f.pending; })){ bins.push(id+b.no); break; } } });
+    return { su:su, bins:bins };
+  }
+  function unitTxt(l){ var u = l.u; return (u.id ? "SU "+esc(u.id) : "tanpa ID (stok contoh)")+" &middot; "+u.n+" roll &middot; "+fm(u.h,2)+" m"; }
+  function renderMove(){
+    var h = '<div class="pt-card">', steps = function(i){ return '<div class="pt-steps">'+["1 Scan SU / lokasi asal","2 Scan lokasi tujuan","3 Alasan"].map(function(x, k){ return '<span class="'+(k<i ? "done" : (k===i ? "now" : ""))+'">'+x+'</span>'; }).join("")+'</div>'; };
+    var err = MV.err ? '<div class="msg show crit">'+esc(MV.err)+'</div>' : '';
+    if(MV.step==="asal"){
+      var sm = moveSamples();
+      h += steps(0)+err+'<p>Scan label SU yang mau dipindah, atau scan label lokasi asal lalu pilih tumpukan depan yang diambil forklift.</p>';
+      if(MODE==="cam") h += '<button type="button" class="primary bigbtn" id="mv-scan-asal">Scan SU / lokasi asal</button>';
+      else h += '<div class="sim"><div class="t">Simulasi scan asal</div>'+
+        (sm.su.length ? '<div class="note" style="margin:0">SU yang sudah ditaruh:</div><div class="row">'+sm.su.map(function(c){ return '<button type="button" data-asal="'+esc(c)+'">'+esc(c)+'</button>'; }).join("")+'</div>' : '')+
+        '<div class="note" style="margin:0">Lokasi asal:</div><div class="row">'+sm.bins.map(function(c){ return '<button type="button" data-asal="'+c+'">'+c+'</button>'; }).join("")+'</div>'+
+        '<div class="row"><input id="mv-asal-code" placeholder="atau ketik SU / lokasi, mis. B13A" autocomplete="off"><button type="button" id="mv-asal-type">Scan kode</button></div></div>';
+    } else if(MV.step==="pilih"){
+      var b = MV.b, fu = frontUnits(b).filter(function(f){ return !MV.sub || colLabel(b, f.ci).slice(-1)===MV.sub || !isAB(b); });
+      h += steps(0)+err+'<p>Bin <b>'+binName(b)+'</b>. Forklift mengambil dari depan &mdash; pilih SU paling depan yang dipindah:</p>';
+      fu.forEach(function(f){
+        h += '<div class="sim"><div class="t">'+colLabel(b, f.ci)+' &middot; '+f.c.mat+'</div><div class="side-wrap">'+sideSvg(b, f.c, f.u)+'</div>'+
+          (f.pending ? '<div class="note" style="margin:0">Posisi depan masih booking, belum bisa dipindah.</div>' : '<button type="button" class="primary" data-pick="'+f.ci+'">Ambil yang depan: '+unitTxt(f)+'</button>')+'</div>';
+      });
+      h += '<div class="btn-row" style="margin-top:0"><button type="button" id="mv-reset">Batal</button></div>';
+    } else if(MV.step==="tujuan" || MV.step==="alasan"){
+      var l = MV.l, m = mat(l.c.mat);
+      h += steps(MV.step==="tujuan" ? 1 : 2)+
+        '<div class="pt-row"><div><div class="pt-label">Dipindah</div><div class="mono" style="font-weight:600">'+unitTxt(l)+'</div><div class="note" style="margin:0">'+m.code+' &middot; '+esc(m.name)+' &middot; '+dLbl(m.d)+'</div></div><div style="text-align:right"><div class="pt-label">Dari</div><div class="pt-big">'+colLabel(l.b, l.ci)+'</div></div></div>'+
+        '<div class="side-wrap">'+sideSvg(l.b, l.c, l.u)+'</div>'+err;
+      if(MV.step==="tujuan"){
+        if(MODE==="cam") h += '<button type="button" class="primary bigbtn" id="mv-scan-tuj">Scan lokasi tujuan</button>';
+        else {
+          var alts = [], seen = {}, wrong = [];
+          moveOptions(l).forEach(function(o){ var c = o.b.line.id+o.b.no; if(seen[c] || alts.length>=5) return; seen[c] = 1; alts.push({ code:c, why:KIND[o.kind][0] }); });
+          LINES.forEach(function(L){ L.bins.forEach(function(b){ if(wrong.length>=2 || b===l.b || b.cols.length!==1) return; if(b.cols[0].mat!==l.c.mat && Math.abs(colW(b.cols[0]) - b.w) < 0.2) wrong.push(L.id+b.no); }); });
+          h += '<div class="sim"><div class="t">Simulasi scan lokasi tujuan</div>'+
+            (alts.length ? '<div class="note" style="margin:0">Bin yang muat (urutan saran):</div><div class="row">'+alts.map(function(a){ return '<button type="button" data-tuj="'+a.code+'" title="'+esc(a.why)+'">'+a.code+'</button>'; }).join("")+'</div>' : '<div class="note" style="margin:0">Tidak ada bin lain yang muat.</div>')+
+            (wrong.length ? '<div class="note" style="margin:0">Contoh salah scan:</div><div class="row">'+wrong.map(function(c){ return '<button type="button" data-tuj="'+c+'">'+c+'</button>'; }).join("")+'</div>' : '')+
+            '<div class="row"><input id="mv-tuj-code" placeholder="atau ketik lokasi tujuan" autocomplete="off"><button type="button" id="mv-tuj-type">Scan kode</button></div></div>';
+        }
+        h += '<div class="btn-row" style="margin-top:0"><button type="button" id="mv-reset">Batal</button></div>';
+      } else {
+        h += '<div class="msg show info">Tujuan <b>'+esc(MV.code)+'</b> muat ('+esc(KIND[MV.opt.kind][0].toLowerCase())+'). '+MV.opt.notes.join(" ")+'</div>'+
+          '<select id="mv-why">'+MV_WHY.map(function(w){ return '<option>'+w+'</option>'; }).join("")+'</select>'+
+          '<button type="button" class="primary bigbtn" id="mv-ok">Konfirmasi pindah ke '+esc(MV.code)+'</button>'+
+          '<div class="btn-row" style="margin-top:0"><button type="button" id="mv-back">Scan ulang tujuan</button><button type="button" id="mv-reset">Batal</button></div>';
+      }
+    } else if(MV.step==="done"){
+      var r = MV.res;
+      h += steps(3)+'<div class="msg show ok" style="font-size:.95rem">'+(r.mv.su ? 'SU '+esc(r.mv.su) : 'Tumpukan tanpa ID')+' ('+r.mv.n+' roll '+r.mv.mat+') dipindah <b>'+esc(r.from)+' &rarr; '+esc(r.to)+'</b>. Alasan: '+esc(r.mv.why)+'.'+(r.mv.note ? ' ('+esc(r.mv.note)+')' : '')+'</div>'+
+        '<button type="button" class="primary bigbtn" id="mv-reset">Pindah stok lagi</button>';
+    }
+    h += (LOG.length ? '<div class="scanlog">'+LOG.map(esc).join("<br>")+'</div>' : '')+'</div>';
+    $("#pt-main").innerHTML = h;
+  }
+  function render(){
+    $("#store-st").innerHTML = storeBadge();
+    Array.prototype.forEach.call(document.querySelectorAll("[data-tab]"), function(b){ b.className = b.getAttribute("data-tab")===TAB ? "on" : ""; });
+    $("#sec-transit").hidden = TAB!=="taruh";
+    if(TAB==="pindah"){ Array.prototype.forEach.call(document.querySelectorAll("[data-mode]"), function(b){ b.className = b.getAttribute("data-mode")===MODE ? "on" : ""; }); renderMove(); return; }
+    Array.prototype.forEach.call(document.querySelectorAll("[data-mode]"), function(b){ b.className = b.getAttribute("data-mode")===MODE ? "on" : ""; });
+    var w = waiting(), h = '';
+    var steps = function(i){ return '<div class="pt-steps">'+["1 Scan SU","2 Cek isi","3 Scan lokasi bin"].map(function(x, k){ return '<span class="'+(k<i ? "done" : (k===i ? "now" : ""))+'">'+x+'</span>'; }).join("")+'</div>'; };
+    if(PT.step==="su"){
+      h = '<div class="pt-card">'+steps(0)+(PT.err ? '<div class="msg show crit">'+esc(PT.err)+'</div>' : '')+
+        '<p>'+(w.length ? '<b>'+w.length+' SU</b> menunggu ditaruh. Scan label SU di roll / bundle yang ada di depan forklift.' : 'Tidak ada SU yang menunggu. Booking dibuat admin di halaman Admin.')+'</p>'+
+        (MODE==="cam" ? '<button type="button" class="primary bigbtn" id="b-scan-su"'+(w.length ? '' : ' disabled')+'>Scan SU</button>'
+          : '<div class="sim"><div class="t">Simulasi scan label SU</div>'+
+            (w.length ? '<div class="row"><select id="sim-su">'+w.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.id)+' &middot; '+t.mat+' &middot; &plusmn;'+t.nEst+' roll</option>'; }).join("")+'</select><button type="button" class="primary" id="sim-su-go">Scan</button></div>' : '')+
+            '<div class="row"><input id="sim-su-code" placeholder="atau ketik kode SU apa saja" autocomplete="off"><button type="button" id="sim-su-type">Scan kode</button></div>'+
+            '<div class="note" style="margin:0">Di lapangan langkah ini = arahkan kamera HP / scanner ke barcode SU di roll.</div></div>')+
+        (LOG.length ? '<div class="scanlog">'+LOG.map(esc).join("<br>")+'</div>' : '')+'</div>';
+    } else {
+      var t = PT.t, m = mat(t.mat), l = locateTask(t), lbl = l ? colLabel(l.b, l.ci) : t.label;
+      if(PT.step==="done"){
+        var r = PT.res;
+        h = '<div class="pt-card">'+steps(3)+'<div class="msg show '+(r.diff ? "info" : "ok")+'" style="font-size:.95rem"><b>SU '+esc(t.id)+'</b> ('+r.n+' roll) tercatat di <b>'+esc(r.bin)+'</b>.'+(r.note ? ' '+esc(r.note)+'.' : '')+(r.diff ? ' Beda dari booking: '+esc(r.why)+'.' : '')+'</div>'+
+          '<button type="button" class="primary bigbtn" id="'+(MODE==="cam" ? "b-scan-su" : "b-next")+'"'+(w.length ? '' : ' disabled')+'>'+(w.length ? 'Scan SU berikutnya ('+w.length+')' : 'Semua SU sudah ditaruh')+'</button>'+(LOG.length ? '<div class="scanlog">'+LOG.map(esc).join("<br>")+'</div>' : '')+'</div>';
+      } else {
+        var n = PT.n, hgt = n*m.w;
+        h = '<div class="pt-card">'+steps(PT.step==="bin" ? 1 : 2)+
+          '<div class="pt-row"><div><div class="pt-label">SU</div><div class="mono" style="font-size:1.1rem; font-weight:600">'+esc(t.id)+'</div><div class="note" style="margin:0">'+t.mat+' &middot; '+esc(m.name)+' &middot; '+dLbl(m.d)+' &times; '+mm(m.w)+'W &middot; '+t.kg+' kg</div></div>'+
+          '<div style="text-align:right"><div class="pt-label">Taruh di (booking)</div><div class="pt-big">'+esc(lbl)+'</div></div></div>'+
+          '<div><div class="pt-label">Isi bundle &mdash; perkiraan dari berat '+t.nEst+' roll, ganti kalau beda</div><div class="chips" style="margin-top:6px">'+[1,2,3,4,5,6,7,8].map(function(k){ return '<button type="button" data-n="'+k+'" class="'+(k===n ? "on" : "")+'">'+k+'</button>'; }).join("")+'</div>'+
+          '<div class="note" style="margin-top:4px">Tinggi 1 SU = '+n+' &times; '+mm(m.w)+' mm = '+fm(hgt,2)+' m</div></div>'+
+          (l ? '<div class="side-wrap">'+sideSvg(l.b, l.c, l.u)+'</div><div class="note" style="margin:0">Kotak biru tebal = posisi booking SU ini (tampak samping '+esc(lbl)+', depan di kiri).</div>' : '')+
+          (PT.err ? '<div class="msg show crit">'+esc(PT.err)+'</div>' : '');
+        if(PT.step==="bin"){
+          if(MODE==="cam"){
+            h += '<button type="button" class="primary bigbtn" id="b-scan-bin">Scan lokasi bin</button>'+
+              '<div class="btn-row" style="margin-top:0"><button type="button" id="b-sim-bin">Simulasi: scan label '+esc(lbl)+'</button><button type="button" id="b-cancel">Batal</button></div>';
+          } else {
+            var alts = [], seen = {}, wrong = [];
+            optionsForTask(t, n).forEach(function(o){ var c = o.b.line.id+o.b.no; if(l && o.b===l.b) return; if(seen[c] || alts.length>=4) return; seen[c] = 1; alts.push({ code:c, why:KIND[o.kind][0] }); });
+            LINES.forEach(function(L){ L.bins.forEach(function(b){ if(wrong.length>=2 || !b.cols.length || b.cols.length>1) return; if(b.cols[0].mat!==t.mat && Math.abs(colW(b.cols[0]) - b.w) < 0.2) wrong.push({ code:L.id+b.no, why:"isi "+b.cols[0].mat }); }); });
+            h += '<div class="sim"><div class="t">Simulasi scan label lokasi bin</div>'+
+              '<button type="button" class="primary bigbtn" data-bin="'+esc(lbl)+'">Scan label '+esc(lbl)+' (sesuai booking)</button>'+
+              (alts.length ? '<div class="note" style="margin:0">Taruh di bin lain yang masih muat:</div><div class="row">'+alts.map(function(a){ return '<button type="button" data-bin="'+a.code+'" title="'+esc(a.why)+'">'+a.code+'</button>'; }).join("")+'</div>' : '')+
+              (wrong.length ? '<div class="note" style="margin:0">Contoh salah scan (bin berisi no material lain):</div><div class="row">'+wrong.map(function(a){ return '<button type="button" data-bin="'+a.code+'">'+a.code+' <span class="note">('+esc(a.why)+')</span></button>'; }).join("")+'</div>' : '')+
+              '<div class="row"><input id="sim-bin-code" placeholder="atau ketik kode lokasi, mis. B13A" autocomplete="off"><button type="button" id="sim-bin-type">Scan kode</button></div>'+
+              '<div class="note" style="margin:0">Di lapangan langkah ini = scan label lokasi yang ditempel di bin / tiang.</div></div>'+
+              '<div class="btn-row" style="margin-top:0"><button type="button" id="b-cancel">Batal</button></div>';
+          }
+        } else {
+          var o = PT.opt;
+          h += '<div class="msg show warn">Lokasi yang discan <b>'+esc(PT.code)+'</b> beda dari booking <b>'+esc(lbl)+'</b>. Bin itu masih muat ('+esc(KIND[o.kind][0].toLowerCase())+'). Pilih alasannya:</div>'+
+            '<select id="b-why"><option>Bin booking terhalang roll lain</option><option>Bin booking ternyata penuh / tidak muat</option><option>Lebih dekat dari posisi forklift</option><option>Instruksi kepala shift</option><option>Lainnya</option></select>'+
+            '<button type="button" class="primary bigbtn" id="b-other-ok">Konfirmasi taruh di '+esc(PT.code)+'</button>'+
+            '<div class="btn-row" style="margin-top:0"><button type="button" id="b-rescan">Scan ulang lokasi</button></div>';
+        }
+        h += '</div>';
+      }
+    }
+    $("#pt-main").innerHTML = h;
+    $("#pt-list").innerHTML = w.length ? '<p class="note" style="margin:0">Tap untuk langsung memilih SU (sama seperti scan).</p>'+w.map(function(t){ return '<button type="button" data-su="'+esc(t.id)+'"><span><span class="mono">'+esc(t.id)+'</span> &middot; '+t.mat+' &middot; &plusmn;'+t.nEst+' roll</span><span class="mono">&rarr; '+esc(taskLabel(t))+'</span></button>'; }).join("")
+      : '<p class="note" style="margin:0">Kosong.</p>';
+  }
+  document.addEventListener("click", function(e){
+    var t = e.target.closest ? e.target.closest("button") : e.target; if(!t) return;
+    if(t.getAttribute("data-mode")){ setMode(t.getAttribute("data-mode")); return; }
+    if(t.getAttribute("data-tab")){ setTab(t.getAttribute("data-tab")); return; }
+    if(TAB==="pindah"){
+      if(t.id==="mv-scan-asal"){ openCam("Scan SU / lokasi asal", "Arahkan kamera ke label SU di roll, atau label lokasi bin asal.", scanAsal); return; }
+      if(t.getAttribute("data-asal")){ MV.err = ""; scanAsal(t.getAttribute("data-asal")); return; }
+      if(t.id==="mv-asal-type"){ var ca = $("#mv-asal-code").value.trim(); if(ca){ MV.err = ""; scanAsal(ca); } return; }
+      if(t.getAttribute("data-pick")){ var f = frontUnits(MV.b)[0] && frontUnits(MV.b).filter(function(x){ return x.ci===+t.getAttribute("data-pick"); })[0]; if(f){ MV = { step:"tujuan", l:f }; render(); } return; }
+      if(t.id==="mv-scan-tuj" || t.id==="mv-back"){ MV.step = "tujuan"; MV.err = ""; if(MODE==="cam") openCam("Scan lokasi tujuan", "Arahkan kamera ke label lokasi bin tujuan.", scanTujuan); else render(); return; }
+      if(t.getAttribute("data-tuj")){ MV.err = ""; scanTujuan(t.getAttribute("data-tuj")); return; }
+      if(t.id==="mv-tuj-type"){ var ct = $("#mv-tuj-code").value.trim(); if(ct){ MV.err = ""; scanTujuan(ct); } return; }
+      if(t.id==="mv-ok"){ var r = moveUnit(MV.l, MV.opt, $("#mv-why").value); if(r.ok){ saveState(); MV = { step:"done", res:r }; } else MV.err = r.err; render(); return; }
+      if(t.id==="mv-reset"){ MV = { step:"asal" }; render(); return; }
+      return;
+    }
+    if(t.id==="sim-su-go"){ scanSU($("#sim-su").value); return; }
+    if(t.id==="sim-su-type"){ var c = $("#sim-su-code").value.trim(); if(c) scanSU(c); return; }
+    if(t.id==="b-next"){ PT = { step:"su" }; render(); return; }
+    if(t.getAttribute("data-bin")){ scanBin(t.getAttribute("data-bin")); return; }
+    if(t.id==="sim-bin-type"){ var c2 = $("#sim-bin-code").value.trim(); if(c2) scanBin(c2); return; }
+    if(t.id==="b-scan-su"){ openCam("Scan SU", "Arahkan kamera ke barcode / QR label SU di roll atau bundle.", scanSU); return; }
+    if(t.getAttribute("data-su")){ scanSU(t.getAttribute("data-su")); window.scrollTo({ top:0, behavior:"smooth" }); return; }
+    if(t.getAttribute("data-n")){ PT.n = +t.getAttribute("data-n"); PT.err = ""; if(PT.step==="beda") PT.step = "bin"; render(); return; }
+    if(t.id==="b-scan-bin" || t.id==="b-rescan"){ PT.step = "bin"; PT.err = ""; openCam("Scan lokasi bin", "Arahkan kamera ke label lokasi bin (contoh B13 / B13A).", scanBin); return; }
+    if(t.id==="b-sim-bin"){ var l = locateTask(PT.t); scanBin(l ? colLabel(l.b, l.ci) : PT.t.label); return; }
+    if(t.id==="b-cancel"){ PT = { step:"su" }; render(); return; }
+    if(t.id==="b-other-ok"){ var r = placeOther(PT.t, PT.n, PT.opt, $("#b-why").value); if(r.ok){ saveState(); PT = { step:"done", t:PT.t, res:r }; } else PT.err = r.err; render(); return; }
+  });
+  document.addEventListener("keydown", function(e){ if(e.key!=="Enter") return; if(e.target.id==="sim-su-code"){ e.preventDefault(); $("#sim-su-type").click(); } if(e.target.id==="sim-bin-code"){ e.preventDefault(); $("#sim-bin-type").click(); } if(e.target.id==="mv-asal-code"){ e.preventDefault(); $("#mv-asal-type").click(); } if(e.target.id==="mv-tuj-code"){ e.preventDefault(); $("#mv-tuj-type").click(); } });
+  initStore(function(why){
+    if(why==="remote" && MV.step!=="asal" && MV.step!=="done") MV = { step:"asal", err:"Data gudang berubah dari perangkat lain, ulangi scan asal." };
+    if(why==="remote" && PT.t){ var cur = taskByIdCode(PT.t.id); if(!cur){ PT = { step:"su", err:"Booking SU ini dibatalkan admin." }; } else PT.t = cur; if(PT.step==="beda") PT.step = "bin"; }
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

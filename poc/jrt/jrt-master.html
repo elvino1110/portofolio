@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Simulator JRT Master Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="jrt.css">
+<style>
+  .mat-table input{width:80px; font-family:var(--mono); font-size:.84rem; padding:5px 6px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink)}
+  .labels{display:grid; grid-template-columns:repeat(auto-fill, minmax(170px,1fr)); gap:10px; margin-top:12px}
+  .lbl{border:1px dashed var(--line); border-radius:8px; padding:10px; display:flex; flex-direction:column; align-items:center; gap:4px; background:#fff; color:#111}
+  .lbl svg{width:120px; height:120px}
+  .lbl b{font-family:var(--mono); font-size:1.6rem; letter-spacing:.04em}
+  .lbl span{font-family:var(--mono); font-size:.7rem; color:#555; text-align:center}
+  @media print{
+    body{background:#fff !important; padding:0 !important}
+    .wrap > *:not(#print-sec){display:none !important}
+    #print-sec .section-head, #print-sec .panel > :not(.labels){display:none !important}
+    #print-sec .panel{border:none; padding:0}
+    .labels{grid-template-columns:repeat(3, 1fr); gap:6mm}
+    .lbl{break-inside:avoid; border:1px solid #999; padding:6mm}
+    .lbl svg{width:40mm; height:40mm}
+    .lbl b{font-size:22pt}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav"><a href="jrt-admin.html">Admin</a><a href="jrt-petugas.html">Petugas (kamera)</a><a href="jrt-master.html" class="on">Master data &amp; kalkulator</a><span id="store-st"></span></nav>
+  <header class="top">
+    <span class="eyebrow">PPIC &middot; JRT &middot; Master data</span>
+    <h1>Master data &amp; kalkulator</h1>
+    <p class="lede">Parameter, peruntukan line, dan acuan berat per no material yang dipakai halaman admin dan petugas. Perubahan langsung tersimpan dan ikut ke halaman lain.</p>
+  </header>
+
+  <section>
+    <div class="section-head"><h2>Parameter gudang</h2></div>
+    <div class="panel">
+      <div class="grid4">
+        <div class="field"><label for="p-hmax">Batas tinggi (m)</label><input id="p-hmax" type="number" step="0.1" min="2" max="10"></div>
+        <div class="field"><label for="p-gap">Jarak setiap 2 roll (cm)</label><input id="p-gap" type="number" step="5" min="0" max="80"></div>
+        <div class="field"><label for="p-gapmin">Jarak minimal saat geser (cm)</label><input id="p-gapmin" type="number" step="5" min="0" max="80"></div>
+        <div class="field"><label for="p-rho">Kepadatan tissue untuk perkiraan (kg/m&sup3;)</label><input id="p-rho" type="number" step="5" min="80" max="400"></div>
+      </div>
+      <div class="field" style="margin-top:14px"><label>Peruntukan line (contoh &mdash; ubah sesuai lapangan)</label><div class="pref-grid" id="p-pref"></div>
+        <p class="note" style="margin-top:4px">Hanya mempengaruhi urutan saran: bin kosong di line yang peruntukannya cocok didahulukan. "bebas" = semua diameter dianggap cocok. Lebar fisik bin tidak berubah.</p></div>
+      <div class="msg" id="p-msg"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Material &amp; acuan berat 1 roll</h2><h3>Acuan terisi otomatis dari isi yang dibenarkan petugas &middot; bisa diisi / dihapus manual</h3></div>
+    <div class="panel"><div class="tbl-wrap"><table class="mat-table" id="mat-table"></table></div></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Kalkulator kapasitas</h2></div>
+    <div class="panel">
+      <div class="grid4">
+        <div class="field"><label for="c-d">Diameter (mm)</label><select id="c-d"></select></div>
+        <div class="field"><label for="c-depth">Kedalaman line</label><select id="c-depth"><option value="8.1">8,1 m (A, D, F, H)</option><option value="8.9" selected>8,9 m (B, C)</option><option value="9.1">9,1 m (E, G)</option></select></div>
+        <div class="field"><label for="c-w">Width 1 roll (mm)</label><input id="c-w" type="number" value="2750" min="100" max="4000" step="10"></div>
+        <div class="field"><label for="c-n">Roll per SU (bundle)</label><input id="c-n" type="number" value="1" min="1" max="12" step="1"></div>
+      </div>
+      <div class="spec-grid" id="c-out" style="margin-top:12px"></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Diameter</th><th>8,1 m</th><th>8,9 m</th><th>9,1 m</th></tr></thead><tbody id="c-table"></tbody></table></div>
+      <p class="note">Angka = roll ke belakang dalam 1 kolom (sisa kedalaman). Tebal = kedalaman yang paling sedikit membuang ruang untuk diameter itu.</p>
+    </div>
+  </section>
+
+  <section id="print-sec">
+    <div class="section-head"><h2>Label uji untuk scan</h2><h3>QR lokasi bin dan QR SU booking &mdash; untuk mencoba halaman petugas</h3></div>
+    <div class="panel">
+      <div class="grid4">
+        <div class="field"><label for="lb-type">Jenis label</label><select id="lb-type"><option value="bin">Lokasi bin per line</option><option value="su">SU yang sedang booking</option><option value="placed">SU yang sudah ditaruh (uji pindah stok)</option></select></div>
+        <div class="field"><label for="lb-line">Line</label><select id="lb-line"></select></div>
+        <div class="field"><label for="lb-from">Dari no bin</label><input id="lb-from" type="number" value="13" min="1"></div>
+        <div class="field"><label for="lb-to">Sampai no bin</label><input id="lb-to" type="number" value="24" min="1"></div>
+      </div>
+      <div class="btn-row"><button type="button" id="lb-print" class="primary">Cetak</button><span class="note" id="lb-note" style="margin:0; align-self:center"></span></div>
+      <div class="labels" id="labels"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Reset data simulasi</h2></div>
+    <div class="panel"><p class="note" style="margin-top:0">Mengembalikan isi gudang contoh dan menghapus semua booking. Berlaku untuk semua halaman dan semua perangkat yang tersambung.</p>
+      <div class="btn-row" id="reset-row"><button type="button" id="b-reset">Reset gudang</button></div></div>
+  </section>
+
+<section id="rules">
+    <div class="section-head"><h2>Aturan yang dimodelkan</h2></div>
+    <div class="panel rulegrid">
+      <div>
+        <h3 style="margin-bottom:8px">Susun &amp; hitung</h3>
+        <ul class="rules">
+          <li><b>1 bin = 1 no material.</b> Diameter boleh campur dalam 1 bin kalau no material sama.</li>
+          <li><b>Ke samping:</b> setiap 2 roll menempel, lalu jarak 30 cm. Bin biasa = 1 roll ke samping, jadi 2 bin (misal B15 + B16) lalu jarak. Bin A/B sudah 2 roll, jadi diberi jarak sendiri sebelum dan sesudahnya. Jarak boleh dipersempit sampai batas minimal, dan bin sebelahnya boleh digeser.</li>
+          <li><b>Ke belakang:</b> roll menempel. Jumlah = kedalaman line &divide; diameter.</li>
+          <li><b>Ke atas:</b> tinggi 1 ID roll = isi bundle &times; width. Jumlah tumpuk = 6,6 m &divide; tinggi 1 ID.</li>
+          <li><b>A/B:</b> kalau 2 kolom roll kecil muat dalam lebar 1 bin, bin jadi xA dan xB.</li>
+          <li><b>Isi bundle dihitung per ID roll:</b> berat ID &divide; berat 1 roll no material itu. Berat 1 roll diambil dari acuan tersimpan; kalau belum ada, dicari dari pola berat kedatangan (angka yang membuat semua ID jadi bilangan bulat) lalu dicek dengan perkiraan ukuran (volume &times; &plusmn;230 kg/m&sup3;). Petugas cukup membenarkan isi saat scan; setelah konfirmasi, berat 1 roll tersimpan jadi acuan.</li>
+          <li><b>Kedatangan campur no material</b> dipilah otomatis; tiap no material dicarikan bin sendiri.</li>
+          <li><b>Tumpukan campur isi:</b> ID 5 roll dan 3 roll boleh satu tumpukan selama total tinggi &le; 6,6 m. ID yang tinggi ditaruh dulu.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-bottom:8px">Urutan saran tempat</h3>
+        <ol class="steps">
+          <li><b>Stok sama</b> &mdash; no material &amp; diameter sama, masih ada ruang di belakang. Didahulukan bin yang muat semua kiriman dengan sisa paling pas, supaya 1 kedatangan tidak tersebar ke banyak bin.</li>
+          <li><b>Bin kosong sesuai peruntukan</b> line untuk diameter itu.</li>
+          <li><b>Stok sama, diameter beda</b> &mdash; masih ada sisa kedalaman.</li>
+          <li><b>Pecah A/B</b> &mdash; separuh bin kosong di sebelah roll kecil lain.</li>
+          <li><b>Line lain</b> yang masih muat, lalu <b>Line A (mix)</b>.</li>
+        </ol>
+        <p class="note"><b>Booking dulu, taruh kemudian:</b> admin hanya memesan tempat; stok baru tercatat setelah petugas scan SU, membenarkan isi, dan menaruhnya (di bin booking atau bin lain + alasan). Isi yang dibenarkan petugas dipakai memperbarui berat 1 roll.</p>
+        <p class="note">Ambil selalu dari depan (FIFO). Posisi depan yang sudah diambil jadi kosong; sebelum restock no material sama, stok lama dimajukan dulu.</p>
+      </div>
+    </div>
+  </section>
+
+  
+
+  <footer>Simulasi untuk diskusi proses. No material contoh; ukuran mengikuti list stok 28 Okt 2026.</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js"></script>
+<script src="jrt-core.js"></script>
+<script>
+(function(){
+  "use strict";
+  function renderParams(){
+    $("#p-hmax").value = P.HMAX; $("#p-gap").value = Math.round(P.GAP*100); $("#p-gapmin").value = Math.round(P.GAPMIN*100); $("#p-rho").value = P.RHO;
+    $("#p-pref").innerHTML = LINES.map(function(L){
+      var opts = ['<option value="mix"'+(L.pref==="mix"?" selected":"")+'>mix</option>','<option value="bebas"'+(L.pref==="bebas"?" selected":"")+'>bebas</option>'].concat(DIAS.map(function(d){ return '<option value="'+d+'"'+(L.pref===d?" selected":"")+'>'+mm(d)+'</option>'; }));
+      return '<label>Line '+L.id+' &middot; '+fm(L.depth,1)+' m<select data-pref="'+L.id+'">'+opts.join("")+'</select></label>';
+    }).join("");
+  }
+  function onParams(){
+    P.HMAX = Math.max(1, parseFloat($("#p-hmax").value)||6.6);
+    P.RHO = Math.max(50, parseFloat($("#p-rho").value)||230);
+    var g = Math.max(0, (parseFloat($("#p-gap").value)||0)/100), gm = Math.max(0, (parseFloat($("#p-gapmin").value)||0)/100);
+    P.GAPMIN = Math.min(gm, g);
+    if(Math.abs(g-P.GAP)>EPS){ var old = P.GAP; P.GAP = g; LINES.forEach(function(L){ if(Math.abs(L.gap-old)<EPS || L.gap>g) L.gap = g; }); }
+    saveState(); flash("Parameter tersimpan."); renderCalc();
+  }
+  function flash(t){ var m = $("#p-msg"); m.className = "msg show ok"; m.textContent = t; clearTimeout(flash.tm); flash.tm = setTimeout(function(){ m.className = "msg"; }, 1800); }
+  $("#p-pref").addEventListener("change", function(e){ var id = e.target.getAttribute("data-pref"); if(!id) return; var L = lineById(id), v = e.target.value; L.pref = (v==="mix" || v==="bebas") ? v : parseFloat(v); saveState(); flash("Peruntukan line "+id+" tersimpan."); });
+  ["p-hmax","p-gap","p-gapmin","p-rho"].forEach(function(id){ $("#"+id).addEventListener("change", onParams); });
+
+  function renderMats(){
+    $("#mat-table").innerHTML = '<thead><tr><th>No material</th><th>Nama</th><th>Ukuran</th><th>Core</th><th>Perkiraan dari ukuran</th><th>Acuan berat 1 roll (kg)</th><th>Dari</th><th></th></tr></thead><tbody>'+
+      MATS.map(function(m){ var v = vol(m);
+        return '<tr><td class="mono">'+m.code+'</td><td>'+esc(m.name)+'</td><td class="mono">'+dLbl(m.d)+' &times; '+mm(m.w)+'W</td><td class="mono">'+m.coreIn+'&quot;</td><td class="mono">'+fm(v,2)+' m&sup3; &times; '+P.RHO+' = '+Math.round(v*P.RHO)+' kg</td>'+
+          '<td><input type="text" inputmode="numeric" data-kg="'+m.code+'" value="'+(m.kg||"")+'" placeholder="belum ada"></td><td class="mono">'+(m.kg ? (m.refN||0)+' SU' : '&ndash;')+'</td><td>'+(m.kg ? '<button type="button" data-clr="'+m.code+'">Hapus acuan</button>' : '')+'</td></tr>';
+      }).join("")+'</tbody>';
+  }
+  $("#mat-table").addEventListener("change", function(e){ var c = e.target.getAttribute("data-kg"); if(!c) return; var m = mat(c), v = parseFloat(String(e.target.value).replace(",", ".")); if(v>0){ m.kg = Math.round(v); m.refN = Math.max(1, m.refN||0); } else { m.kg = null; m.refN = 0; } saveState(); renderMats(); });
+  $("#mat-table").addEventListener("click", function(e){ var c = e.target.getAttribute && e.target.getAttribute("data-clr"); if(!c) return; var m = mat(c); m.kg = null; m.refN = 0; saveState(); renderMats(); });
+
+  function renderCalc(){
+    var d = parseFloat($("#c-d").value), depth = parseFloat($("#c-depth").value), w = (parseFloat($("#c-w").value)||0)/1000, n = Math.max(1, parseInt($("#c-n").value,10)||1);
+    var h = n*w, deep = Math.floor((depth+EPS)/d), per = h>0 ? perStack(h) : 0;
+    $("#c-out").innerHTML = '<div><span class="k">Ke belakang</span><span class="v">'+deep+' (sisa '+fm(depth-deep*d,2)+' m)</span></div><div><span class="k">Tinggi 1 SU / tumpuk</span><span class="v">'+fm(h,2)+' m &middot; '+per+'&times;</span></div><div><span class="k">Kapasitas 1 kolom</span><span class="v">'+(deep*per)+' SU &middot; '+(deep*per*n)+' roll</span></div>';
+    $("#c-table").innerHTML = DIAS.map(function(dd){
+      var vals = [8.1, 8.9, 9.1].map(function(D){ var k = Math.floor((D+EPS)/dd); return { k:k, s:D-k*dd }; });
+      var best = Math.min.apply(null, vals.map(function(v){ return v.s; }));
+      return '<tr><td class="mono">'+mm(dd)+'</td>'+vals.map(function(v){ var b = Math.abs(v.s-best)<EPS; return '<td class="mono">'+(b?"<b>":"")+v.k+' ('+fm(v.s,2)+')'+(b?"</b>":"")+'</td>'; }).join("")+'</tr>';
+    }).join("");
+  }
+  $("#c-d").innerHTML = DIAS.map(function(d){ return '<option value="'+d+'"'+(d===2.0?" selected":"")+'>'+mm(d)+'</option>'; }).join("");
+  ["c-d","c-depth","c-w","c-n"].forEach(function(id){ $("#"+id).addEventListener("input", renderCalc); $("#"+id).addEventListener("change", renderCalc); });
+
+  /* ---------- label uji ---------- */
+  function qrSvg(text){ try{ var q = qrcode(0, "M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize:4, margin:2, scalable:true }); }catch(e){ return '<div class="mono">'+esc(text)+'</div>'; } }
+  function renderLabels(){
+    var type = $("#lb-type").value, out = [];
+    $("#lb-line").disabled = $("#lb-from").disabled = $("#lb-to").disabled = type!=="bin";
+    if(type==="bin"){
+      var L = lineById($("#lb-line").value), from = parseInt($("#lb-from").value,10)||L.from, to = parseInt($("#lb-to").value,10)||from;
+      L.bins.forEach(function(b){ if(b.no<from || b.no>to) return;
+        var codes = [L.id+b.no]; if(b.cols.length===2) codes = [L.id+b.no+"A", L.id+b.no+"B"];
+        codes.forEach(function(c){ out.push({ code:c, sub:"Lokasi bin &middot; Line "+L.id }); });
+      });
+    } else if(type==="placed"){
+      TASKS.filter(function(t){ return t.kind!=="move" && t.status!=="booking"; }).forEach(function(t){ if(locateSU(t.id)) out.push({ code:t.id, sub:t.mat+" &middot; di "+esc(colLabel(locateSU(t.id).b, locateSU(t.id).ci)) }); });
+    } else {
+      TASKS.filter(function(t){ return t.status==="booking"; }).forEach(function(t){ out.push({ code:t.id, sub:t.mat+" &middot; booking "+esc(taskLabel(t)) }); });
+    }
+    $("#labels").innerHTML = out.length ? out.slice(0, 120).map(function(x){ return '<div class="lbl">'+qrSvg(x.code)+'<b>'+esc(x.code)+'</b><span>'+x.sub+'</span></div>'; }).join("") : '<p class="note">Tidak ada label.'+(type==="su" ? ' Buat booking dulu di halaman admin.' : '')+'</p>';
+    $("#lb-print").hidden = IN_FRAME;
+    $("#lb-note").innerHTML = (IN_FRAME ? 'Cetak tersedia saat dibuka dari link Netlify. ' : '')+out.length+' label. Scan dengan kamera di halaman petugas, atau ketik kodenya.';
+  }
+  $("#lb-line").innerHTML = LINES.map(function(L){ return '<option value="'+L.id+'"'+(L.id==="B"?" selected":"")+'>Line '+L.id+'</option>'; }).join("");
+  ["lb-type","lb-line","lb-from","lb-to"].forEach(function(id){ $("#"+id).addEventListener("change", renderLabels); });
+  $("#lb-print").addEventListener("click", function(){ window.print(); });
+
+  /* ---------- reset ---------- */
+  $("#reset-row").addEventListener("click", function(e){
+    var id = e.target.id;
+    if(id==="b-reset"){ $("#reset-row").innerHTML = '<span class="note" style="margin:0; align-self:center">Yakin? Semua booking dan perubahan isi gudang hilang.</span><button type="button" id="b-reset-yes" class="primary">Ya, reset</button><button type="button" id="b-reset-no">Batal</button>'; }
+    if(id==="b-reset-no"){ $("#reset-row").innerHTML = '<button type="button" id="b-reset">Reset gudang</button>'; }
+    if(id==="b-reset-yes"){ resetAll(); $("#reset-row").innerHTML = '<span class="msg show ok" style="margin:0">Gudang direset.</span><button type="button" id="b-reset">Reset gudang</button>'; renderAllM(); }
+  });
+
+  function renderAllM(){ $("#store-st").innerHTML = storeBadge(); renderParams(); renderMats(); renderCalc(); renderLabels(); }
+  initStore(function(why){ if(why==="status"){ $("#store-st").innerHTML = storeBadge(); return; } var a = document.activeElement; if(a && a.tagName==="INPUT") { renderMats(); renderLabels(); return; } renderAllM(); });
+  renderAllM();
+})();
+</script>
+</body>
+</html>

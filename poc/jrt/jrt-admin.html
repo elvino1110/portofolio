@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Simulator JRT Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="jrt.css">
+<div class="wrap">
+  <nav class="topnav"><a href="jrt-admin.html" class="on">Admin</a><a href="jrt-petugas.html">Petugas (kamera)</a><a href="jrt-master.html">Master data &amp; kalkulator</a><span id="store-st"></span></nav>
+  <header class="top">
+    <span class="eyebrow">PPIC &middot; Raw Material Warehouse &middot; POC &middot; Admin</span>
+    <h1>Simulator Bin Jumbo Roll Tissue</h1>
+    <p class="lede">Line A&ndash;H memanjang &plusmn;115 m, bin bernomor berjajar tanpa batas fisik, setiap 2 roll berdampingan diberi jarak 30 cm, tumpuk sampai 6,6 m. Admin mencari tempat dan <b>booking</b>; barang baru tercatat di bin setelah petugas scan SU dan scan lokasi bin.</p>
+  </header>
+  <div class="banner"><b>Data ilustratif.</b> No material, berat, isi gudang, dan peruntukan line hanya contoh. Parameter, peruntukan line, dan acuan berat bisa diubah di halaman Master data.</div>
+  <section id="warehouse">
+    <div class="section-head">
+      <h2>Layout gudang 3D &mdash; Line A&ndash;H</h2>
+      <h3>Klik line untuk denah, klik bin untuk detail</h3>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="scene-wrap">
+      <div id="scene3d" class="scene3d" role="img" aria-label="Tampilan 3D gudang jumbo roll Line A sampai H"></div>
+      <div class="scene-ctrl" id="scene-ctrl">
+        <button id="view-overview" type="button">Overview</button>
+        <button id="view-line" type="button">Fokus line</button>
+        <button id="view-focus" type="button">Fokus bin terpilih</button>
+      </div>
+      <div class="scene-hint" id="scene-hint">Drag untuk putar &middot; scroll / pinch untuk zoom &middot; klik lantai atau roll untuk memilih bin. Plastik transparan = bundle (1 ID roll berisi beberapa roll).</div>
+      <div class="scene-fallback" id="scene-fallback" hidden>Tampilan 3D tidak bisa dimuat di perangkat ini. Denah line di bawah tetap bisa dipakai.</div>
+    </div>
+    <div class="lines" id="line-cards"></div>
+  </section>
+
+  <section id="denah">
+    <div class="section-head">
+      <h2 id="denah-title">Denah line</h2>
+      <h3>Tampak atas &middot; depan (lorong forklift) di bawah &middot; warna = no material &middot; makin pekat = makin tinggi tumpukannya</h3>
+    </div>
+    <div class="panel">
+      <div id="denah-sum" class="note" style="margin-top:0"></div>
+      <div class="denah-wrap" id="denah-svg"></div>
+    </div>
+  </section>
+
+  <section id="arrival">
+    <div class="section-head">
+      <h2>Kedatangan jumbo roll</h2>
+      <h3>1. List SU / ID roll + berat (campur no material) &rarr; 2. Sistem memilah per no material &amp; menebak isi dari berat &rarr; 3. Cari tempat &rarr; 4. Booking tempat &rarr; petugas scan SU &amp; lokasi bin di halaman petugas</h3>
+    </div>
+    <div class="panel">
+      <div class="grid4">
+        <div class="field"><label for="arr-nmat">No material (list contoh)</label><input id="arr-nmat" type="number" value="3" min="1" max="6" step="1"></div>
+        <div class="field"><label for="arr-count">Jumlah ID (list contoh)</label><input id="arr-count" type="number" value="10" min="1" max="60" step="1"></div>
+        <div class="field" style="grid-column:span 2; justify-content:flex-end"><button id="btn-gen" type="button">Buat list kedatangan contoh</button></div>
+      </div>
+      <p class="note">Di lapangan list ini dari dokumen kedatangan (SU + berat per SU; kolom Roll selalu 1 walau isinya bundle). Karena belum tahu mana yang datang bundle, semua no material diperlakukan sama: isi tiap ID ditebak dari berat (acuan tersimpan, atau pola berat kedatangan itu sendiri yang dicek dengan perkiraan ukuran volume &times; kepadatan). Kolom "Isi" dan "berat 1 roll manual" bisa diisi sendiri untuk mencoba skenario lain.</p>
+      <div class="tbl-wrap"><table class="id-table" id="arr-table"></table></div>
+      <div class="btn-row" style="align-items:flex-start">
+        <select id="arr-mat" aria-label="No material untuk baris baru" style="font-family:var(--mono); font-size:.8rem; padding:6px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); max-width:100%"></select>
+        <button id="btn-add" type="button">+ Tambah ID</button>
+        <details class="paste"><summary>Tempel dari Excel</summary>
+          <textarea id="arr-paste" rows="4" placeholder="No material [tab] SU / ID roll [tab] berat kg &mdash; satu baris per ID"></textarea>
+          <button id="btn-paste" type="button">Pakai list ini</button>
+        </details>
+      </div>
+      <div class="est" id="arr-sum"></div>
+      <div class="btn-row">
+        <button id="btn-search" class="primary" type="button">Cari tempat</button>
+      </div>
+      <div id="arrival-options"></div>
+      <div id="arrival-result"></div>
+    </div>
+  </section>
+
+
+  <section id="status-su">
+    <div class="section-head"><h2>Status SU &amp; pindah stok</h2><h3>Booking &rarr; ditaruh petugas, dan riwayat pindah stok (otomatis ikut berubah)</h3></div>
+    <div class="panel" id="task-list"></div>
+  </section>
+  <section id="detail">
+    <div class="section-head"><h2>Detail bin terpilih</h2><h3>Tampak samping per kolom &middot; kotak biru putus-putus = booking</h3></div>
+    <div class="panel" id="detail-panel"></div>
+  </section>
+  <footer>Simulasi untuk diskusi proses &middot; aturan sesuai catatan lapangan 27&ndash;28 Okt 2026 (dokumen proses bagian 9.14). Outbound / reservasi produksi tidak disimulasikan karena sudah ditangani WMS yang ada.</footer>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js"></script>
+<script src="jrt-core.js"></script>
+<script>
+(function(){
+  "use strict";
+/* ================= state ================= */
+  var selLine = "B", selBin = 13, lastAllocated = {}, pending = null;
+  function selectedBin(){ return binOf(selLine, selBin) || lineById(selLine).bins[0]; }
+
+  /* ================= arrival: list kedatangan campur no material ================= */
+  // 1 kedatangan = list ID roll (SU) dengan berat, campur beberapa no material. Sistem memilah per no material,
+  // lalu menebak isi tiap ID dari berat. Petugas cukup membenarkan / mengganti angka saat scan.
+  var ARR = { rows:[], ref:{} };
+  function genMixed(nMat, nId){
+    var small = MATS.filter(function(m){ return canBundle(m.d); }), big = MATS.filter(function(m){ return !canBundle(m.d); });
+    var pickM = [], pool = small.slice(), poolB = big.slice();
+    for(var i=0;i<nMat;i++){
+      var src = (i%2===0 && pool.length) ? pool : (poolB.length ? poolB : pool);
+      pickM.push(src.splice(Math.floor(Math.random()*src.length), 1)[0]);
+    }
+    var rows = [];
+    pickM.forEach(function(m, i){
+      var k = Math.max(1, Math.round(nId/nMat) + (i===0 ? nId-Math.round(nId/nMat)*nMat : 0));
+      for(var q=0;q<k;q++){ var n = canBundle(m.d) ? 2+Math.floor(Math.random()*4) : 1; rows.push({ mat:m.code, id:newId(), kg:sampleKg(m, n), nManual:null }); }
+    });
+    return rows;
+  }
+  function groups(){
+    var order = [], by = {};
+    ARR.rows.forEach(function(r, i){ if(!by[r.mat]){ by[r.mat] = []; order.push(r.mat); } by[r.mat].push(i); });
+    return order.map(function(code){ return { m:mat(code), idx:by[code] }; });
+  }
+  function rollRef(m, rows){
+    var wv = P.RHO*vol(m), r = { wv:wv };
+    if(ARR.ref[m.code]>0){ r.w = ARR.ref[m.code]; r.src = "manual"; return r; }
+    if(m.kg){ r.w = m.kg; r.src = "acuan"; return r; }
+    var man = rows.filter(function(x){ return x.nManual>0 && x.kg>0; });
+    if(man.length){ r.w = median(man.map(function(x){ return x.kg/x.nManual; })); r.src = "petugas"; return r; }
+    var kgs = rows.map(function(x){ return x.kg; }).filter(function(k){ return k>0; }), cands = [];
+    if(kgs.length>=2){
+      var mn = Math.min.apply(null, kgs);
+      for(var k=1;k<=8;k++){
+        var w = mn/k, err = 0, mxN = 0;
+        kgs.forEach(function(kg){ var q = kg/w; err = Math.max(err, Math.abs(q-Math.round(q))); mxN = Math.max(mxN, Math.round(q)); });
+        if(err<=0.2 && mxN*m.w <= P.HMAX+EPS){
+          var ref = kgs.reduce(function(s,kg){ return s + kg/Math.max(1, Math.round(kg/w)); }, 0)/kgs.length;
+          cands.push({ k:k, w:ref, ratio:ref/wv, err:err });
+        }
+      }
+      r.cands = cands;
+      var ok = cands.filter(function(c){ return c.ratio>0.6 && c.ratio<1.6; });
+      if(ok.length){ ok.sort(function(a,b){ return Math.abs(Math.log(a.ratio))-Math.abs(Math.log(b.ratio)); }); r.w = ok[0].w; r.src = "pola"; r.pick = ok[0]; return r; }
+    }
+    r.w = wv; r.src = "volume"; return r;
+  }
+  function evalRow(m, row, R){
+    var e = { r:row };
+    if(row.kg>0 && R.w) e.est = row.kg/R.w;
+    if(row.nManual>0){
+      e.n = row.nManual; e.tag = ["diisi petugas","info"];
+      if(e.est!==undefined && Math.abs(e.est-row.nManual)>0.5) e.tag = ["diisi petugas (perkiraan "+fm(e.est,1)+")","warn"];
+    } else if(e.est!==undefined){
+      var a = Math.max(1, Math.round(e.est)), fr = Math.abs(e.est-a);
+      if(a===1 && e.est<1.3){ e.n = 1; e.tag = e.est<0.8 ? ["1 roll, berat "+Math.round((1-e.est)*100)+"% di bawah biasanya","warn"] : ["1 roll","ok"]; }
+      else if(fr<=0.15){ e.n = a; e.tag = R.src==="volume" ? ["perkiraan dari ukuran","warn"] : ["yakin","ok"]; }
+      else if(fr<=0.3){ e.n = a; e.tag = ["cek saat taruh","warn"]; }
+      else { var lo = Math.floor(e.est), hi = Math.ceil(e.est); e.n = Math.max(1, hi); e.tag = ["ragu "+lo+"/"+hi+" → rencana "+hi+", cek saat taruh","crit"]; }
+    } else { e.n = null; e.tag = ["isi berat","crit"]; }
+    if(e.n){ e.h = e.n*m.w; e.ok = perStack(e.h)>=1; if(!e.ok) e.tag = ["lebih tinggi dari "+fm(P.HMAX,1)+" m","crit"]; }
+    return e;
+  }
+  function evalAll(){
+    return groups().map(function(g){
+      var rows = g.idx.map(function(i){ return ARR.rows[i]; }), R = rollRef(g.m, rows);
+      return { m:g.m, idx:g.idx, R:R, ev:rows.map(function(r){ return evalRow(g.m, r, R); }) };
+    });
+  }
+  function groupState(G){
+    var units = [];
+    G.ev.forEach(function(e){ if(e.n && e.ok && e.r.kg>0) units.push({ id:e.r.id, n:e.n, nw:G.m.w, h:e.h, kg:e.r.kg }); });
+    units.sort(function(a,b){ return b.h-a.h; });
+    var rolls = 0; units.forEach(function(u){ rolls += u.n; });
+    return { m:G.m, R:G.R, units:units, qty:units.length, rolls:rolls, skipped:G.ev.length-units.length };
+  }
+  var SRC_TXT = { manual:"diisi manual", acuan:"acuan tersimpan", petugas:"dari isi yang diisi petugas", pola:"dari pola berat kedatangan ini", volume:"perkiraan dari ukuran (volume &times; kepadatan)" };
+  function renderArrival(focus){
+    var E = evalAll(), h = '<thead><tr><th>SU / ID roll</th><th>Berat (kg)</th><th>Perkiraan isi</th><th>Isi (roll)</th><th>Tinggi 1 ID</th><th>Status</th><th></th></tr></thead><tbody>';
+    var totId = 0, totRoll = 0, nCek = 0;
+    E.forEach(function(G, gi){
+      var m = G.m, R = G.R;
+      var refTxt = 'berat 1 roll dipakai <b>'+Math.round(R.w)+' kg</b> ('+SRC_TXT[R.src]+(R.src==="pola" ? ', cocok dengan perkiraan ukuran '+Math.round(R.wv)+' kg' : (R.src!=="volume" ? '; perkiraan ukuran '+Math.round(R.wv)+' kg' : ''))+')';
+      h += '<tr class="grp"><td colspan="7"><span class="sw" style="background:'+m.color+'; margin-right:6px"></span><b class="mono">'+m.code+'</b> &middot; '+esc(m.name)+' &middot; '+dLbl(m.d)+' &times; '+mm(m.w)+'W, core '+m.coreIn+'&quot; &middot; '+G.ev.length+' ID &middot; '+refTxt+
+        ' &middot; <label style="white-space:nowrap">berat 1 roll manual <input type="text" inputmode="numeric" id="ref-'+m.code+'" data-ref="'+m.code+'" value="'+(ARR.ref[m.code]||"")+'" placeholder="otomatis" style="width:84px"> kg</label>'+
+        (R.src==="pola" && R.cands && R.cands.length>1 ? ' <button type="button" class="linkish" data-why="'+gi+'">kenapa?</button>' : '')+'</td></tr>';
+      if(R.src==="pola" && openWhy[m.code] && R.cands){
+        h += '<tr class="why"><td colspan="7"><div class="note" style="margin:0">Berat ID paling ringan dibagi 1, 2, 3, &hellip; Kandidat yang membuat semua ID jadi bilangan bulat: '+R.cands.map(function(c){ return '<b>'+Math.round(c.w)+' kg</b> (&divide;'+c.k+')'; }).join(", ")+'. Dipilih yang paling dekat dengan perkiraan ukuran '+Math.round(R.wv)+' kg.</div></td></tr>';
+      }
+      G.ev.forEach(function(e, j){
+        var i = G.idx[j], r = e.r;
+        if(e.n && e.ok){ totId++; totRoll += e.n; }
+        if(e.tag[1]!=="ok" && e.tag[1]!=="dim" && e.tag[1]!=="info") nCek++;
+        h += '<tr><td class="mono">'+esc(r.id)+'</td>'+
+          '<td><input type="text" inputmode="decimal" id="kg-'+i+'" data-kg="'+i+'" value="'+(r.kg||"")+'" aria-label="Berat '+esc(r.id)+'"></td>'+
+          '<td class="mono">'+(e.est!==undefined ? r.kg+' &divide; '+Math.round(R.w)+' = <b>'+fm(e.est,2)+'</b>' : '&ndash;')+'</td>'+
+          '<td><input type="text" inputmode="numeric" id="n-'+i+'" data-n="'+i+'" value="'+(r.nManual||"")+'" placeholder="'+(e.n||"?")+'" aria-label="Isi '+esc(r.id)+'"></td>'+
+          '<td class="mono">'+(e.h ? fm(e.h,2)+' m &middot; '+perStack(e.h)+'&times;' : '&ndash;')+'</td>'+
+          '<td><span class="tag '+e.tag[1]+'">'+e.tag[0]+'</span></td>'+
+          '<td><button type="button" data-del="'+i+'" aria-label="Hapus '+esc(r.id)+'" style="padding:3px 8px">&times;</button></td></tr>';
+      });
+    });
+    $("#arr-table").innerHTML = h+'</tbody>';
+    $("#arr-sum").innerHTML = '<div><div class="f"><b>'+ARR.rows.length+' ID roll</b> datang, dipilah jadi <b>'+E.length+' no material</b> &middot; '+totId+' ID siap dicarikan tempat = <b>'+totRoll+' roll</b></div>'+
+      (nCek ? '<div class="f" style="color:var(--warn)">'+nCek+' ID ditandai: petugas cek isinya saat scan dan ganti angka kalau beda. Yang ragu direncanakan pakai angka lebih besar supaya ruangnya pasti cukup.</div>' : '<div class="f" style="color:var(--ok)">Semua isi terbaca dari berat &mdash; petugas cukup membenarkan saat scan.</div>')+'</div><span></span>';
+    if(focus){ var el = document.getElementById(focus.id); if(el){ el.focus(); try{ el.setSelectionRange(focus.pos, focus.pos); }catch(x){} } }
+  }
+  var openWhy = {};
+  $("#arr-table").addEventListener("input", function(e){
+    var t = e.target, i;
+    var num = parseFloat(String(t.value).replace(",", "."));
+    if((i = t.getAttribute("data-kg"))!==null){ ARR.rows[+i].kg = num>0 ? num : 0; }
+    else if((i = t.getAttribute("data-n"))!==null){ var v = parseInt(t.value,10); ARR.rows[+i].nManual = v>0 && v<=20 ? v : null; }
+    else if((i = t.getAttribute("data-ref"))!==null){ if(num>0) ARR.ref[i] = num; else delete ARR.ref[i]; }
+    else return;
+    var pos = null; try{ pos = t.selectionStart; }catch(x){}
+    invalidateSearch(); renderArrival({ id:t.id, pos:pos===null ? String(t.value).length : pos });
+  });
+  $("#arr-table").addEventListener("click", function(e){
+    var t = e.target, i = t.getAttribute && t.getAttribute("data-del"), w = t.getAttribute && t.getAttribute("data-why");
+    if(w!==null && w!==undefined){ var code = evalAll()[+w].m.code; openWhy[code] = !openWhy[code]; renderArrival(); return; }
+    if(i===null || i===undefined) return; ARR.rows.splice(+i, 1); invalidateSearch(); renderArrival();
+  });
+  function parsePaste(txt){
+    var rows = [], unknown = 0;
+    String(txt).split(/\r?\n/).forEach(function(line){
+      var p = line.split(/\t|;/).map(function(x){ return x.trim(); }).filter(Boolean);
+      if(p.length<3) return;
+      var kg = parseFloat(String(p[p.length-1]).replace(/,/g,""));
+      if(!(kg>0)) return;
+      if(!mat(p[0])){ unknown++; return; }
+      rows.push({ mat:p[0], id:p[1], kg:Math.round(kg), nManual:null });
+    });
+    return { rows:rows, unknown:unknown };
+  }
+
+  function renderOptions(){
+    var el = $("#arrival-options");
+    if(!pending){ el.innerHTML = ""; return; }
+    var html = '<p class="note" style="font-size:.86rem; color:var(--ink)">Klik nama bin atau barisnya untuk melihat bin itu di map 3D. Kedatangan dipilah per no material. Tiap no material dicarikan tempat sendiri (1 bin = 1 no material); bin yang sudah disarankan untuk no material lain tidak ditawarkan lagi. ID yang tinggi ditumpuk dulu, yang pendek mengisi sisa atas tumpukan.</p>';
+    pending.groups.forEach(function(gp, g){
+      var st = gp.st, m = st.m;
+      html += '<div class="grp-opt"><h3 style="font-size:.88rem; margin-top:14px"><span class="sw" style="background:'+m.color+'; margin-right:6px"></span>'+m.code+' &middot; '+dLbl(m.d)+' &times; '+mm(m.w)+'W &middot; '+st.qty+' ID ('+st.rolls+' roll)</h3>';
+      if(!gp.opts.length){ html += '<div class="msg show crit">Tidak ada bin yang bisa menampung '+m.code+'. Perlu relokasi atau area transit.</div></div>'; return; }
+      var shownOff = 0, hiddenN = 0;
+      html += '<div class="tbl-wrap"><table class="opt-table"><thead><tr><th></th><th>Bin</th><th>Jenis</th><th>Ruang</th><th>Isi (ID)</th><th>Catatan</th></tr></thead><tbody>'+gp.opts.map(function(o, i){
+        var hide = false;
+        if(!o.on && !gp.showAll){ if(shownOff>=3){ hide = true; hiddenN++; } else shownOff++; }
+        return '<tr data-g="'+g+'" data-i="'+i+'" class="'+(o.on?"on":"")+'"'+(hide ? ' hidden' : '')+'>'+
+          '<td><input type="checkbox" id="opt-c-'+g+'-'+i+'" data-g="'+g+'" data-i="'+i+'" aria-label="Pilih '+o.label+'"'+(o.on?" checked":"")+'></td>'+
+          '<td><button type="button" class="linkish" data-focus="'+o.b.line.id+'|'+o.b.no+'" title="Lihat di map">'+o.label+' &#8599;</button></td>'+
+          '<td><span class="tag '+KIND[o.kind][1]+'">'+KIND[o.kind][0]+'</span></td>'+
+          '<td class="mono">'+o.cap+' ID</td>'+
+          '<td><input type="number" id="opt-q-'+g+'-'+i+'" data-g="'+g+'" data-i="'+i+'" min="0" max="'+o.cap+'" step="1" value="'+(o.qty||0)+'" aria-label="Jumlah ID ke '+o.label+'"></td>'+
+          '<td class="note-cell">'+o.notes.join(" ")+'</td></tr>';
+      }).join("")+'</tbody></table></div><div class="mono note" id="opt-total-'+g+'"></div>'+
+        (hiddenN || gp.showAll ? '<button type="button" class="linkish" data-more="'+g+'" style="margin-top:4px">'+(gp.showAll ? 'Ringkas' : 'Lihat '+hiddenN+' opsi lain')+'</button>' : '')+'</div>';
+    });
+    html += '<div class="opt-foot"><span class="mono" id="opt-total"></span><div class="btn-row" style="margin:0"><button type="button" id="opt-reco">Pakai saran</button><button type="button" id="opt-cancel">Batal</button><button type="button" id="opt-confirm" class="primary">Booking tempat</button></div></div><div class="msg" id="opt-msg"></div>';
+    el.innerHTML = html;
+    updateTotals();
+  }
+  function updateTotals(){
+    if(!pending) return;
+    var over = false, sumAll = 0, needAll = 0;
+    pending.groups.forEach(function(gp, g){
+      var sum = gp.opts.reduce(function(s,o){ return s+(o.qty||0); }, 0), need = gp.st.qty;
+      sumAll += sum; needAll += need; if(sum>need) over = true;
+      var t = $("#opt-total-"+g); if(t) t.innerHTML = 'Dipilih '+sum+' / '+need+' ID'+(sum>need ? ' <span style="color:var(--crit)">(lebih '+(sum-need)+')</span>' : (sum<need ? ' <span style="color:var(--warn)">('+(need-sum)+' ke transit)</span>' : ''));
+      gp.opts.forEach(function(o, i){ var r = document.querySelector('#arrival-options tr[data-g="'+g+'"][data-i="'+i+'"]'); if(r){ r.className = o.on ? "on" : ""; if(o.on) r.hidden = false; } });
+    });
+    var msg = $("#opt-msg"), btn = $("#opt-confirm");
+    $("#opt-total").innerHTML = 'Total dipilih <b>'+sumAll+'</b> / '+needAll+' ID roll';
+    if(over){ msg.className = "msg show crit"; msg.textContent = "Ada no material yang isiannya melebihi jumlah ID yang datang."; btn.disabled = true; }
+    else if(sumAll===0){ msg.className = "msg show info"; msg.textContent = "Pilih minimal satu bin."; btn.disabled = true; }
+    else if(sumAll<needAll){ msg.className = "msg show warn"; msg.textContent = (needAll-sumAll)+" ID belum dapat bin dan menunggu di transit. Tetap bisa dikonfirmasi."; btn.disabled = false; }
+    else { msg.className = "msg"; btn.disabled = false; }
+    renderLineCards(); renderDenah(); update3D();
+  }
+  function startSearch(){
+    $("#arrival-result").innerHTML = "";
+    var E = evalAll(), reserved = {}, gps = [];
+    E.forEach(function(G){
+      var st = groupState(G); if(!st.qty) return;
+      var gp = { st:st, opts:findOptions(st, reserved) };
+      recommendGroup(gp);
+      gp.opts.forEach(function(o){ if(o.qty>0) reserved[o.b.line.id+o.b.no] = true; });
+      gps.push(gp);
+    });
+    if(!gps.length){ $("#arrival-result").innerHTML = '<div class="msg show warn">Belum ada ID yang siap. Isi berat tiap ID.</div>'; return; }
+    lastAllocated = {};
+    pending = { groups:gps };
+    var f = null; gps.forEach(function(gp){ gp.opts.forEach(function(o){ if(!f && o.qty>0) f = o; }); });
+    if(f){ selLine = f.b.line.id; selBin = f.b.no; }
+    renderOptions(); renderAll(); if(G) focusLine();
+  }
+  function confirmPlan(){
+    if(!pending) return;
+    clearNew(); lastAllocated = {};
+    var out = "", allLeft = [], nBook = 0;
+    pending.groups.forEach(function(gp){
+      var st = gp.st, m = st.m, res = [], remaining = st.units.slice(), kgOf = {};
+      st.units.forEach(function(u){ kgOf[u.id] = u.kg; });
+      gp.opts.forEach(function(o){
+        if(!(o.qty>0) || !remaining.length) return;
+        if(!stillValid(o, m)) return;
+        var r = applyOption(o, st, remaining);
+        remaining = remaining.filter(function(u){ return r.ids.indexOf(u.id)<0; });
+        r.units.forEach(function(u){
+          u.pending = true; u.isNew = false;
+          var l = findUnit(function(x){ return x===u; });
+          TASKS.push({ seq:Date.now()+nBook, id:u.id, mat:m.code, kg:kgOf[u.id], nEst:u.n, ref:Math.round(st.R.w), label:l ? colLabel(l.b, l.ci) : o.label, status:"booking", ts:Date.now() });
+          nBook++;
+        });
+        if(r.placed>0){ lastAllocated[o.b.line.id+o.b.no] = true; res.push({ o:o, r:r }); }
+      });
+      remaining.forEach(function(u){ allLeft.push(m.code+" "+u.id); });
+      out += '<li><b>'+m.code+'</b> ('+dLbl(m.d)+'): '+(res.length ? res.map(function(x){ var b = x.o.b, notes = []; if(x.r.moved) notes.push("stok lama perlu dimajukan "+fm(x.r.moved,2)+" m"); if(x.r.geser) notes.push(x.r.geser); return binName(b)+' &larr; booking '+x.r.placed+' SU (&plusmn;'+x.r.rolls+' roll)'+(notes.length ? ' <span style="color:var(--warn)">('+notes.join("; ")+')</span>' : ''); }).join(" &middot; ") : '<span style="color:var(--crit)">belum dapat bin</span>')+'</li>';
+    });
+    var first = null; Object.keys(lastAllocated).forEach(function(k){ if(!first) first = k; });
+    if(first){ selLine = first.charAt(0); selBin = +first.slice(1); }
+    pending = null; renderOptions();
+    $("#arrival-result").innerHTML = '<div class="msg show '+(allLeft.length?"warn":"ok")+'" style="margin:12px 0 8px"><b>'+nBook+' SU dibooking</b> &mdash; tempatnya sudah dipesan di map (kotak biru transparan), barang masih di transit menunggu petugas. Petugas menaruhnya lewat <a href="jrt-petugas.html">halaman petugas</a> (scan SU, lalu scan lokasi bin).'+(allLeft.length ? ' <b>'+allLeft.length+' SU belum dapat bin:</b> '+allLeft.join(", ")+'.' : '')+'</div><ol class="steps">'+out+'</ol>';
+    ARR.rows = genMixed(Math.max(1, Math.min(6, parseInt($("#arr-nmat").value,10)||3)), Math.max(1, Math.min(60, parseInt($("#arr-count").value,10)||10)));
+    saveState();
+    renderArrival(); renderAll(); renderTasks(); if(first) focusBin();
+  }
+  function invalidateSearch(){ if(!pending) return; pending = null; renderOptions(); renderLineCards(); renderDenah(); update3D(); }
+
+  function showOnMap(){
+    var w = document.getElementById("warehouse");
+    try{ w.scrollIntoView({ behavior:"smooth", block:"start" }); }catch(x){ w.scrollIntoView(); }
+    focusBin();
+  }
+  function optAt(t){ var g = t.getAttribute("data-g"), i = t.getAttribute("data-i"); if(g===null || i===null) return null; return { gp:pending.groups[+g], o:pending.groups[+g].opts[+i], g:g, i:i }; }
+  $("#arrival-options").addEventListener("input", function(e){
+    if(!pending || e.target.type!=="number") return; var x = optAt(e.target); if(!x) return;
+    var v = Math.max(0, Math.min(x.o.cap, parseInt(e.target.value,10)||0)); x.o.qty = v; x.o.on = v>0; $("#opt-c-"+x.g+"-"+x.i).checked = x.o.on; updateTotals();
+  });
+  $("#arrival-options").addEventListener("change", function(e){
+    if(!pending) return; var x = optAt(e.target); if(!x) return;
+    if(e.target.type==="checkbox"){
+      if(e.target.checked){ var used = x.gp.opts.reduce(function(s,o){ return s+(o.qty||0); }, 0); x.o.qty = Math.max(0, Math.min(x.o.cap, x.gp.st.qty-used)); x.o.on = true; }
+      else { x.o.qty = 0; x.o.on = false; }
+      $("#opt-q-"+x.g+"-"+x.i).value = x.o.qty; updateTotals();
+    } else if(e.target.type==="number") e.target.value = x.o.qty;
+  });
+  $("#arrival-options").addEventListener("click", function(e){
+    var t = e.target, f = t.getAttribute && t.getAttribute("data-focus");
+    if(!f && t.closest && !t.closest("input,button,label")){ var tr = t.closest("tr[data-g]"); if(tr){ var x = pending.groups[+tr.getAttribute("data-g")].opts[+tr.getAttribute("data-i")]; f = x.b.line.id+"|"+x.b.no; } }
+    if(f){ var a = f.split("|"); selLine = a[0]; selBin = +a[1]; renderLineCards(); renderDenah(); renderDetail(); update3D(); showOnMap(); return; }
+    var more = t.getAttribute && t.getAttribute("data-more");
+    if(more!==null && more!==undefined){ var gp = pending.groups[+more]; gp.showAll = !gp.showAll; renderOptions(); return; }
+    if(t.id==="opt-reco"){ pending.groups.forEach(recommendGroup); renderOptions(); }
+    else if(t.id==="opt-cancel"){ pending = null; renderOptions(); renderAll(); }
+    else if(t.id==="opt-confirm") confirmPlan();
+  });
+  function fillMatSelect(){ $("#arr-mat").innerHTML = MATS.map(function(m){ return '<option value="'+m.code+'">'+m.code+' · '+dLbl(m.d)+' × '+mm(m.w)+'W · '+esc(m.name)+'</option>'; }).join(""); }
+  function genList(){ ARR.rows = genMixed(Math.max(1, Math.min(6, parseInt($("#arr-nmat").value,10)||3)), Math.max(1, Math.min(60, parseInt($("#arr-count").value,10)||10))); $("#arrival-result").innerHTML = ""; invalidateSearch(); renderArrival(); }
+  $("#btn-gen").addEventListener("click", genList);
+  $("#btn-add").addEventListener("click", function(){ ARR.rows.push({ mat:$("#arr-mat").value, id:newId(), kg:0, nManual:null }); invalidateSearch(); renderArrival({ id:"kg-"+(ARR.rows.length-1), pos:0 }); });
+  $("#btn-paste").addEventListener("click", function(){
+    var p = parsePaste($("#arr-paste").value);
+    if(!p.rows.length){ $("#arrival-result").innerHTML = '<div class="msg show warn">Tidak ada baris yang terbaca. Format: No material, SU / ID roll, berat (kg), dipisah tab.'+(p.unknown ? ' '+p.unknown+' baris no materialnya tidak ada di master simulator.' : '')+'</div>'; return; }
+    ARR.rows = p.rows; $("#arrival-result").innerHTML = p.unknown ? '<div class="msg show warn">'+p.unknown+' baris dilewati karena no materialnya tidak ada di master simulator.</div>' : ""; invalidateSearch(); renderArrival();
+  });
+
+  /* ================= 2D ================= */
+  function candState(){ var s = {}; if(pending) pending.groups.forEach(function(gp){ gp.opts.forEach(function(o){ var k = o.b.line.id+o.b.no; if(o.on) s[k] = "chosen"; else if(!s[k]) s[k] = "cand"; }); }); return s; }
+  function renderLegend(){
+    $("#legend").innerHTML = '<span><i class="sw" style="background:var(--accent)"></i>Bin terpilih</span><span><i class="sw" style="background:var(--info)"></i>Opsi tempat (pekat = dipilih)</span><span><i class="sw" style="background:var(--ok)"></i>Baru ditaruh</span><span><i class="sw" style="background:color-mix(in srgb, var(--info) 40%, transparent); border:1px dashed var(--info)"></i>Booking (belum ditaruh)</span><span><i class="sw" style="background:var(--paint)"></i>Garis bin &amp; pemisah A/B</span>';
+  }
+  function renderLineCards(){
+    var cs = candState();
+    $("#line-cards").innerHTML = LINES.map(function(L){
+      var lay = layout(L), filled = L.bins.filter(function(b){ return b.cols.length; }).length, cand = 0, nb = 0;
+      L.bins.forEach(function(b){ b.cols.forEach(function(c){ c.stacks.forEach(function(st){ st.units.forEach(function(u){ if(u.pending) nb++; }); }); }); });
+      L.bins.forEach(function(b){ if(cs[L.id+b.no]) cand++; });
+      var pct = Math.round(filled/L.bins.length*100);
+      return '<button type="button" class="lcard'+(L.id===selLine?" on":"")+'" data-line="'+L.id+'"><span class="t">Line '+L.id+' &middot; '+plotLbl(L)+' &middot; '+fm(L.depth,1)+' m</span>'+
+        '<span class="s">'+L.bins.length+' bin ('+L.id+L.bins[0].no+'&ndash;'+L.id+L.bins[L.bins.length-1].no+') &middot; '+filled+' terisi</span>'+
+        '<span class="s">sisa ujung '+fm(Math.max(0,lay.slack),1)+' m &middot; jarak '+Math.round(L.gap*100)+' cm'+(cand ? ' &middot; <b style="color:var(--info)">'+cand+' opsi</b>' : '')+(nb ? ' &middot; <b style="color:var(--info)">'+nb+' booking</b>' : '')+'</span>'+
+        '<span class="bar"><i style="width:'+pct+'%"></i></span></button>';
+    }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll("#line-cards .lcard"), function(btn){
+      btn.addEventListener("click", function(){ selLine = btn.getAttribute("data-line"); var L = lineById(selLine); selBin = L.bins[0].no; renderAll(); focusLine(); });
+    });
+  }
+  function hexA(hex, a){ var n = parseInt(hex.slice(1),16); return "rgba("+(n>>16&255)+","+(n>>8&255)+","+(n&255)+","+a+")"; }
+  function colCenters(b){
+    var w0 = b.cols[0] ? colW(b.cols[0]) : 0;
+    if(b.cols.length===2){ var w1 = colW(b.cols[1]); return [w0/2, b.w-w1/2]; }
+    if(b.cols.length===1) return [w0 <= b.w/2+0.15 ? w0/2 : b.w/2];
+    return [];
+  }
+  function renderDenah(){
+    var L = lineById(selLine), lay = layout(L), k = 13, padX = 14, top = 14, H = L.depth*k, cs = candState();
+    var W = Math.ceil(L.len*k + padX*2);
+    var s = '<svg width="'+W+'" height="'+(H+top+40)+'" viewBox="0 0 '+W+' '+(H+top+40)+'" font-family="IBM Plex Mono, monospace">';
+    s += '<rect x="'+padX+'" y="'+top+'" width="'+(L.len*k)+'" height="'+H+'" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>';
+    if(lay.slack>0.05) s += '<text x="'+(padX+(lay.used+lay.slack/2)*k)+'" y="'+(top+H/2)+'" text-anchor="middle" font-size="10" fill="var(--ink-dim)">sisa '+fm(lay.slack,1)+' m</text>';
+    L.bins.forEach(function(b, i){
+      var x = padX + lay.xs[i]*k, key = L.id+b.no, sel = b.no===selBin;
+      var stroke = sel ? "var(--accent)" : (cs[key]==="chosen" ? "var(--info)" : (lastAllocated[key] ? "var(--ok)" : "var(--paint)"));
+      var sw = (sel || cs[key] || lastAllocated[key]) ? 2.4 : 1;
+      var bg = cs[key]==="chosen" ? "color-mix(in srgb, var(--info) 30%, transparent)" : (cs[key]==="cand" ? "color-mix(in srgb, var(--info) 12%, transparent)" : "transparent");
+      s += '<g data-bin="'+b.no+'"><rect x="'+x+'" y="'+top+'" width="'+(b.w*k)+'" height="'+H+'" fill="'+bg+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+      var cc = colCenters(b);
+      b.cols.forEach(function(c, ci){
+        var m = mat(c.mat), cw = colW(c), cx = x + cc[ci]*k, z = c.gap;
+        c.stacks.forEach(function(st){
+          var a = 0.25 + 0.7*Math.min(1, stackH(st)/P.HMAX);
+          var bk = st.units.some(function(u){ return u.pending; });
+          s += '<rect x="'+(cx-st.d*k/2+0.5)+'" y="'+(top+H-(z+st.d)*k+0.5)+'" width="'+(st.d*k-1)+'" height="'+(st.d*k-1)+'" rx="'+(st.d*k/2)+'" fill="'+hexA(m.color, a)+'"'+(bk ? ' stroke="var(--info)" stroke-width="1.6" stroke-dasharray="2 2"' : '')+'/>';
+          z += st.d;
+        });
+      });
+      if(isAB(b)) s += '<line x1="'+(x+colW(b.cols[0])*k+ (b.w-binContentW(b))*k/2)+'" y1="'+top+'" x2="'+(x+colW(b.cols[0])*k+(b.w-binContentW(b))*k/2)+'" y2="'+(top+H)+'" stroke="var(--paint)" stroke-dasharray="3 3"/>';
+      s += '<text x="'+(x+b.w*k/2)+'" y="'+(top+H+13)+'" text-anchor="middle" font-size="9" fill="'+(sel?"var(--accent)":"var(--ink-dim)")+'" font-weight="'+(sel?700:400)+'">'+b.no+(isAB(b)?"AB":"")+'</text></g>';
+    });
+    s += '<text x="'+padX+'" y="'+(top+H+32)+'" font-size="10" fill="var(--ink-dim)">&darr; depan &middot; lorong forklift &middot; '+L.len+' m &rarr;</text></svg>';
+    $("#denah-svg").innerHTML = s;
+    $("#denah-title").textContent = "Denah line "+L.id+" · "+plotLbl(L)+" · kedalaman "+fm(L.depth,1)+" m";
+    var filled = L.bins.filter(function(b){ return b.cols.length; }).length;
+    $("#denah-sum").innerHTML = 'Line <b>'+L.id+'</b> panjang '+L.len+' m &middot; '+L.bins.length+' bin muat dengan plot lebar '+dLbl(L.plot)+' &middot; peruntukan '+prefLbl(L)+' (no '+L.bins[0].no+'&ndash;'+L.bins[L.bins.length-1].no+'; nomor sesudahnya hanya ada di SAP) &middot; '+filled+' bin terisi &middot; lebar terpakai '+fm(lay.used,1)+' m, sisa ujung '+fm(Math.max(0,lay.slack),1)+' m &middot; jarak antar pasangan '+Math.round(L.gap*100)+' cm.';
+    Array.prototype.forEach.call(document.querySelectorAll("#denah-svg [data-bin]"), function(g){
+      g.addEventListener("click", function(){ selBin = +g.getAttribute("data-bin"); renderAll(); focusBin(); });
+    });
+    var wrap = $("#denah-svg"), lb = selectedBin(), li = L.bins.indexOf(lb);
+    if(li>-1){ var xx = padX + lay.xs[li]*k; if(xx < wrap.scrollLeft || xx > wrap.scrollLeft+wrap.clientWidth-40) wrap.scrollLeft = Math.max(0, xx-wrap.clientWidth/3); }
+  }
+  function renderDetail(){
+    var b = selectedBin(), L = b.line, panel = $("#detail-panel");
+    var html = '<div class="detail-head"><h3>Bin '+binName(b)+' <span style="color:var(--ink-dim); font-weight:400">&middot; Line '+L.id+'</span></h3><span class="pill">lebar plot '+dLbl(L.plot)+' &middot; peruntukan '+prefLbl(L)+' &middot; dalam '+fm(L.depth,1)+' m</span></div>';
+    html += '<div class="spec-grid"><div><span class="k">Lebar bin</span><span class="v">'+fm(b.w,2)+' m</span></div><div><span class="k">Lebar terpakai</span><span class="v">'+fm(binContentW(b),2)+' m</span></div><div><span class="k">Isi</span><span class="v">'+binIDs(b)+' ID &middot; '+binRolls(b)+' roll</span></div></div>';
+    if(!b.cols.length){
+      html += '<p class="note">Bin kosong. Muat 1 kolom roll sampai '+dLbl(b.w)+'; roll '+dLbl(b.w/2)+' ke bawah muat 2 kolom (jadi '+L.id+b.no+'A/B).</p>';
+    }
+    b.cols.forEach(function(c, ci){
+      var m = mat(c.mat), mixD = {}; c.stacks.forEach(function(s){ mixD[dLbl(s.d)] = 1; });
+      html += '<div class="col-card"><div class="col-head"><b>'+colLabel(b, ci)+'</b><span style="display:inline-flex; gap:6px; align-items:center; flex-wrap:wrap"><span class="pill"><i class="sw" style="background:'+m.color+'; margin-right:5px"></i>'+m.code+' &middot; '+esc(m.name)+'</span><span class="pill">'+Object.keys(mixD).join(" + ")+'</span></span></div>'+
+        '<div class="spec-grid"><div><span class="k">Kedalaman terpakai</span><span class="v">'+fm(c.gap+colDepth(c),2)+' / '+fm(L.depth,1)+' m</span></div><div><span class="k">Posisi ke belakang</span><span class="v">'+c.stacks.length+'</span></div><div><span class="k">ID / roll</span><span class="v">'+colIDs(c)+' / '+colRolls(c)+'</span></div></div>'+
+        '<div class="side-wrap">'+sideSvg(b, c)+'</div></div>';
+    });
+    panel.innerHTML = html + '<div class="msg" id="bin-msg"></div>';
+  }
+
+  
+  /* ================= status SU (booking -> ditaruh petugas) ================= */
+  function renderTasks(){
+    var box = $("#task-list"); if(!box) return;
+    var SU = TASKS.filter(function(t){ return t.kind!=="move"; }), MVS = TASKS.filter(function(t){ return t.kind==="move"; }).reverse();
+    var wait = SU.filter(function(t){ return t.status==="booking"; }).length;
+    var mvHtml = MVS.length ? '<h3 style="margin-top:16px">Riwayat pindah stok ('+MVS.length+')</h3><div class="tbl-wrap"><table class="opt-table"><thead><tr><th>No</th><th>SU</th><th>No material</th><th>Isi</th><th>Dari &rarr; ke</th><th>Alasan</th></tr></thead><tbody>'+
+      MVS.map(function(t){ return '<tr><td class="mono">'+esc(t.id)+'</td><td class="mono">'+(t.su ? esc(t.su) : '<span class="note">tanpa ID</span>')+'</td><td class="mono">'+t.mat+'</td><td class="mono">'+t.n+' roll</td><td class="mono">'+esc(t.from)+' &rarr; '+esc(t.bin)+'</td><td>'+esc(t.why)+'</td></tr>'; }).join("")+'</tbody></table></div>' : '';
+    if(!SU.length){ box.innerHTML = '<p class="note" style="margin-top:0">Belum ada booking.</p>'+mvHtml; return; }
+    var list = SU.slice().reverse();
+    box.innerHTML = '<p class="note" style="margin-top:0"><b>'+wait+'</b> SU menunggu ditaruh petugas &middot; '+(SU.length-wait)+' sudah ditaruh. Halaman ini ikut berubah otomatis saat petugas scan.</p>'+
+      '<div class="tbl-wrap"><table class="opt-table"><thead><tr><th>SU</th><th>No material</th><th>Isi</th><th>Booking</th><th>Ditaruh di</th><th>Status</th><th></th></tr></thead><tbody>'+
+      list.map(function(t){
+        var st = t.status==="booking" ? '<span class="tag warn">booking</span>' : (t.status==="beda" ? '<span class="tag info">beda bin</span>' : '<span class="tag ok">ditaruh</span>');
+        return '<tr><td class="mono">'+esc(t.id)+'</td><td class="mono">'+t.mat+'</td><td class="mono">'+(t.status==="booking" ? '&plusmn;'+t.nEst : t.n+(t.n!==t.nEst ? ' <span class="note">(perkiraan '+t.nEst+')</span>' : ''))+' roll</td><td class="mono">'+esc(t.label)+'</td><td class="mono">'+(t.status==="booking" ? '&ndash;' : (function(){ var l = locateSU(t.id), now = l ? colLabel(l.b, l.ci) : t.bin; return esc(t.bin)+(now!==t.bin ? ' <span class="note">(sekarang '+esc(now)+')</span>' : ''); })())+'</td><td>'+st+(t.why ? '<div class="note" style="margin:2px 0 0">'+esc(t.why)+'</div>' : '')+'</td><td>'+(t.status==="booking" ? '<button type="button" data-cancel="'+esc(t.id)+'">Batalkan</button>' : '')+'</td></tr>';
+      }).join("")+'</tbody></table></div>'+mvHtml;
+  }
+  $("#task-list").addEventListener("click", function(e){
+    var id = e.target.getAttribute && e.target.getAttribute("data-cancel"); if(!id) return;
+    var t = taskByIdCode(id); if(!t) return;
+    var l = locateTask(t); if(l) removeAt(l);
+    TASKS = TASKS.filter(function(x){ return x!==t; });
+    saveState(); renderTasks(); renderAll();
+  });
+/* ================= 3D ================= */
+  var G = null, AISLE = 4.4, PITCH = 9.1+AISLE, X0 = -60;
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888888"; }
+  function lineZ(i){ return -i*PITCH; } // tepi depan line; line memanjang ke -z (belakang)
+  function webglOK(){ try{ var c = document.createElement("canvas"); return !!(window.WebGLRenderingContext && (c.getContext("webgl")||c.getContext("experimental-webgl"))); }catch(e){ return false; } }
+  function col(hex){ return new G.T.Color(hex).convertSRGBToLinear(); }
+  function themeColors(){ return { bg:cssVar("--bg"), floor:cssVar("--floor"), paint:cssVar("--paint"), pillar:cssVar("--pillar"), ink:cssVar("--ink"), dim:cssVar("--ink-dim"), accent:cssVar("--accent"), ok:cssVar("--ok"), info:cssVar("--info"), roll:cssVar("--roll"), core:cssVar("--core"), surface:cssVar("--surface") }; }
+  function textPlane(text, w, h, color, px){
+    var T = G.T, res = 120, cv = document.createElement("canvas"); cv.width = Math.round(w*res); cv.height = Math.round(h*res);
+    var x = cv.getContext("2d"); x.textAlign = "center"; x.textBaseline = "middle"; x.fillStyle = color;
+    x.font = '600 '+px+'px "IBM Plex Mono", ui-monospace, monospace'; x.fillText(text, cv.width/2, cv.height/2);
+    var tex = new T.CanvasTexture(cv); tex.encoding = T.sRGBEncoding;
+    var m = new T.Mesh(new T.PlaneGeometry(w,h), new T.MeshBasicMaterial({ map:tex, transparent:true, depthWrite:false }));
+    m.rotation.x = -Math.PI/2; return m;
+  }
+  function topTexture(){
+    var T = G.T, c = G.colors, cv = document.createElement("canvas"); cv.width = cv.height = 128;
+    var x = cv.getContext("2d"); x.fillStyle = c.roll; x.fillRect(0,0,128,128);
+    for(var r=63, i=0; r>14; r-=3, i++){ x.beginPath(); x.arc(64,64,r,0,Math.PI*2); x.strokeStyle = "rgba(110,90,60,"+(i%3===0?0.18:0.07)+")"; x.stroke(); }
+    x.beginPath(); x.arc(64,64,12,0,Math.PI*2); x.fillStyle = c.core; x.fill();
+    x.beginPath(); x.arc(64,64,6,0,Math.PI*2); x.fillStyle = "#2a2118"; x.fill();
+    var t = new T.CanvasTexture(cv); t.encoding = T.sRGBEncoding; return t;
+  }
+  function buildStatic(){
+    var T = G.T, c = G.colors, g = G.staticGroup;
+    while(g.children.length){ var o = g.children[0]; g.remove(o); if(o.geometry) o.geometry.dispose(); if(o.material){ if(o.material.map) o.material.map.dispose(); o.material.dispose(); } }
+    var totalZ = lineZ(LINES.length-1)+9.1;
+    var floor = new T.Mesh(new T.PlaneGeometry(150, totalZ+30), new T.MeshStandardMaterial({ color:col(c.floor), roughness:0.96 }));
+    floor.rotation.x = -Math.PI/2; floor.position.set(X0+59.5, 0, -totalZ/2+4); floor.receiveShadow = true; g.add(floor);
+    G.lineTex = [];
+    LINES.forEach(function(L, li){
+      var cv = document.createElement("canvas"); cv.width = 4096; cv.height = Math.round(4096*L.depth/L.len);
+      var tex = new T.CanvasTexture(cv); tex.encoding = T.sRGBEncoding; tex.anisotropy = 8;
+      var pl = new T.Mesh(new T.PlaneGeometry(L.len, L.depth), new T.MeshBasicMaterial({ map:tex, transparent:true, depthWrite:false }));
+      pl.rotation.x = -Math.PI/2; pl.position.set(X0+L.len/2, 0.012, lineZ(li)-L.depth/2); g.add(pl);
+      G.lineTex.push({ cv:cv, tex:tex });
+      var lbl = textPlane("LINE "+L.id+" · "+plotLbl(L)+" · "+fm(L.depth,1)+" m", 16, 1.4, c.dim, 100);
+      lbl.position.set(X0+9, 0.02, lineZ(li)+1.6); g.add(lbl);
+    });
+    var pm = new T.MeshStandardMaterial({ color:col(c.pillar), roughness:0.8 }), pg = new T.BoxGeometry(0.45, 7.4, 0.45);
+    LINES.forEach(function(L, li){ for(var x=0; x<=L.len; x+=19){ var p = new T.Mesh(pg, pm); p.position.set(X0+x, 3.7, lineZ(li)-L.depth-0.5); p.castShadow = true; g.add(p); } });
+  }
+  function drawLineTex(){
+    var c = G.colors, cs = candState();
+    LINES.forEach(function(L, li){
+      var t = G.lineTex[li], cv = t.cv, x = cv.getContext("2d"), s = cv.width/L.len, lay = layout(L);
+      x.clearRect(0,0,cv.width,cv.height);
+      L.bins.forEach(function(b, i){
+        var bx = lay.xs[i]*s, bw = b.w*s, key = L.id+b.no, sel = L.id===selLine && b.no===selBin;
+        var fill = null;
+        if(cs[key]==="chosen") fill = [c.info, 0.5]; else if(sel) fill = [c.accent, 0.45]; else if(cs[key]==="cand") fill = [c.info, 0.2]; else if(lastAllocated[key]) fill = [c.ok, 0.4];
+        if(fill){ x.globalAlpha = fill[1]; x.fillStyle = fill[0]; x.fillRect(bx, 0, bw, cv.height); x.globalAlpha = 1; }
+        x.strokeStyle = c.paint; x.lineWidth = 3; x.strokeRect(bx+1.5, 1.5, bw-3, cv.height-3);
+        if(isAB(b)){ var mx = bx + (colW(b.cols[0]) + (b.w-binContentW(b))/2)*s; x.setLineDash([10,8]); x.beginPath(); x.moveTo(mx, 0); x.lineTo(mx, cv.height); x.stroke(); x.setLineDash([]); }
+        x.fillStyle = sel ? c.accent : c.ink; x.font = '600 '+Math.round(Math.min(bw*0.45, 26))+'px "IBM Plex Mono", monospace'; x.textAlign = "center"; x.textBaseline = "bottom";
+        x.fillText(String(b.no), bx+bw/2, cv.height-6);
+      });
+      t.tex.needsUpdate = true;
+    });
+  }
+  function update3D(){
+    if(!G) return;
+    var T = G.T;
+    drawLineTex();
+    ["iBody","iBand","iWrap","iGhost"].forEach(function(k){ if(G[k]){ G.scene.remove(G[k]); G[k].dispose && G[k].dispose(); G[k] = null; } });
+    var rolls = [], wraps = [], ghosts = [];
+    LINES.forEach(function(L, li){
+      var lay = layout(L);
+      L.bins.forEach(function(b, bi){
+        var x0 = X0 + lay.xs[bi], cc = colCenters(b);
+        b.cols.forEach(function(c, ci){
+          var cx = x0 + cc[ci], z = lineZ(li) - c.gap;
+          c.stacks.forEach(function(st){
+            var zc = z - st.d/2, y = 0;
+            st.units.forEach(function(u){
+              if(u.pending){ ghosts.push({ x:cx, y:y+u.h/2, z:zc, d:st.d, h:u.h, line:L.id, no:b.no }); y += u.h; return; }
+              for(var r=0;r<u.n;r++) rolls.push({ x:cx, y:y+r*u.nw+u.nw/2, z:zc, d:st.d, h:u.nw, mat:c.mat, isNew:u.isNew, line:L.id, no:b.no });
+              if(u.n>1) wraps.push({ x:cx, y:y+u.h/2, z:zc, d:st.d, h:u.h });
+              y += u.h;
+            });
+            z -= st.d;
+          });
+        });
+      });
+    });
+    var dm = new T.Object3D();
+    if(!G.geo){ G.geo = { body:new T.CylinderGeometry(0.5,0.5,1,22,1,false), band:new T.CylinderGeometry(0.507,0.507,0.13,22,1,true), wrap:new T.CylinderGeometry(0.52,0.52,1,22,1,true) }; }
+    if(!G.mat.side){ G.mat.side = new T.MeshStandardMaterial({ color:col(G.colors.roll), roughness:0.88 }); G.mat.top = new T.MeshStandardMaterial({ map:topTexture(), roughness:0.92 }); G.mat.band = new T.MeshStandardMaterial({ color:0xffffff, roughness:0.55, side:T.DoubleSide }); G.mat.wrap = new T.MeshStandardMaterial({ color:0xdfeaf3, transparent:true, opacity:0.22, roughness:0.2, side:T.DoubleSide, depthWrite:false }); }
+    if(rolls.length){
+      var body = new T.InstancedMesh(G.geo.body, [G.mat.side, G.mat.top, G.mat.top], rolls.length);
+      var band = new T.InstancedMesh(G.geo.band, G.mat.band, rolls.length);
+      var cNew = col(G.colors.ok);
+      rolls.forEach(function(r, i){
+        dm.position.set(r.x, r.y, r.z); dm.scale.set(r.d-0.03, r.h-0.012, r.d-0.03); dm.updateMatrix(); body.setMatrixAt(i, dm.matrix);
+        dm.position.set(r.x, r.y+r.h*0.22, r.z); dm.scale.set(r.d-0.03, Math.min(1, r.h/0.9), r.d-0.03); dm.updateMatrix(); band.setMatrixAt(i, dm.matrix);
+        band.setColorAt(i, r.isNew ? cNew : col(mat(r.mat).color));
+      });
+      body.instanceMatrix.needsUpdate = true; band.instanceMatrix.needsUpdate = true; if(band.instanceColor) band.instanceColor.needsUpdate = true;
+      body.castShadow = rolls.length < 4000; body.receiveShadow = false;
+      G.scene.add(body); G.scene.add(band); G.iBody = body; G.iBand = band; G.rollRef = rolls;
+    } else G.rollRef = [];
+    if(wraps.length){
+      var wr = new T.InstancedMesh(G.geo.wrap, G.mat.wrap, wraps.length);
+      wraps.forEach(function(w, i){ dm.position.set(w.x, w.y, w.z); dm.scale.set(w.d, w.h+0.02, w.d); dm.updateMatrix(); wr.setMatrixAt(i, dm.matrix); });
+      wr.instanceMatrix.needsUpdate = true; G.scene.add(wr); G.iWrap = wr;
+    }
+    if(ghosts.length){
+      if(!G.mat.ghost) G.mat.ghost = new T.MeshStandardMaterial({ color:col(G.colors.info), transparent:true, opacity:0.32, roughness:0.4, depthWrite:false });
+      var gm = new T.InstancedMesh(G.geo.body, G.mat.ghost, ghosts.length);
+      ghosts.forEach(function(w, i){ dm.position.set(w.x, w.y, w.z); dm.scale.set(w.d-0.05, w.h-0.03, w.d-0.05); dm.updateMatrix(); gm.setMatrixAt(i, dm.matrix); });
+      gm.instanceMatrix.needsUpdate = true; G.scene.add(gm); G.iGhost = gm;
+    }
+    G.dirty = true;
+  }
+  function flyTo(pos, tgt, instant){
+    var T = G.T, p1 = new T.Vector3(pos[0],pos[1],pos[2]), t1 = new T.Vector3(tgt[0],tgt[1],tgt[2]);
+    if(instant || reduceMotion){ G.camera.position.copy(p1); G.controls.target.copy(t1); G.controls.update(); G.anim = null; return; }
+    var p0 = G.camera.position.clone(), t0 = G.controls.target.clone(), start = performance.now(), dur = 750;
+    G.anim = function(now){ var k = Math.min(1,(now-start)/dur), e = k<0.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2; G.camera.position.lerpVectors(p0,p1,e); G.controls.target.lerpVectors(t0,t1,e); if(k>=1) G.anim = null; };
+  }
+  function viewOverview(instant){ var tz = (lineZ(LINES.length-1)-9.1)/2; var f = Math.max(1, 1.8/(G.camera.aspect||2)); flyTo([X0+20, 62*f, tz+70*f], [X0+57, 0, tz], instant); }
+  function binCenter(b){ var L = b.line, lay = layout(L), i = L.bins.indexOf(b); return [X0+lay.xs[i]+b.w/2, lineZ(lineIdx(L))-L.depth/2]; }
+  function focusLine(){ if(!G) return; var b = selectedBin(), p = binCenter(b), z = lineZ(lineIdx(b.line)); flyTo([p[0]-6, 16, z+24], [p[0]+6, 1.5, z-4]); }
+  function focusBin(){ if(!G) return; var b = selectedBin(), p = binCenter(b), z = lineZ(lineIdx(b.line)); flyTo([p[0]+9, 12, z+14], [p[0], 2.2, z-b.line.depth*0.45]); }
+  function pickAt(e){
+    var rect = G.renderer.domElement.getBoundingClientRect();
+    G.ndc.set(((e.clientX-rect.left)/rect.width)*2-1, -((e.clientY-rect.top)/rect.height)*2+1);
+    G.ray.setFromCamera(G.ndc, G.camera);
+    if(G.iBody){ var hits = G.ray.intersectObject(G.iBody); if(hits.length && hits[0].instanceId!==undefined){ var r = G.rollRef[hits[0].instanceId]; if(r) return [r.line, r.no]; } }
+    var pt = new G.T.Vector3();
+    if(!G.ray.ray.intersectPlane(new G.T.Plane(new G.T.Vector3(0,1,0), 0), pt)) return null;
+    for(var li=0; li<LINES.length; li++){
+      var L = LINES[li], z0 = lineZ(li);
+      if(pt.z > z0+0.2 || pt.z < z0-L.depth-0.2) continue;
+      var lay = layout(L), xr = pt.x-X0;
+      for(var i=0;i<L.bins.length;i++) if(xr >= lay.xs[i]-0.15 && xr <= lay.xs[i]+L.bins[i].w+0.15) return [L.id, L.bins[i].no];
+    }
+    return null;
+  }
+  function init3D(){
+    var el = $("#scene3d"), T = window.THREE;
+    function fallback(){ el.hidden = true; $("#scene-ctrl").hidden = true; $("#scene-hint").hidden = true; $("#scene-fallback").hidden = false; G = null; }
+    if(!T || !T.OrbitControls || !webglOK()){ fallback(); return; }
+    try{
+      var renderer = new T.WebGLRenderer({ antialias:true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2)); renderer.setSize(el.clientWidth||800, el.clientHeight||540);
+      renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.outputEncoding = T.sRGBEncoding;
+      el.appendChild(renderer.domElement);
+      var scene = new T.Scene(), camera = new T.PerspectiveCamera(40, (el.clientWidth||800)/(el.clientHeight||540), 0.1, 600);
+      var controls = new T.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI*0.48; controls.minDistance = 4; controls.maxDistance = 220;
+      G = { T:T, renderer:renderer, scene:scene, camera:camera, controls:controls, staticGroup:new T.Group(), mat:{}, ray:new T.Raycaster(), ndc:new T.Vector2(), anim:null, colors:themeColors() };
+      scene.add(G.staticGroup); scene.background = col(G.colors.bg); scene.fog = new T.Fog(col(G.colors.bg), 140, 300);
+      scene.add(new T.HemisphereLight(0xffffff, 0x6f6a60, 0.66));
+      var dir = new T.DirectionalLight(0xffffff, 0.9); dir.position.set(X0+40, 60, 30); dir.target.position.set(X0+60, 0, -50);
+      dir.castShadow = true; dir.shadow.mapSize.set(2048,2048); var sc = dir.shadow.camera; sc.left = -90; sc.right = 90; sc.top = 90; sc.bottom = -90; sc.near = 1; sc.far = 220; dir.shadow.bias = -0.0008;
+      scene.add(dir); scene.add(dir.target);
+      buildStatic(); update3D(); viewOverview(true);
+      var down = null;
+      renderer.domElement.addEventListener("pointerdown", function(e){ down = { x:e.clientX, y:e.clientY }; });
+      renderer.domElement.addEventListener("pointerup", function(e){
+        if(!down) return; var dx = e.clientX-down.x, dy = e.clientY-down.y; down = null; if(dx*dx+dy*dy>30) return;
+        var r = pickAt(e); if(r){ selLine = r[0]; selBin = r[1]; renderAll(); }
+      });
+      if(window.ResizeObserver) new ResizeObserver(function(){ var w = el.clientWidth, h = el.clientHeight; if(!w||!h) return; renderer.setSize(w,h); camera.aspect = w/h; camera.updateProjectionMatrix(); G.dirty = true; }).observe(el);
+      G.dirty = true;
+      (function loop(now){ requestAnimationFrame(loop); if(G.anim){ G.anim(now||performance.now()); G.dirty = true; } var ch = controls.update(); if(ch || G.dirty){ renderer.render(scene, camera); G.dirty = false; } })();
+    }catch(err){ fallback(); }
+  }
+  function onTheme(){ if(!G) return; G.colors = themeColors(); G.scene.background = col(G.colors.bg); G.scene.fog.color.copy(col(G.colors.bg)); G.mat = {}; buildStatic(); update3D(); }
+
+    /* ================= wiring ================= */
+  function renderAll(){ renderLineCards(); renderDenah(); renderDetail(); update3D(); var s = $("#store-st"); if(s) s.innerHTML = storeBadge(); }
+  $("#btn-search").addEventListener("click", startSearch);
+  $("#view-overview").addEventListener("click", function(){ if(G) viewOverview(); });
+  $("#view-line").addEventListener("click", focusLine);
+  $("#view-focus").addEventListener("click", focusBin);
+  try{ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", onTheme); }catch(e){}
+  try{ new MutationObserver(onTheme).observe(document.documentElement, { attributes:true, attributeFilter:["data-theme"] }); }catch(e){}
+
+  initStore(function(why){
+    if(why==="status"){ var s = $("#store-st"); if(s) s.innerHTML = storeBadge(); return; }
+    // data berubah dari halaman lain (petugas / master data)
+    if(pending){ pending = null; renderOptions(); }
+    if(G) buildStatic();
+    renderArrival(); renderTasks(); renderAll();
+  });
+  renderLegend(); fillMatSelect(); ARR.rows = genMixed(3, 10); renderArrival(); renderTasks();
+  init3D();
+  renderAll();
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ if(G){ buildStatic(); update3D(); } });
+})();
+</script>
+
+
+</body>
+</html>
