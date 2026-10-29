@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Antrian Sparepart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sp.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav"><a href="sp-mekanik.html">Mekanik</a><a href="sp-gudang.html" class="on">Tim sparepart</a><a href="sp-master.html">Master data</a><span id="store-st"></span></nav>
+  <header class="top">
+    <span class="eyebrow">Sparepart &middot; tim gudang</span>
+    <h1>Antrian pesanan</h1>
+    <p class="lede">Pesanan dari mekanik masuk di sini: siapkan barang menurut bin, tandai siap diambil, lalu serah terima. Kandidat ukuran yang tidak cocok dikembalikan ke rak; yang dipakai mengurangi stok dan masuk history mesin.</p>
+  </header>
+  <div class="tabs"><button type="button" data-f="aktif">Aktif</button><button type="button" data-f="selesai">Selesai / batal</button></div>
+  <div id="sum" class="row" style="margin-bottom:10px"></div>
+  <div id="list"></div>
+  <footer>POC &middot; Di lapangan GI tetap dicatat di SAP (MB1A) setelah order engineering masuk (YI94); halaman ini membantu menyiapkan barang lebih dulu.</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js"></script>
+<script src="sp-core.js"></script>
+<script>
+(function(){
+  "use strict";
+  var F = (function(){ try{ return localStorage.getItem("sp-g-f") || "aktif"; }catch(e){ return "aktif"; } })();
+  var DONE = {};
+  function render(){
+    $("#store-st").innerHTML = storeBadge();
+    Array.prototype.forEach.call(document.querySelectorAll("[data-f]"), function(b){ b.className = b.getAttribute("data-f")===F ? "on" : ""; });
+    var act = ORDERS.filter(function(o){ return o.status!=="selesai" && o.status!=="batal"; });
+    var cnt = { baru:0, siapkan:0, siap:0 }; act.forEach(function(o){ cnt[o.status]++; });
+    $("#sum").innerHTML = '<span class="tag warn">'+cnt.baru+' baru</span><span class="tag info">'+cnt.siapkan+' disiapkan</span><span class="tag ok">'+cnt.siap+' siap diambil</span><span class="tag crit">'+act.filter(function(o){ return o.urgent; }).length+' mendesak</span>';
+    var list = (F==="aktif" ? act : ORDERS.filter(function(o){ return o.status==="selesai" || o.status==="batal"; })).slice();
+    list.sort(function(a, b){ if(F==="aktif" && a.urgent!==b.urgent) return a.urgent ? -1 : 1; return F==="aktif" ? a.ts-b.ts : b.ts-a.ts; });
+    $("#list").innerHTML = list.length ? list.map(orderHtml).join("") : '<div class="panel"><p class="note">'+(F==="aktif" ? 'Belum ada pesanan aktif. Buat pesanan dari halaman Mekanik.' : 'Belum ada.')+'</p></div>';
+  }
+  function orderHtml(o){
+    var items = o.items.slice().sort(function(a, b){ return item(a.mat).bin < item(b.mat).bin ? -1 : 1; }), h = '';
+    h += '<div class="order'+(o.urgent ? ' urgent' : '')+'" style="margin-bottom:12px"><div class="hd"><span><b class="mono">'+o.id+'</b> &middot; '+esc(o.name)+' &middot; <b>'+esc((machineById(o.machine)||{}).name||o.machine)+'</b>'+(o.sec ? ' &rsaquo; '+esc(secName(o.machine, o.sec))+' <span class="note mono">'+esc((sectionOf(o.machine, o.sec)||{}).fl||"")+'</span>' : '')+'</span><span class="tag '+STATUS_LBL[o.status][1]+'">'+STATUS_LBL[o.status][0]+'</span></div>';
+    h += '<div class="note">Masuk '+tgFull(ymd(new Date(o.ts)))+' '+nowTime(o.ts)+(o.urgent ? ' &middot; <b style="color:var(--crit)">MENDESAK</b>' : '')+(o.note ? ' &middot; "'+esc(o.note)+'"' : '')+'</div>';
+    var cols = o.status==="siapkan" ? '<th>Ambil</th>' : (o.status==="siap" ? '<th>Serah terima</th>' : '<th></th>');
+    h += '<div class="tbl-wrap"><table><tr><th>Bin</th><th></th><th>Barang</th><th>Qty</th><th>Stok</th>'+cols+'</tr>';
+    items.forEach(function(x){
+      var it = item(x.mat), i = o.items.indexOf(x), c = '';
+      if(o.status==="siapkan") c = '<label class="row" style="gap:4px"><input type="checkbox" data-got="'+o.id+'|'+i+'" style="width:auto"'+(x.got ? ' checked' : '')+'> diambil</label>';
+      else if(o.status==="siap") c = '<div class="row" style="gap:4px"><button type="button" class="'+(x.res==="pakai" ? 'primary' : '')+'" data-res="'+o.id+'|'+i+'|pakai">Dipakai</button><button type="button" class="'+(x.res==="kembali" ? 'primary' : '')+'" data-res="'+o.id+'|'+i+'|kembali">Kembali ke rak</button></div>';
+      else if(x.res) c = x.res==="pakai" ? '<span class="tag ok">dipakai</span>' : '<span class="tag dim">dikembalikan</span>';
+      h += '<tr><td class="mono"><b>'+esc(it.bin)+'</b></td><td style="width:56px">'+thumbHtml(it, "thumb")+'</td><td>'+esc(it.name)+(x.cand ? ' <span class="tag">kandidat</span>' : '')+'<div class="note"><span class="mono">'+it.mat+'</span> &middot; '+esc(it.brand)+' &middot; '+esc(it.spec)+'</div></td><td class="mono">'+x.q+'</td><td class="mono">'+stockOf(x.mat)+'</td><td>'+c+'</td></tr>';
+    });
+    h += '</table></div>';
+    if(o.status==="baru") h += '<div class="row"><button type="button" class="primary" data-go="'+o.id+'|siapkan">Mulai siapkan</button></div>';
+    if(o.status==="siapkan"){ var all = o.items.every(function(x){ return x.got; }); h += '<div class="row"><button type="button" class="primary" data-go="'+o.id+'|siap"'+(all ? '' : ' disabled')+'>Siap diambil</button><span class="note">'+(all ? 'Semua barang sudah diambil dari rak.' : 'Centang tiap barang setelah diambil dari bin.')+'</span></div>';
+    }
+    if(o.status==="siap"){ var ok = o.items.every(function(x){ return x.res; }); h += '<div class="row"><button type="button" class="primary" data-close="'+o.id+'"'+(ok ? '' : ' disabled')+'>Selesaikan serah terima</button><span class="note">Cocokkan dengan barang rusak yang dibawa mekanik. Kandidat yang tidak cocok &rarr; kembali ke rak.</span></div>'; }
+    if(DONE[o.id]) h += '<div class="msg show ok">Serah terima selesai. Stok berkurang untuk barang yang dipakai dan history '+esc(o.machine)+' diperbarui. Ingat catat GI di SAP (MB1A) setelah order engineering masuk.</div>';
+    return h+'</div>';
+  }
+  document.addEventListener("click", function(e){
+    var t = e.target.closest ? e.target.closest("button") : null; if(!t) return;
+    var a;
+    if((a = t.getAttribute("data-f"))){ F = a; try{ localStorage.setItem("sp-g-f", a); }catch(x){} render(); return; }
+    if((a = t.getAttribute("data-go"))){ var p = a.split("|"), o = orderById(p[0]); if(o){ if(p[1]==="siap") o.items.forEach(function(x){ if(!x.cand && !x.res) x.res = "pakai"; }); setOrderStatus(o, p[1]); saveState(); render(); } return; }
+    if((a = t.getAttribute("data-res"))){ var q = a.split("|"), o2 = orderById(q[0]); if(o2){ o2.items[+q[1]].res = q[2]; saveState(); render(); } return; }
+    if((a = t.getAttribute("data-close"))){ var o3 = orderById(a); if(o3){ closeOrder(o3); DONE[o3.id] = 1; saveState(); F = "aktif"; render(); var el = document.createElement("div"); el.className = "msg show ok"; el.innerHTML = 'Pesanan <b>'+o3.id+'</b> selesai. Lihat di tab "Selesai / batal". Ingat catat GI di SAP (MB1A).'; $("#list").prepend(el); } return; }
+  });
+  document.addEventListener("change", function(e){ var a = e.target.getAttribute && e.target.getAttribute("data-got"); if(!a) return; var p = a.split("|"), o = orderById(p[0]); if(o){ o.items[+p[1]].got = e.target.checked; saveState(); render(); } });
+  initStore(function(){ render(); });
+  render();
+})();
+</script>
+</body>
+</html>
