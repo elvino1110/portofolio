@@ -40,7 +40,6 @@
         </div>
         <div class="clipst" id="clip-st"></div>
         <div class="bar" id="clip-bar" hidden><i style="width:0%"></i></div>
-        <div><p class="note" style="margin-bottom:6px">Contoh foto dari gudang (bukan foto katalog):</p><div class="samples" id="samples"></div></div>
       </div>
       <div id="photo-res" style="margin-top:12px"></div>
     </div>
@@ -150,11 +149,10 @@
   /* ---------- tab foto ---------- */
   function renderClipSt(){
     var st = CLIP.state, el = $("#clip-st"), bar = $("#clip-bar");
-    var t = { sim:"Mode simulasi: di pratinjau ini model CLIP tidak bisa diunduh. Pakai contoh foto di bawah, atau buka link Netlify untuk CLIP sungguhan.", off:"CLIP belum dimuat.", loading:CLIP.msg, ready:CLIP.msg, error:CLIP.msg }[st];
+    var t = { sim:"Pratinjau ini tidak bisa menjalankan model CLIP. Buka link Netlify untuk mencoba pencarian foto; di sini kamu tetap bisa memilih keluarga barang secara manual.", off:"CLIP belum dimuat.", loading:CLIP.msg, ready:CLIP.msg, error:CLIP.msg }[st];
     el.textContent = t || ""; bar.hidden = st!=="loading"; bar.firstChild.style.width = (CLIP.pct||0)+"%";
   }
   CLIP.listeners.push(renderClipSt);
-  $("#samples").innerHTML = SAMPLE_SHOTS.map(function(s, i){ return '<button type="button" data-shot="'+i+'"><img src="'+s.src+'" alt="">'+esc(s.label)+'</button>'; }).join("");
   function runPhoto(src, shot){
     UI.photo = src; UI.res = null; UI.famSel = null; UI.busy = true; renderPhoto();
     var useReal = CLIP.state!=="sim" && CLIP.state!=="error";
@@ -168,9 +166,9 @@
     if(!UI.photo){ el.innerHTML = ''; return; }
     var r = UI.res, h = '<div class="panel"><div class="shot"><img src="'+esc(UI.photo)+'" alt="Foto barang">';
     if(UI.busy) h += '<div class="famres"><p>Menganalisis foto&hellip;</p><p class="clipst">'+esc(CLIP.msg||"")+'</p></div>';
-    else if(!r || r.err) h += '<div class="famres"><p>Foto belum bisa dianalisis di sini (mode simulasi hanya untuk contoh foto). Pilih keluarga barangnya:</p><div class="chips">'+FAMS.map(function(f){ return '<button type="button" class="chip'+(UI.famSel && UI.famSel.indexOf(f.id)>=0 ? ' on' : '')+'" data-pfam="'+f.id+'">'+esc(f.name)+'</button>'; }).join("")+'</div></div>';
+    else if(!r || r.err) h += '<div class="famres"><p>Foto belum bisa dianalisis di sini (CLIP hanya jalan di link Netlify). Pilih keluarga barangnya:</p><div class="chips">'+FAMS.map(function(f){ return '<button type="button" class="chip'+(UI.famSel && UI.famSel.indexOf(f.id)>=0 ? ' on' : '')+'" data-pfam="'+f.id+'">'+esc(f.name)+'</button>'; }).join("")+'</div></div>';
     else {
-      h += '<div class="famres"><p><b>Kemungkinan keluarga barang</b> <span class="note">'+(r.real ? '(CLIP, '+(r.ms/1000).toFixed(1).replace(".",",")+' detik)' : '(simulasi)')+' &middot; tap untuk memilih</span></p>'+
+      h += '<div class="famres"><p><b>Kemungkinan keluarga barang</b> <span class="note">'+(r.real ? '(foto ke foto, '+(r.ms/1000).toFixed(1).replace(".",",")+' detik)' : '(simulasi)')+' &middot; tap untuk memilih</span></p>'+
         r.fams.slice(0,4).map(function(f){ var on = UI.famSel && UI.famSel.indexOf(f.id)>=0; return '<div class="famrow"><button type="button" class="chip'+(on ? ' on' : '')+'" data-pfam="'+f.id+'">'+esc(famById(f.id).name)+'</button><div class="bar"><i style="width:'+Math.round(f.p*100)+'%"></i></div><span class="mono" style="font-size:.74rem">'+Math.round(f.p*100)+'%</span></div>'; }).join("")+
         '<p class="note">Bukan semuanya? <a href="#" data-allfam="1">Pilih keluarga lain</a></p></div>';
     }
@@ -251,7 +249,6 @@
     if((a = t.getAttribute("data-fam"))){ UI.fam = UI.fam===a ? null : a; $("#q").value = ""; renderText(); return; }
     if((a = t.getAttribute("data-detail"))){ DET = a; renderDetail(); $("#dsheet").hidden = false; return; }
     if((a = t.getAttribute("data-add"))){ var c = inCart(a); if(c) CART = CART.filter(function(x){ return x!==c; }); else CART.push({ mat:a, q:1, cand:false }); saveCart(); renderAll(); return; }
-    if((a = t.getAttribute("data-shot"))!==null){ var s = SAMPLE_SHOTS[+a]; runPhoto(s.src, s); return; }
     if((a = t.getAttribute("data-pfam"))){ UI.famSel = UI.famSel || []; var k = UI.famSel.indexOf(a); if(k>=0) UI.famSel.splice(k, 1); else UI.famSel.push(a); renderPhoto(); return; }
     if(t.getAttribute("data-allfam")){ e.preventDefault(); UI.showAll = !UI.showAll; renderPhoto(); return; }
     if((a = t.getAttribute("data-qm"))!==null){ var x = CART[+a]; x.q = Math.max(1, x.q-1); saveCart(); renderCart(); return; }
