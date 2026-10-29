@@ -43,9 +43,15 @@
         <div class="field"><label for="p-gap">Jarak setiap 2 roll (cm)</label><input id="p-gap" type="number" step="5" min="0" max="80"></div>
         <div class="field"><label for="p-gapmin">Jarak minimal saat geser (cm)</label><input id="p-gapmin" type="number" step="5" min="0" max="80"></div>
         <div class="field"><label for="p-rho">Kepadatan tissue untuk perkiraan (kg/m&sup3;)</label><input id="p-rho" type="number" step="5" min="80" max="400"></div>
+        <div class="field"><label for="p-fe">Tambah ke bin berisi: ringan s.d. isi (%)</label><input id="p-fe" type="number" step="5" min="0" max="100"></div>
+        <div class="field"><label for="p-fm">Tidak disarankan di atas isi (%)</label><input id="p-fm" type="number" step="5" min="0" max="100"></div>
+        <div class="field"><label for="p-ce">Biaya pakai 1 bin kosong (masih banyak / mulai sedikit / langka)</label><input id="p-ce" type="text" inputmode="numeric" placeholder="3 / 6 / 10"></div>
+        <div class="field"><label for="p-ct">Biaya per bin tanggung tersisa</label><input id="p-ct" type="number" step="1" min="0" max="20"></div>
+        <div class="field"><label for="p-cs">Biaya per bin tambahan (kedatangan terpecah)</label><input id="p-cs" type="number" step="1" min="0" max="20"></div>
       </div>
-      <div class="field" style="margin-top:14px"><label>Peruntukan line (contoh &mdash; ubah sesuai lapangan)</label><div class="pref-grid" id="p-pref"></div>
-        <p class="note" style="margin-top:4px">Hanya mempengaruhi urutan saran: bin kosong di line yang peruntukannya cocok didahulukan. "bebas" = semua diameter dianggap cocok. Lebar fisik bin tidak berubah.</p></div>
+      <p class="note">Forklift hanya masuk dari depan dan roll baru wajib di belakang roll lama. Menambah ke bin yang sudah berisi berarti mengeluarkan roll lama ke koridor lalu menyusun ulang. Isi kolom = luas tampak samping yang terpakai &divide; (kedalaman &times; batas tinggi).</p>
+      <div class="field" style="margin-top:14px"><label>Peruntukan line &mdash; 1 line boleh beberapa diameter (contoh &mdash; ubah sesuai lapangan)</label><div class="pref-grid" id="p-pref"></div>
+        <p class="note" style="margin-top:4px">Dipakai untuk saran tempat: bin kosong di line yang peruntukannya cocok didahulukan, dan bin kosong di line peruntukan dihitung sebagai "tabungan" untuk diameter itu. <b>Pilih diameter</b> = centang satu atau lebih; <b>bebas</b> = semua diameter cocok; <b>mix</b> = line cadangan, dipakai paling akhir. Lebar fisik bin tidak berubah.</p></div>
       <div class="msg" id="p-msg"></div>
     </div>
   </section>
@@ -74,7 +80,7 @@
     <div class="section-head"><h2>Label uji untuk scan</h2><h3>QR lokasi bin dan QR SU booking &mdash; untuk mencoba halaman petugas</h3></div>
     <div class="panel">
       <div class="grid4">
-        <div class="field"><label for="lb-type">Jenis label</label><select id="lb-type"><option value="bin">Lokasi bin per line</option><option value="su">SU yang sedang booking</option><option value="placed">SU yang sudah ditaruh (uji pindah stok)</option></select></div>
+        <div class="field"><label for="lb-type">Jenis label</label><select id="lb-type"><option value="bin">Lokasi bin per line</option><option value="su">SU yang sedang booking</option><option value="placed">SU yang sudah ditaruh (uji pindah stok)</option><option value="front">SU paling depan per bin (uji ambil)</option></select></div>
         <div class="field"><label for="lb-line">Line</label><select id="lb-line"></select></div>
         <div class="field"><label for="lb-from">Dari no bin</label><input id="lb-from" type="number" value="13" min="1"></div>
         <div class="field"><label for="lb-to">Sampai no bin</label><input id="lb-to" type="number" value="24" min="1"></div>
@@ -96,6 +102,11 @@
       <div>
         <h3 style="margin-bottom:8px">Susun &amp; hitung</h3>
         <ul class="rules">
+          <li><b>Roll baru wajib di belakang roll lama.</b> Forklift hanya masuk dari depan, jadi menambah ke kolom berisi = keluarkan roll lama ke koridor, taruh yang baru di belakang, susun ulang yang lama di depan (kecuali kolom yang baru 1 tumpukan: cukup ditumpuk di atasnya).</li>
+          <li><b>Saran tempat dihitung sebagai rencana berbiaya</b>, dipilih yang paling murah: 1 poin per ID roll lama yang dipindah; pakai 1 bin kosong 3 / 6 / 10 poin (bin kosong untuk diameter itu masih &gt;30% / 10&ndash;30% / &lt;10%); +3 per bin tambahan kalau kedatangan terpecah; +2 per bin tanggung (isi &le; 30% dari kapasitas no material itu) yang tersisa; +10 kalau menambah ke bin berisi &gt; 60%; line lain +1, line A +3. Hasilnya: kedatangan kecil mengisi bin tanggung, kedatangan besar dapat bin kosong, dan bin kosong makin dihemat saat mulai langka.</li>
+          <li><b>Rapikan saat senggang:</b> bin tanggung atau bin di luar line peruntukan digabung ke bin no material sama yang masih muat; semua ID disusun ulang menurut tanggal masuk.</li>
+          <li><b>FIFO saat keluar.</b> Tiap SU punya tanggal masuk. Saat menaruh, roll baru boleh ditumpuk di atas roll lama (tanggal beda tidak masalah) dan tumpukan baru di belakang. Saat mengambil, sistem menyarankan <b>blok paling depan</b> yang berisi SU paling lama; kalau SU itu ada di bawah, ID roll di atasnya dipindah sementara lalu ditaruh kembali. Scan SU yang lebih baru ditolak.</li>
+          <li><b>1 SU = 1 scan.</b> Petugas scan tiap SU / ID roll satu per satu; progres per kedatangan terlihat sampai semua SU ditaruh.</li>
           <li><b>1 bin = 1 no material.</b> Diameter boleh campur dalam 1 bin kalau no material sama.</li>
           <li><b>Ke samping:</b> setiap 2 roll menempel, lalu jarak 30 cm. Bin biasa = 1 roll ke samping, jadi 2 bin (misal B15 + B16) lalu jarak. Bin A/B sudah 2 roll, jadi diberi jarak sendiri sebelum dan sesudahnya. Jarak boleh dipersempit sampai batas minimal, dan bin sebelahnya boleh digeser.</li>
           <li><b>Ke belakang:</b> roll menempel. Jumlah = kedalaman line &divide; diameter.</li>
@@ -134,23 +145,37 @@
 (function(){
   "use strict";
   function renderParams(){
-    $("#p-hmax").value = P.HMAX; $("#p-gap").value = Math.round(P.GAP*100); $("#p-gapmin").value = Math.round(P.GAPMIN*100); $("#p-rho").value = P.RHO;
+    $("#p-hmax").value = P.HMAX; $("#p-gap").value = Math.round(P.GAP*100); $("#p-gapmin").value = Math.round(P.GAPMIN*100); $("#p-rho").value = P.RHO; $("#p-fe").value = Math.round(P.FILL_EASY*100); $("#p-fm").value = Math.round(P.FILL_MAX*100); $("#p-ce").value = P.C_EMPTY.join(" / "); $("#p-ct").value = P.C_TANG; $("#p-cs").value = P.C_SPLIT;
     $("#p-pref").innerHTML = LINES.map(function(L){
-      var opts = ['<option value="mix"'+(L.pref==="mix"?" selected":"")+'>mix</option>','<option value="bebas"'+(L.pref==="bebas"?" selected":"")+'>bebas</option>'].concat(DIAS.map(function(d){ return '<option value="'+d+'"'+(L.pref===d?" selected":"")+'>'+mm(d)+'</option>'; }));
-      return '<label>Line '+L.id+' &middot; '+fm(L.depth,1)+' m<select data-pref="'+L.id+'">'+opts.join("")+'</select></label>';
+      var mode = L.pref==="mix" ? "mix" : (L.pref==="bebas" ? "bebas" : "dia");
+      var sel = '<select data-pmode="'+L.id+'"><option value="dia"'+(mode==="dia"?" selected":"")+'>pilih diameter</option><option value="bebas"'+(mode==="bebas"?" selected":"")+'>bebas (semua)</option><option value="mix"'+(mode==="mix"?" selected":"")+'>mix (cadangan)</option></select>';
+      var chips = DIAS.map(function(d){ var on = mode==="dia" && prefHas(L, d); return '<label class="dchip'+(on?" on":"")+(mode!=="dia"?" off":"")+'"><input type="checkbox" data-pdia="'+L.id+'" value="'+d+'"'+(on?" checked":"")+(mode!=="dia"?" disabled":"")+'>'+mm(d)+'</label>'; }).join("");
+      return '<div class="pref-row"><div class="pref-h"><b>Line '+L.id+'</b><span>dalam '+fm(L.depth,1)+' m &middot; lebar bin '+dLbl(L.plot)+'</span></div>'+sel+'<div class="dchips">'+chips+'</div></div>';
     }).join("");
   }
   function onParams(){
     P.HMAX = Math.max(1, parseFloat($("#p-hmax").value)||6.6);
     P.RHO = Math.max(50, parseFloat($("#p-rho").value)||230);
+    var fe = Math.min(100, Math.max(0, parseFloat($("#p-fe").value)||30))/100, fmx = Math.min(100, Math.max(0, parseFloat($("#p-fm").value)||60))/100;
+    P.FILL_EASY = Math.min(fe, fmx); P.FILL_MAX = Math.max(fe, fmx);
+    var ce = String($("#p-ce").value).split(/[^0-9.]+/).filter(Boolean).map(Number); if(ce.length===3) P.C_EMPTY = ce;
+    P.C_TANG = Math.max(0, parseFloat($("#p-ct").value)||0); P.C_SPLIT = Math.max(0, parseFloat($("#p-cs").value)||0);
     var g = Math.max(0, (parseFloat($("#p-gap").value)||0)/100), gm = Math.max(0, (parseFloat($("#p-gapmin").value)||0)/100);
     P.GAPMIN = Math.min(gm, g);
     if(Math.abs(g-P.GAP)>EPS){ var old = P.GAP; P.GAP = g; LINES.forEach(function(L){ if(Math.abs(L.gap-old)<EPS || L.gap>g) L.gap = g; }); }
     saveState(); flash("Parameter tersimpan."); renderCalc();
   }
   function flash(t){ var m = $("#p-msg"); m.className = "msg show ok"; m.textContent = t; clearTimeout(flash.tm); flash.tm = setTimeout(function(){ m.className = "msg"; }, 1800); }
-  $("#p-pref").addEventListener("change", function(e){ var id = e.target.getAttribute("data-pref"); if(!id) return; var L = lineById(id), v = e.target.value; L.pref = (v==="mix" || v==="bebas") ? v : parseFloat(v); saveState(); flash("Peruntukan line "+id+" tersimpan."); });
-  ["p-hmax","p-gap","p-gapmin","p-rho"].forEach(function(id){ $("#"+id).addEventListener("change", onParams); });
+  $("#p-pref").addEventListener("change", function(e){
+    var id = e.target.getAttribute("data-pmode"), L;
+    if(id){ L = lineById(id); var v = e.target.value; L.pref = v==="dia" ? (Array.isArray(L.pref) && L.pref.length ? L.pref : [L.plot]) : v; }
+    else { id = e.target.getAttribute("data-pdia"); if(!id) return; L = lineById(id);
+      var ds = []; Array.prototype.forEach.call(document.querySelectorAll('[data-pdia="'+id+'"]'), function(cb){ if(cb.checked) ds.push(parseFloat(cb.value)); });
+      if(!ds.length){ e.target.checked = true; flash("Line "+id+" minimal 1 diameter (atau pilih bebas / mix)."); return; }
+      L.pref = ds; }
+    saveState(); renderParams(); flash("Peruntukan line "+id+" tersimpan: "+prefLbl(L)+".");
+  });
+  ["p-hmax","p-gap","p-gapmin","p-rho","p-fe","p-fm","p-ce","p-ct","p-cs"].forEach(function(id){ $("#"+id).addEventListener("change", onParams); });
 
   function renderMats(){
     $("#mat-table").innerHTML = '<thead><tr><th>No material</th><th>Nama</th><th>Ukuran</th><th>Core</th><th>Perkiraan dari ukuran</th><th>Acuan berat 1 roll (kg)</th><th>Dari</th><th></th></tr></thead><tbody>'+
@@ -179,15 +204,18 @@
   function qrSvg(text){ try{ var q = qrcode(0, "M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize:4, margin:2, scalable:true }); }catch(e){ return '<div class="mono">'+esc(text)+'</div>'; } }
   function renderLabels(){
     var type = $("#lb-type").value, out = [];
-    $("#lb-line").disabled = $("#lb-from").disabled = $("#lb-to").disabled = type!=="bin";
+    $("#lb-line").disabled = (type!=="bin" && type!=="front"); $("#lb-from").disabled = $("#lb-to").disabled = type!=="bin";
     if(type==="bin"){
       var L = lineById($("#lb-line").value), from = parseInt($("#lb-from").value,10)||L.from, to = parseInt($("#lb-to").value,10)||from;
       L.bins.forEach(function(b){ if(b.no<from || b.no>to) return;
         var codes = [L.id+b.no]; if(b.cols.length===2) codes = [L.id+b.no+"A", L.id+b.no+"B"];
         codes.forEach(function(c){ out.push({ code:c, sub:"Lokasi bin &middot; Line "+L.id }); });
       });
+    } else if(type==="front"){
+      var L2 = lineById($("#lb-line").value);
+      L2.bins.forEach(function(b){ frontUnits(b).forEach(function(f){ if(!f.pending && f.u.id && out.length<60) out.push({ code:f.u.id, sub:f.c.mat+" &middot; depan "+colLabel(b, f.ci) }); }); });
     } else if(type==="placed"){
-      TASKS.filter(function(t){ return t.kind!=="move" && t.status!=="booking"; }).forEach(function(t){ if(locateSU(t.id)) out.push({ code:t.id, sub:t.mat+" &middot; di "+esc(colLabel(locateSU(t.id).b, locateSU(t.id).ci)) }); });
+      TASKS.filter(function(t){ return !t.kind && t.status!=="booking"; }).forEach(function(t){ if(locateSU(t.id)) out.push({ code:t.id, sub:t.mat+" &middot; di "+esc(colLabel(locateSU(t.id).b, locateSU(t.id).ci)) }); });
     } else {
       TASKS.filter(function(t){ return t.status==="booking"; }).forEach(function(t){ out.push({ code:t.id, sub:t.mat+" &middot; booking "+esc(taskLabel(t)) }); });
     }

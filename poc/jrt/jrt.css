@@ -169,3 +169,16 @@
   .cam-manual button{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
 
   [hidden]{display:none !important}
+
+.warn-t{color:var(--warn) !important}
+
+.pref-grid{grid-template-columns:1fr !important}
+.pref-row{display:grid; grid-template-columns:minmax(150px,1fr) 150px minmax(0,3fr); gap:8px; align-items:center; padding:6px 0; border-bottom:1px solid var(--line)}
+.pref-h{display:flex; flex-direction:column; font-size:.78rem}
+.pref-h span{font-family:var(--mono); font-size:.68rem; color:var(--ink-dim)}
+.dchips{display:flex; flex-wrap:wrap; gap:4px}
+.dchip{display:inline-flex !important; flex-direction:row !important; align-items:center; gap:4px; padding:3px 8px; border:1px solid var(--line); border-radius:14px; font-family:var(--mono); font-size:.72rem; color:var(--ink-dim); cursor:pointer}
+.dchip input{margin:0}
+.dchip.on{border-color:var(--accent); color:var(--ink); background:color-mix(in srgb, var(--accent) 12%, transparent)}
+.dchip.off{opacity:.45; cursor:default}
+@media (max-width:640px){ .pref-row{grid-template-columns:1fr} }

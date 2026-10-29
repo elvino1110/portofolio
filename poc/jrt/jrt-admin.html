@@ -48,6 +48,11 @@
     </div>
   </section>
 
+  <section id="detail">
+    <div class="section-head"><h2>Detail bin terpilih</h2><h3>Tampak samping per kolom &middot; kotak biru putus-putus = booking</h3></div>
+    <div class="panel" id="detail-panel"></div>
+  </section>
+
   <section id="arrival">
     <div class="section-head">
       <h2>Kedatangan jumbo roll</h2>
@@ -62,7 +67,8 @@
       <p class="note">Di lapangan list ini dari dokumen kedatangan (SU + berat per SU; kolom Roll selalu 1 walau isinya bundle). Karena belum tahu mana yang datang bundle, semua no material diperlakukan sama: isi tiap ID ditebak dari berat (acuan tersimpan, atau pola berat kedatangan itu sendiri yang dicek dengan perkiraan ukuran volume &times; kepadatan). Kolom "Isi" dan "berat 1 roll manual" bisa diisi sendiri untuk mencoba skenario lain.</p>
       <div class="tbl-wrap"><table class="id-table" id="arr-table"></table></div>
       <div class="btn-row" style="align-items:flex-start">
-        <select id="arr-mat" aria-label="No material untuk baris baru" style="font-family:var(--mono); font-size:.8rem; padding:6px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); max-width:100%"></select>
+        <span style="display:flex; flex-direction:column; gap:2px; min-width:0; flex:0 1 300px"><input id="arr-mat" list="mat-dl" aria-label="No material untuk baris baru" placeholder="Ketik / pilih no material, mis. 5100212 atau facial" autocomplete="off" style="font-family:var(--mono); font-size:.8rem; padding:7px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); width:100%; min-width:0"><span class="note" id="arr-mat-msg" style="margin:0; font-size:.72rem"></span></span>
+        <datalist id="mat-dl"></datalist>
         <button id="btn-add" type="button">+ Tambah ID</button>
         <details class="paste"><summary>Tempel dari Excel</summary>
           <textarea id="arr-paste" rows="4" placeholder="No material [tab] SU / ID roll [tab] berat kg &mdash; satu baris per ID"></textarea>
@@ -83,9 +89,21 @@
     <div class="section-head"><h2>Status SU &amp; pindah stok</h2><h3>Booking &rarr; ditaruh petugas, dan riwayat pindah stok (otomatis ikut berubah)</h3></div>
     <div class="panel" id="task-list"></div>
   </section>
-  <section id="detail">
-    <div class="section-head"><h2>Detail bin terpilih</h2><h3>Tampak samping per kolom &middot; kotak biru putus-putus = booking</h3></div>
-    <div class="panel" id="detail-panel"></div>
+  <section id="rapikan">
+    <div class="section-head"><h2>Saran rapikan (saat forklift senggang)</h2><h3>Gabungkan bin tanggung / bin di luar line peruntukan ke bin no material sama, supaya ada bin kosong lagi untuk kedatangan besar</h3></div>
+    <div class="panel" id="rp-list"></div>
+  </section>
+  <section id="ambil">
+    <div class="section-head"><h2>Permintaan ambil produksi (TP)</h2><h3>Contoh reservasi: no material + jumlah SU &rarr; petugas scan tiap ID roll paling lama (FIFO) dan antar ke transit point di menu "Ambil" halaman petugas. Di lapangan TP tetap lewat WMS SAP.</h3></div>
+    <div class="panel">
+      <div class="grid4">
+        <div class="field" style="grid-column:span 2"><label for="pk-mat">No material (ketik atau pilih)</label><input id="pk-mat" list="pk-mat-dl" placeholder="mis. 5100212 atau towel" autocomplete="off"><datalist id="pk-mat-dl"></datalist><span class="note" id="pk-mat-msg" style="margin:0; font-size:.72rem"></span></div>
+        <div class="field"><label for="pk-qty">Jumlah SU</label><input id="pk-qty" type="number" value="3" min="1" max="30" step="1"></div>
+        <div class="field"><label for="pk-mesin">Untuk mesin (opsional)</label><input id="pk-mesin" list="mesin-dl" placeholder="mis. MESIN-03" autocomplete="off" autocapitalize="characters"><datalist id="mesin-dl"></datalist></div>
+      </div>
+      <div class="btn-row"><button type="button" class="primary" id="pk-add">Buat permintaan</button></div>
+      <div id="pk-list"></div>
+    </div>
   </section>
   <footer>Simulasi untuk diskusi proses &middot; aturan sesuai catatan lapangan 27&ndash;28 Okt 2026 (dokumen proses bagian 9.14). Outbound / reservasi produksi tidak disimulasikan karena sudah ditangani WMS yang ada.</footer>
 </div>
@@ -172,7 +190,7 @@
   }
   function groupState(G){
     var units = [];
-    G.ev.forEach(function(e){ if(e.n && e.ok && e.r.kg>0) units.push({ id:e.r.id, n:e.n, nw:G.m.w, h:e.h, kg:e.r.kg }); });
+    G.ev.forEach(function(e){ if(e.n && e.ok && e.r.kg>0) units.push({ id:e.r.id, n:e.n, nw:G.m.w, h:e.h, kg:e.r.kg, tg:todayStr() }); });
     units.sort(function(a,b){ return b.h-a.h; });
     var rolls = 0; units.forEach(function(u){ rolls += u.n; });
     return { m:G.m, R:G.R, units:units, qty:units.length, rolls:rolls, skipped:G.ev.length-units.length };
@@ -246,13 +264,17 @@
       html += '<div class="grp-opt"><h3 style="font-size:.88rem; margin-top:14px"><span class="sw" style="background:'+m.color+'; margin-right:6px"></span>'+m.code+' &middot; '+dLbl(m.d)+' &times; '+mm(m.w)+'W &middot; '+st.qty+' ID ('+st.rolls+' roll)</h3>';
       if(!gp.opts.length){ html += '<div class="msg show crit">Tidak ada bin yang bisa menampung '+m.code+'. Perlu relokasi atau area transit.</div></div>'; return; }
       var shownOff = 0, hiddenN = 0;
-      html += '<div class="tbl-wrap"><table class="opt-table"><thead><tr><th></th><th>Bin</th><th>Jenis</th><th>Ruang</th><th>Isi (ID)</th><th>Catatan</th></tr></thead><tbody>'+gp.opts.map(function(o, i){
+      html += '<div class="msg show info" style="margin:6px 0">'+planWhy(gp)+'</div>';
+      html += '<div class="tbl-wrap"><table class="opt-table"><thead><tr><th></th><th>Bin</th><th>Jenis</th><th>Biaya</th><th>Pindah dulu</th><th>Isi bin</th><th>Ruang</th><th>Isi (ID)</th><th>Catatan</th></tr></thead><tbody>'+gp.opts.map(function(o, i){
         var hide = false;
         if(!o.on && !gp.showAll){ if(shownOff>=3){ hide = true; hiddenN++; } else shownOff++; }
         return '<tr data-g="'+g+'" data-i="'+i+'" class="'+(o.on?"on":"")+'"'+(hide ? ' hidden' : '')+'>'+
           '<td><input type="checkbox" id="opt-c-'+g+'-'+i+'" data-g="'+g+'" data-i="'+i+'" aria-label="Pilih '+o.label+'"'+(o.on?" checked":"")+'></td>'+
           '<td><button type="button" class="linkish" data-focus="'+o.b.line.id+'|'+o.b.no+'" title="Lihat di map">'+o.label+' &#8599;</button></td>'+
           '<td><span class="tag '+KIND[o.kind][1]+'">'+KIND[o.kind][0]+'</span></td>'+
+          '<td class="mono">'+fm(o.on && o.planCost!==undefined ? o.planCost : o.single.cost - 100*o.single.left, 1)+'</td>'+
+          '<td class="mono">'+(o.moves ? '<span class="tag '+(o.heavy ? "crit" : "warn")+'">'+o.moves+' ID lama</span>' : '<span class="tag ok">tidak perlu</span>')+'</td>'+
+          '<td class="mono" style="white-space:nowrap">'+(o.used||[]).map(function(x){ return (x.old ? Math.round(x.fb*100)+'%' : 'kosong')+' &rarr; '+Math.round(Math.min(1, x.fa)*100)+'%'; }).join('<br>')+'</td>'+
           '<td class="mono">'+o.cap+' ID</td>'+
           '<td><input type="number" id="opt-q-'+g+'-'+i+'" data-g="'+g+'" data-i="'+i+'" min="0" max="'+o.cap+'" step="1" value="'+(o.qty||0)+'" aria-label="Jumlah ID ke '+o.label+'"></td>'+
           '<td class="note-cell">'+o.notes.join(" ")+'</td></tr>';
@@ -285,8 +307,8 @@
     var E = evalAll(), reserved = {}, gps = [];
     E.forEach(function(G){
       var st = groupState(G); if(!st.qty) return;
-      var gp = { st:st, opts:findOptions(st, reserved) };
-      recommendGroup(gp);
+      var gp = { st:st, opts:findOptions(st, reserved, true) };
+      planGroup(gp);
       gp.opts.forEach(function(o){ if(o.qty>0) reserved[o.b.line.id+o.b.no] = true; });
       gps.push(gp);
     });
@@ -300,7 +322,10 @@
   function confirmPlan(){
     if(!pending) return;
     clearNew(); lastAllocated = {};
-    var out = "", allLeft = [], nBook = 0;
+    var out = "", allLeft = [], nBook = 0, tg = todayStr();
+    // no kedatangan: KD-MMDD-urutan hari ini
+    var nToday = {}; TASKS.forEach(function(t){ if(t.arr && t.tg===tg) nToday[t.arr] = 1; });
+    var arrNo = "KD-"+tg.slice(5).replace("-","")+"-"+String(Object.keys(nToday).length+1).padStart(2,"0");
     pending.groups.forEach(function(gp){
       var st = gp.st, m = st.m, res = [], remaining = st.units.slice(), kgOf = {};
       st.units.forEach(function(u){ kgOf[u.id] = u.kg; });
@@ -312,7 +337,7 @@
         r.units.forEach(function(u){
           u.pending = true; u.isNew = false;
           var l = findUnit(function(x){ return x===u; });
-          TASKS.push({ seq:Date.now()+nBook, id:u.id, mat:m.code, kg:kgOf[u.id], nEst:u.n, ref:Math.round(st.R.w), label:l ? colLabel(l.b, l.ci) : o.label, status:"booking", ts:Date.now() });
+          TASKS.push({ seq:Date.now()+nBook, id:u.id, mat:m.code, kg:kgOf[u.id], nEst:u.n, ref:Math.round(st.R.w), label:l ? colLabel(l.b, l.ci) : o.label, status:"booking", tg:tg, arr:arrNo, moves:o.moves||0, fill:o.fill||0, ts:Date.now() });
           nBook++;
         });
         if(r.placed>0){ lastAllocated[o.b.line.id+o.b.no] = true; res.push({ o:o, r:r }); }
@@ -323,7 +348,7 @@
     var first = null; Object.keys(lastAllocated).forEach(function(k){ if(!first) first = k; });
     if(first){ selLine = first.charAt(0); selBin = +first.slice(1); }
     pending = null; renderOptions();
-    $("#arrival-result").innerHTML = '<div class="msg show '+(allLeft.length?"warn":"ok")+'" style="margin:12px 0 8px"><b>'+nBook+' SU dibooking</b> &mdash; tempatnya sudah dipesan di map (kotak biru transparan), barang masih di transit menunggu petugas. Petugas menaruhnya lewat <a href="jrt-petugas.html">halaman petugas</a> (scan SU, lalu scan lokasi bin).'+(allLeft.length ? ' <b>'+allLeft.length+' SU belum dapat bin:</b> '+allLeft.join(", ")+'.' : '')+'</div><ol class="steps">'+out+'</ol>';
+    $("#arrival-result").innerHTML = '<div class="msg show '+(allLeft.length?"warn":"ok")+'" style="margin:12px 0 8px"><b>Kedatangan '+arrNo+': '+nBook+' SU dibooking</b> (tanggal masuk '+tgFull(tg)+') &mdash; tempatnya sudah dipesan di map (kotak biru transparan), barang masih di transit menunggu petugas. Petugas menaruhnya lewat <a href="jrt-petugas.html">halaman petugas</a> (scan tiap SU satu per satu, lalu scan lokasi bin). Roll baru boleh ditumpuk di atas roll lama; FIFO diatur saat pengambilan (disarankan blok paling depan yang paling lama).'+(allLeft.length ? ' <b>'+allLeft.length+' SU belum dapat bin:</b> '+allLeft.join(", ")+'.' : '')+'</div><ol class="steps">'+out+'</ol>';
     ARR.rows = genMixed(Math.max(1, Math.min(6, parseInt($("#arr-nmat").value,10)||3)), Math.max(1, Math.min(60, parseInt($("#arr-count").value,10)||10)));
     saveState();
     renderArrival(); renderAll(); renderTasks(); if(first) focusBin();
@@ -354,14 +379,25 @@
     if(f){ var a = f.split("|"); selLine = a[0]; selBin = +a[1]; renderLineCards(); renderDenah(); renderDetail(); update3D(); showOnMap(); return; }
     var more = t.getAttribute && t.getAttribute("data-more");
     if(more!==null && more!==undefined){ var gp = pending.groups[+more]; gp.showAll = !gp.showAll; renderOptions(); return; }
-    if(t.id==="opt-reco"){ pending.groups.forEach(recommendGroup); renderOptions(); }
+    if(t.id==="opt-reco"){ pending.groups.forEach(planGroup); renderOptions(); }
     else if(t.id==="opt-cancel"){ pending = null; renderOptions(); renderAll(); }
     else if(t.id==="opt-confirm") confirmPlan();
   });
-  function fillMatSelect(){ $("#arr-mat").innerHTML = MATS.map(function(m){ return '<option value="'+m.code+'">'+m.code+' · '+dLbl(m.d)+' × '+mm(m.w)+'W · '+esc(m.name)+'</option>'; }).join(""); }
+  function matOpt(m, extra){ return '<option value="'+m.code+'">'+m.code+' · '+dLbl(m.d)+' × '+mm(m.w)+'W · '+esc(m.name)+(extra||"")+'</option>'; }
+  function fillMatSelect(){ $("#mat-dl").innerHTML = MATS.map(function(m){ return matOpt(m); }).join(""); }
+  // ketik / pilih no material: kode persis, atau potongan kode / nama / diameter yang hasilnya 1
+  function resolveMat(inp, msgEl, pool){
+    var hits = matSearch(inp.value); if(pool) hits = hits.filter(function(m){ return pool[m.code]; });
+    var msg = $(msgEl);
+    if(hits.length===1){ inp.value = hits[0].code; msg.textContent = hits[0].code+" · "+dLbl(hits[0].d)+" × "+mm(hits[0].w)+"W · "+hits[0].name; msg.className = "note"; return hits[0]; }
+    msg.className = "note warn-t";
+    msg.textContent = !inp.value.trim() ? "Ketik atau pilih no material dulu." : (hits.length ? hits.length+" no material cocok ("+hits.slice(0,4).map(function(m){ return m.code; }).join(", ")+(hits.length>4?", …":"")+"). Ketik lebih lengkap atau pilih dari daftar." : "No material \""+inp.value.trim()+"\" tidak ada"+(pool ? " di stok" : " di master")+".");
+    return null;
+  }
+  $("#arr-mat").addEventListener("input", function(){ var h = matSearch(this.value); if(h.length===1 && h[0].code===this.value.trim()) resolveMat(this, "#arr-mat-msg"); else $("#arr-mat-msg").textContent = ""; });
   function genList(){ ARR.rows = genMixed(Math.max(1, Math.min(6, parseInt($("#arr-nmat").value,10)||3)), Math.max(1, Math.min(60, parseInt($("#arr-count").value,10)||10))); $("#arrival-result").innerHTML = ""; invalidateSearch(); renderArrival(); }
   $("#btn-gen").addEventListener("click", genList);
-  $("#btn-add").addEventListener("click", function(){ ARR.rows.push({ mat:$("#arr-mat").value, id:newId(), kg:0, nManual:null }); invalidateSearch(); renderArrival({ id:"kg-"+(ARR.rows.length-1), pos:0 }); });
+  $("#btn-add").addEventListener("click", function(){ var m = resolveMat($("#arr-mat"), "#arr-mat-msg"); if(!m) return; ARR.rows.push({ mat:m.code, id:newId(), kg:0, nManual:null }); invalidateSearch(); renderArrival({ id:"kg-"+(ARR.rows.length-1), pos:0 }); });
   $("#btn-paste").addEventListener("click", function(){
     var p = parsePaste($("#arr-paste").value);
     if(!p.rows.length){ $("#arrival-result").innerHTML = '<div class="msg show warn">Tidak ada baris yang terbaca. Format: No material, SU / ID roll, berat (kg), dipisah tab.'+(p.unknown ? ' '+p.unknown+' baris no materialnya tidak ada di master simulator.' : '')+'</div>'; return; }
@@ -410,7 +446,7 @@
       s += '<g data-bin="'+b.no+'"><rect x="'+x+'" y="'+top+'" width="'+(b.w*k)+'" height="'+H+'" fill="'+bg+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
       var cc = colCenters(b);
       b.cols.forEach(function(c, ci){
-        var m = mat(c.mat), cw = colW(c), cx = x + cc[ci]*k, z = c.gap;
+        var m = mat(c.mat), cw = colW(c), cx = x + cc[ci]*k, z = colFront(c, L.depth);
         c.stacks.forEach(function(st){
           var a = 0.25 + 0.7*Math.min(1, stackH(st)/P.HMAX);
           var bk = st.units.some(function(u){ return u.pending; });
@@ -432,6 +468,13 @@
     var wrap = $("#denah-svg"), lb = selectedBin(), li = L.bins.indexOf(lb);
     if(li>-1){ var xx = padX + lay.xs[li]*k; if(xx < wrap.scrollLeft || xx > wrap.scrollLeft+wrap.clientWidth-40) wrap.scrollLeft = Math.max(0, xx-wrap.clientWidth/3); }
   }
+  // FIFO per kolom: tanggal masuk depan (diambil duluan) sampai belakang
+  function fifoSpec(c){
+    var tgs = []; c.stacks.forEach(function(s){ s.units.forEach(function(u){ if(u.tg && !u.pending) tgs.push(u.tg); }); });
+    if(!tgs.length) return '';
+    tgs.sort(); var f = c.stacks[0] && c.stacks[0].units.filter(function(u){ return !u.pending; }), ft = f && f.length ? f[f.length-1].tg : null;
+    return '<div><span class="k">Tgl masuk (FIFO)</span><span class="v">'+tgLbl(tgs[0])+(tgs[tgs.length-1]!==tgs[0] ? ' &ndash; '+tgLbl(tgs[tgs.length-1]) : '')+' &middot; '+ageDays(tgs[0])+' hari</span></div>';
+  }
   function renderDetail(){
     var b = selectedBin(), L = b.line, panel = $("#detail-panel");
     var html = '<div class="detail-head"><h3>Bin '+binName(b)+' <span style="color:var(--ink-dim); font-weight:400">&middot; Line '+L.id+'</span></h3><span class="pill">lebar plot '+dLbl(L.plot)+' &middot; peruntukan '+prefLbl(L)+' &middot; dalam '+fm(L.depth,1)+' m</span></div>';
@@ -442,29 +485,77 @@
     b.cols.forEach(function(c, ci){
       var m = mat(c.mat), mixD = {}; c.stacks.forEach(function(s){ mixD[dLbl(s.d)] = 1; });
       html += '<div class="col-card"><div class="col-head"><b>'+colLabel(b, ci)+'</b><span style="display:inline-flex; gap:6px; align-items:center; flex-wrap:wrap"><span class="pill"><i class="sw" style="background:'+m.color+'; margin-right:5px"></i>'+m.code+' &middot; '+esc(m.name)+'</span><span class="pill">'+Object.keys(mixD).join(" + ")+'</span></span></div>'+
-        '<div class="spec-grid"><div><span class="k">Kedalaman terpakai</span><span class="v">'+fm(c.gap+colDepth(c),2)+' / '+fm(L.depth,1)+' m</span></div><div><span class="k">Posisi ke belakang</span><span class="v">'+c.stacks.length+'</span></div><div><span class="k">ID / roll</span><span class="v">'+colIDs(c)+' / '+colRolls(c)+'</span></div></div>'+
+        '<div class="spec-grid"><div><span class="k">Kedalaman terpakai</span><span class="v">'+fm(colDepth(c),2)+' / '+fm(L.depth,1)+' m</span></div><div><span class="k">Posisi ke belakang</span><span class="v">'+c.stacks.length+'</span></div><div><span class="k">ID / roll</span><span class="v">'+colIDs(c)+' / '+colRolls(c)+'</span></div>'+fifoSpec(c)+'</div>'+
         '<div class="side-wrap">'+sideSvg(b, c)+'</div></div>';
     });
     panel.innerHTML = html + '<div class="msg" id="bin-msg"></div>';
   }
 
   
+
+  /* ================= permintaan ambil produksi ================= */
+  var PK_STOCK = {};
+  function renderPicks(){
+    var stock = {}; LINES.forEach(function(L){ L.bins.forEach(function(b){ b.cols.forEach(function(c){ c.stacks.forEach(function(s){ s.units.forEach(function(u){ if(!u.pending) stock[c.mat] = (stock[c.mat]||0)+1; }); }); }); }); });
+    PK_STOCK = stock;
+    $("#pk-mat-dl").innerHTML = MATS.filter(function(m){ return stock[m.code]; }).map(function(m){ var o = oldestOf(m.code); return matOpt(m, ' · stok '+stock[m.code]+' SU'+(o ? ' · paling lama '+tgLbl(o.tg) : '')); }).join("");
+    $("#mesin-dl").innerHTML = MESIN.map(function(x){ return '<option value="'+x+'"></option>'; }).join("");
+    var ps = picks().slice().reverse();
+    $("#pk-list").innerHTML = ps.length ? '<div class="tbl-wrap"><table class="opt-table"><thead><tr><th>No</th><th>No material</th><th>Antar ke</th><th>Progres</th><th>Diambil dari (tgl masuk)</th><th>Status</th></tr></thead><tbody>'+
+      ps.map(function(p){ return '<tr><td class="mono">'+p.id+'</td><td class="mono">'+p.mat+'</td><td class="mono">Transit point'+(p.mesin ? '<div class="note" style="margin:0">untuk '+esc(p.mesin)+'</div>' : '')+'</td><td class="mono">'+p.items.length+' / '+p.qty+' SU</td><td class="mono" style="white-space:normal">'+(p.items.length ? p.items.map(function(i){ return esc(i.from)+(i.su ? ' '+esc(i.su) : '')+(i.tg ? ' ('+tgLbl(i.tg)+')' : ''); }).join(", ") : '&ndash;')+'</td><td>'+(p.status==="done" ? '<span class="tag ok">selesai</span>' : '<span class="tag warn">menunggu petugas</span>')+'</td></tr>'; }).join("")+'</tbody></table></div>'
+      : '<p class="note">Belum ada permintaan.</p>';
+  }
+  $("#pk-add").addEventListener("click", function(){
+    var m = resolveMat($("#pk-mat"), "#pk-mat-msg", PK_STOCK); if(!m) return;
+    var q = Math.max(1, parseInt($("#pk-qty").value,10)||1), ms = $("#pk-mesin").value.trim().toUpperCase();
+    var exact = !ms ? "" : MESIN.filter(function(x){ return x.replace(/\W/g,"")===ms.replace(/\W/g,""); })[0]; if(exact) ms = exact;
+    else { var part = MESIN.filter(function(x){ return x.indexOf(ms)>=0; }); if(part.length===1) ms = part[0]; }
+    $("#pk-mesin").value = ms;
+    newPick(m.code, q, ms); saveState(); renderPicks();
+  });
+
   /* ================= status SU (booking -> ditaruh petugas) ================= */
   function renderTasks(){
+    renderRapikan();
     var box = $("#task-list"); if(!box) return;
-    var SU = TASKS.filter(function(t){ return t.kind!=="move"; }), MVS = TASKS.filter(function(t){ return t.kind==="move"; }).reverse();
+    var SU = TASKS.filter(function(t){ return !t.kind; }), MVS = TASKS.filter(function(t){ return t.kind==="move"; }).reverse();
     var wait = SU.filter(function(t){ return t.status==="booking"; }).length;
     var mvHtml = MVS.length ? '<h3 style="margin-top:16px">Riwayat pindah stok ('+MVS.length+')</h3><div class="tbl-wrap"><table class="opt-table"><thead><tr><th>No</th><th>SU</th><th>No material</th><th>Isi</th><th>Dari &rarr; ke</th><th>Alasan</th></tr></thead><tbody>'+
       MVS.map(function(t){ return '<tr><td class="mono">'+esc(t.id)+'</td><td class="mono">'+(t.su ? esc(t.su) : '<span class="note">tanpa ID</span>')+'</td><td class="mono">'+t.mat+'</td><td class="mono">'+t.n+' roll</td><td class="mono">'+esc(t.from)+' &rarr; '+esc(t.bin)+'</td><td>'+esc(t.why)+'</td></tr>'; }).join("")+'</tbody></table></div>' : '';
     if(!SU.length){ box.innerHTML = '<p class="note" style="margin-top:0">Belum ada booking.</p>'+mvHtml; return; }
     var list = SU.slice().reverse();
     box.innerHTML = '<p class="note" style="margin-top:0"><b>'+wait+'</b> SU menunggu ditaruh petugas &middot; '+(SU.length-wait)+' sudah ditaruh. Halaman ini ikut berubah otomatis saat petugas scan.</p>'+
-      '<div class="tbl-wrap"><table class="opt-table"><thead><tr><th>SU</th><th>No material</th><th>Isi</th><th>Booking</th><th>Ditaruh di</th><th>Status</th><th></th></tr></thead><tbody>'+
+      '<div class="tbl-wrap"><table class="opt-table"><thead><tr><th>Kedatangan</th><th>SU</th><th>No material</th><th>Isi</th><th>Booking</th><th>Ditaruh di</th><th>Status</th><th></th></tr></thead><tbody>'+
       list.map(function(t){
         var st = t.status==="booking" ? '<span class="tag warn">booking</span>' : (t.status==="beda" ? '<span class="tag info">beda bin</span>' : '<span class="tag ok">ditaruh</span>');
-        return '<tr><td class="mono">'+esc(t.id)+'</td><td class="mono">'+t.mat+'</td><td class="mono">'+(t.status==="booking" ? '&plusmn;'+t.nEst : t.n+(t.n!==t.nEst ? ' <span class="note">(perkiraan '+t.nEst+')</span>' : ''))+' roll</td><td class="mono">'+esc(t.label)+'</td><td class="mono">'+(t.status==="booking" ? '&ndash;' : (function(){ var l = locateSU(t.id), now = l ? colLabel(l.b, l.ci) : t.bin; return esc(t.bin)+(now!==t.bin ? ' <span class="note">(sekarang '+esc(now)+')</span>' : ''); })())+'</td><td>'+st+(t.why ? '<div class="note" style="margin:2px 0 0">'+esc(t.why)+'</div>' : '')+'</td><td>'+(t.status==="booking" ? '<button type="button" data-cancel="'+esc(t.id)+'">Batalkan</button>' : '')+'</td></tr>';
+        return '<tr><td class="mono">'+esc(t.arr||"–")+'<div class="note" style="margin:0">'+tgLbl(t.tg)+'</div></td><td class="mono">'+esc(t.id)+'</td><td class="mono">'+t.mat+'</td><td class="mono">'+(t.status==="booking" ? '&plusmn;'+t.nEst : t.n+(t.n!==t.nEst ? ' <span class="note">(perkiraan '+t.nEst+')</span>' : ''))+' roll</td><td class="mono">'+esc(t.label)+'</td><td class="mono">'+(t.status==="booking" ? '&ndash;' : (function(){ var l = locateSU(t.id), now = l ? colLabel(l.b, l.ci) : t.bin; return esc(t.bin)+(now!==t.bin ? ' <span class="note">(sekarang '+esc(now)+')</span>' : ''); })())+'</td><td>'+st+(t.why ? '<div class="note" style="margin:2px 0 0">'+esc(t.why)+'</div>' : '')+'</td><td>'+(t.status==="booking" ? '<button type="button" data-cancel="'+esc(t.id)+'">Batalkan</button>' : '')+'</td></tr>';
       }).join("")+'</tbody></table></div>'+mvHtml;
   }
+  // daftar rapikan tetap terbuka walau pindah halaman (Admin <-> Petugas) atau data berubah
+  var RP = [], RP_SHOW = (function(){ try{ return localStorage.getItem("jrt-rp-show")==="1"; }catch(e){ return false; } })();
+  function setRpShow(v){ RP_SHOW = v; try{ localStorage.setItem("jrt-rp-show", v ? "1" : "0"); }catch(e){} renderRapikan(); }
+  function renderRapikan(){
+    var box = $("#rp-list"); if(!box) return;
+    RP = RP_SHOW ? rapikanList() : [];
+    box.innerHTML = !RP_SHOW ? '<div class="btn-row" style="margin-top:0"><button type="button" class="primary" id="rp-find">Cari bin yang perlu dirapikan</button></div><p class="note" style="margin:0">Sistem memeriksa semua stok dan mencari bin tanggung / bin di luar line peruntukan yang bisa digabung.</p>' : RP.length ? '<div class="btn-row" style="margin-top:0"><button type="button" id="rp-hide">Tutup daftar</button></div>'+ '<p class="note" style="margin-top:0">Tanggung = isi &le; '+Math.round(P.FILL_EASY*100)+'% dari kapasitas no material itu di bin tersebut. Saat digabung, semua ID roll disusun ulang menurut tanggal masuk (paling lama di depan). <b>Kirim ke petugas</b> = jadi daftar di menu Pindah stok petugas (seperti taruh barang): scan ID roll, tujuan langsung ditampilkan, lalu scan lokasi tujuan.</p>'+
+      '<div class="tbl-wrap"><table class="opt-table"><thead><tr><th>Asal</th><th>Tujuan</th><th>No material</th><th>Alasan</th><th>ID dipindah</th><th>Tujuan jadi</th><th>Hasil</th><th></th></tr></thead><tbody>'+
+      RP.map(function(r, i){ return '<tr><td class="mono">'+colLabel(r.s.b, r.s.ci)+' <span class="note">('+Math.round(r.s.fill*100)+'%)</span></td><td class="mono">'+colLabel(r.t.b, r.t.ci)+' <span class="note">('+Math.round(r.t.fill*100)+'%)</span></td><td class="mono">'+r.s.c.mat+'</td><td>'+(r.why==="tanggung" ? '<span class="tag warn">bin tanggung</span>' : '<span class="tag info">di luar line peruntukan</span>')+'</td><td class="mono">'+r.s.ids+' + susun ulang '+r.t.ids+'</td><td class="mono">'+Math.round(Math.min(1, r.fa)*100)+'%</td><td>'+(r.s.b.cols.length===1 ? 'bin '+r.s.L.id+r.s.b.no+' jadi kosong' : 'separuh bin '+r.s.L.id+r.s.b.no+' kosong')+'</td><td style="white-space:nowrap"><button type="button" class="primary" data-rps="'+i+'">Kirim ke petugas</button></td></tr>'; }).join("")+'</tbody></table></div>'
+      : '<p class="note" style="margin:0">Tidak ada yang perlu dirapikan.</p><div class="btn-row"><button type="button" id="rp-hide">Tutup</button></div>';
+    var jobs = rapiJobs().slice().reverse();
+    box.innerHTML = (jobs.length ? '<h3 style="margin-top:0">Tugas rapikan di petugas ('+jobs.filter(function(j){ return j.status==="open"; }).length+' berjalan)</h3><div class="tbl-wrap"><table class="opt-table"><thead><tr><th>No</th><th>Asal &rarr; tujuan</th><th>No material</th><th>Progres</th><th>Status</th></tr></thead><tbody>'+
+      jobs.map(function(j){ var d = j.items.filter(function(x){ return x.done; }).length; return '<tr><td class="mono">'+j.id+'</td><td class="mono">'+esc(j.from)+' &rarr; '+esc(j.to)+'</td><td class="mono">'+j.mat+'</td><td class="mono">'+d+' / '+j.items.length+' ID</td><td>'+(j.status==="done" ? '<span class="tag ok">selesai</span>' : '<span class="tag warn">menunggu petugas</span>')+'</td></tr>'; }).join("")+'</tbody></table></div><h3>Saran baru</h3>' : '')+box.innerHTML+'<div class="msg" id="rp-msg"></div>';
+  }
+  $("#rp-list").addEventListener("click", function(e){
+    if(e.target.id==="rp-find"){ setRpShow(true); return; }
+    if(e.target.id==="rp-hide"){ setRpShow(false); return; }
+    var si = e.target.getAttribute && e.target.getAttribute("data-rps");
+    if(si!==null && si!==undefined){ var rr = RP[+si]; if(!rr) return; var j = newRapi(rr); saveState(); renderRapikan(); var mm2 = $("#rp-msg"); if(mm2){ mm2.className = "msg show ok"; mm2.innerHTML = 'Tugas <b>'+j.id+'</b> dikirim ke petugas (menu Pindah stok): '+j.items.length+' ID roll '+esc(j.from)+' &rarr; '+esc(j.to)+', urutan scan sudah ditentukan.'; } return; }
+    var i = e.target.getAttribute && e.target.getAttribute("data-rp"); if(i===null || i===undefined) return;
+    var r = RP[+i]; if(!r) return;
+    var res = doRapikan(r); if(!res.ok){ renderRapikan(); return; }
+    saveState(); selLine = r.t.L.id; selBin = r.t.b.no; renderAll(); renderTasks();
+    var m = $("#rp-msg"); if(m){ m.className = "msg show ok"; m.innerHTML = res.n+' ID roll dari '+esc(res.from)+' digabung ke '+esc(res.to)+' (disusun ulang, paling lama di depan). Tercatat di riwayat pindah stok.'; }
+  });
   $("#task-list").addEventListener("click", function(e){
     var id = e.target.getAttribute && e.target.getAttribute("data-cancel"); if(!id) return;
     var t = taskByIdCode(id); if(!t) return;
@@ -544,7 +635,7 @@
       L.bins.forEach(function(b, bi){
         var x0 = X0 + lay.xs[bi], cc = colCenters(b);
         b.cols.forEach(function(c, ci){
-          var cx = x0 + cc[ci], z = lineZ(li) - c.gap;
+          var cx = x0 + cc[ci], z = lineZ(li) - colFront(c, L.depth);
           c.stacks.forEach(function(st){
             var zc = z - st.d/2, y = 0;
             st.units.forEach(function(u){
@@ -658,9 +749,9 @@
     // data berubah dari halaman lain (petugas / master data)
     if(pending){ pending = null; renderOptions(); }
     if(G) buildStatic();
-    renderArrival(); renderTasks(); renderAll();
+    renderArrival(); renderTasks(); renderPicks(); renderAll();
   });
-  renderLegend(); fillMatSelect(); ARR.rows = genMixed(3, 10); renderArrival(); renderTasks();
+  renderLegend(); fillMatSelect(); ARR.rows = genMixed(3, 10); renderArrival(); renderTasks(); renderPicks();
   init3D();
   renderAll();
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ if(G){ buildStatic(); update3D(); } });
