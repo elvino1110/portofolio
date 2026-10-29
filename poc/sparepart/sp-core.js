@@ -30,8 +30,8 @@ var FAMS = [
   { id:"mt", name:"Motor listrik",       en:["a photo of an electric motor","an industrial induction motor"] },
   { id:"kt", name:"Kontaktor",           en:["a photo of an electrical contactor","a magnetic contactor relay"] },
   { id:"hc", name:"Hose clamp",          en:["a photo of a stainless steel hose clamp","a metal worm gear hose clamp band"] },
-  { id:"sb", name:"Sealing belt",        en:["a photo of a flat sealing belt for a packaging machine","a thin heat resistant flat belt loop"] },
-  { id:"cb", name:"Conveyor belt",       en:["a photo of a small conveyor belt","a flat rubber conveyor belt loop"] },
+  { id:"sb", name:"Sealing belt",        en:["a photo of a brown PTFE coated sealing belt with stitched edges","a brown teflon heat resistant flat belt loop"] },
+  { id:"cb", name:"Conveyor belt",       en:["a photo of a green rubber conveyor belt with white fabric backing","a flat green conveyor belt loop"] },
   { id:"sc", name:"Baut / screw",        en:["a photo of a steel bolt screw","a hex socket screw with thread"] },
   { id:"gr", name:"Gear",                en:["a photo of a spur gear","a white nylon plastic gear wheel"] },
   { id:"ad", name:"Adapter sleeve",      en:["a photo of a bearing adapter sleeve with lock nut","a tapered steel sleeve with a slotted nut"] },
@@ -112,35 +112,26 @@ function secName(machine, code){ var x = sectionOf(machine, code); return x ? x.
 function machineById(id){ for(var i=0;i<MACHINES.length;i++) if(MACHINES[i].id===id) return MACHINES[i]; return null; }
 
 /* ================= katalog contoh (no material fiktif) ================= */
-// foto asli dari gudang (POC): dipakai sebagai foto katalog; foto ke-3 disisihkan sebagai contoh foto mekanik
+// foto asli dari gudang: seluruhnya dipakai sebagai foto katalog (pencarian foto = foto ke foto)
 var BASE_PHOTOS = {
-  "2001041": ["sp-img/rodend-1.jpg","sp-img/rodend-2.jpg"],
-  "2001007": ["sp-img/bearing-1.jpg","sp-img/bearing-2.jpg"],
+  "2001041": ["sp-img/rodend-1.jpg","sp-img/rodend-2.jpg","sp-img/rodend-3.jpg"],
+  "2001007": ["sp-img/bearing-1.jpg","sp-img/bearing-2.jpg","sp-img/bearing-3.jpg"],
   "2001012": ["sp-img/timken6309-1.jpg"],
-  "2001061": ["sp-img/pot-1.jpg","sp-img/pot-2.jpg"],
-  "2001480": ["sp-img/2001480-1.jpg", "sp-img/2001480-2.jpg", "sp-img/2001480-3.jpg"],
+  "2001061": ["sp-img/pot-1.jpg","sp-img/pot-2.jpg","sp-img/pot-3.jpg"],
   "2001202": ["sp-img/2001202-1.jpg", "sp-img/2001202-2.jpg"],
-  "2001460": ["sp-img/2001460-1.jpg", "sp-img/2001460-2.jpg"],
+  "2001460": ["sp-img/2001460-1.jpg", "sp-img/2001460-2.jpg", "sp-img/2001460-3.jpg"],
   "2001442": ["sp-img/2001442-1.jpg", "sp-img/2001442-2.jpg"],
   "2001441": ["sp-img/2001441-1.jpg", "sp-img/2001441-2.jpg"],
   "2001440": ["sp-img/2001440-1.jpg", "sp-img/2001440-2.jpg"],
   "2001303": ["sp-img/2001303-1.jpg", "sp-img/2001303-2.jpg", "sp-img/2001303-3.jpg"],
   "2001302": ["sp-img/2001303-1.jpg", "sp-img/2001302-2.jpg", "sp-img/2001302-3.jpg"],
-  "2001420": ["sp-img/2001420-1.jpg", "sp-img/2001420-2.jpg"],
+  "2001420": ["sp-img/2001420-1.jpg", "sp-img/2001420-2.jpg", "sp-img/shot-cb.jpg"],
   "2001123": ["sp-img/2001123-1.jpg", "sp-img/2001123-2.jpg"],
-  "2001400": ["sp-img/2001400-1.jpg", "sp-img/2001400-2.jpg", "sp-img/2001400-3.jpg"],
+  "2001400": ["sp-img/2001400-1.jpg", "sp-img/2001400-2.jpg", "sp-img/2001400-3.jpg", "sp-img/shot-sb.jpg"],
   "2001015": ["sp-img/2001015-1.jpg", "sp-img/2001015-2.jpg"],
-  "2001380": ["sp-img/2001380-1.jpg", "sp-img/2001380-2.jpg"]
+  "2001380": ["sp-img/2001380-1.jpg", "sp-img/2001380-2.jpg", "sp-img/shot-hc.jpg"]
 };
-var SAMPLE_SHOTS = [
-  { src:"sp-img/rodend-3.jpg", label:"Rod end (foto mekanik)", sim:{ re:0.86, bb:0.06, pot:0.03 }, near:"2001041" },
-  { src:"sp-img/bearing-3.jpg", label:"Bearing bekas (foto mekanik)", sim:{ bb:0.81, pb:0.07, os:0.05 }, near:"2001007" },
-  { src:"sp-img/pot-3.jpg", label:"Potensiometer (foto mekanik)", sim:{ pot:0.74, px:0.10, mt:0.06 }, near:"2001061" },
-  { src:"sp-img/shot-hc.jpg", label:"Klem selang (foto mekanik)", sim:{ hc:0.78, sk:0.05, sc:0.04 }, near:"2001380" },
-  { src:"sp-img/shot-sb.jpg", label:"Sealing belt (foto mekanik)", sim:{ sb:0.62, cb:0.22, tb:0.06 }, near:"2001400" },
-  { src:"sp-img/shot-cb.jpg", label:"Conveyor belt (foto mekanik)", sim:{ cb:0.70, sb:0.18, tb:0.05 }, near:"2001420" },
-  { src:"sp-img/2001460-3.jpg", label:"Gear nylon (foto mekanik)", sim:{ gr:0.72, sk:0.12, gb:0.08 }, near:"2001460" }
-];
+var SAMPLE_SHOTS = [];
 var ITEMS_SRC = [
   // mat, fam, nama, brand, spesifikasi, kata kunci ukuran
   ["2001001","bb","Bearing 6203-2RS","SKF","17 × 40 × 12 mm, seal karet 2 sisi","6203"],
@@ -508,23 +499,14 @@ function clipLoad(){
   CLIP.ready = import(CLIP_LIB).then(function(T){
     CLIP.T = T; T.env.allowLocalModels = false;
     var opt = { dtype:"q8", progress_callback:prog };
-    return Promise.all([ T.AutoProcessor.from_pretrained(CLIP_MODEL), T.CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, opt), T.AutoTokenizer.from_pretrained(CLIP_MODEL), T.CLIPTextModelWithProjection.from_pretrained(CLIP_MODEL, opt) ]);
+    return Promise.all([ T.AutoProcessor.from_pretrained(CLIP_MODEL), T.CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, opt) ]);
   }).then(function(r){
     CLIP.proc = r[0]; CLIP.vis = r[1];
-    CLIP.msg = "Menyiapkan kata kunci keluarga barang…"; clipNotify();
-    var texts = [], owner = [];
-    FAMS.forEach(function(f, i){ f.en.forEach(function(t){ texts.push(t); owner.push(i); }); });
-    var ti = r[2](texts, { padding:true, truncation:true });
-    return r[3](ti).then(function(out){
-      var E = out.text_embeds, dim = E.dims[1], data = E.data, sums = FAMS.map(function(){ return new Float32Array(dim); });
-      for(var k=0;k<texts.length;k++){ var v = l2(data.slice(k*dim, (k+1)*dim)); for(var j=0;j<dim;j++) sums[owner[k]][j] += v[j]; }
-      CLIP.famEmb = sums.map(l2);
-    });
   }).then(function(){
     CLIP.msg = "Membaca foto katalog…"; clipNotify();
     return clipIndexCatalog();
   }).then(function(){ CLIP.state = "ready"; CLIP.msg = "CLIP siap · berjalan di perangkat ini"; clipNotify(); return true; })
-  .catch(function(e){ console.error("CLIP", e); CLIP.state = "error"; CLIP.msg = "CLIP gagal dimuat ("+String(e && e.message || e).slice(0,120)+"). Pakai pencarian teks / pilih keluarga, atau contoh foto."; clipNotify(); return false; });
+  .catch(function(e){ console.error("CLIP", e); CLIP.state = "error"; CLIP.msg = "CLIP gagal dimuat ("+String(e && e.message || e).slice(0,120)+"). Pakai pencarian nama atau pilih keluarga barangnya."; clipNotify(); return false; });
   return CLIP.ready;
 }
 function clipEmbed(src){
@@ -542,14 +524,13 @@ function clipIndexCatalog(){
 function clipSearch(src){
   var t0 = Date.now();
   return clipIndexCatalog().then(function(){ return clipEmbed(src); }).then(function(v){
-    var logits = CLIP.famEmb.map(function(f){ return 100*dot(v, f); }), mx = Math.max.apply(null, logits);
-    var ex = logits.map(function(l){ return Math.exp(l-mx); }), sum = ex.reduce(function(a, b){ return a+b; }, 0);
-    var fams = FAMS.map(function(f, i){ return { id:f.id, p:ex[i]/sum }; });
-    var photo = {};
-    ITEMS.forEach(function(it){ var best = 0; photosOf(it.mat).forEach(function(s){ var e = CLIP.imgEmb[s]; if(e){ var c = dot(v, e); if(c>best) best = c; } }); if(best) photo[it.mat] = best; });
-    // foto katalog yang sangat mirip ikut menaikkan keluarganya
-    Object.keys(photo).forEach(function(mat){ var c = photo[mat]; if(c>0.80){ var f = fams.filter(function(x){ return x.id===item(mat).fam; })[0]; f.p += (c-0.80)*2; } });
-    var tot = fams.reduce(function(a, b){ return a+b.p; }, 0); fams.forEach(function(f){ f.p /= tot; });
+    // hanya foto ke foto: bandingkan dengan semua foto katalog (cosine similarity)
+    var photo = {}, famBest = {};
+    ITEMS.forEach(function(it){ var best = 0; photosOf(it.mat).forEach(function(s){ var e = CLIP.imgEmb[s]; if(e){ var c = dot(v, e); if(c>best) best = c; } }); if(best){ photo[it.mat] = best; if(!(famBest[it.fam]>best)) famBest[it.fam] = best; } });
+    // keluarga = foto katalog terdekat per keluarga, diubah jadi persen dengan softmax (hanya keluarga yang punya foto)
+    var ks = Object.keys(famBest), mx = Math.max.apply(null, ks.map(function(k){ return famBest[k]; }));
+    var fams = ks.map(function(k){ return { id:k, p:Math.exp(50*(famBest[k]-mx)) }; }), tot = fams.reduce(function(a, b){ return a+b.p; }, 0);
+    fams.forEach(function(f){ f.p /= tot; });
     fams.sort(function(a, b){ return b.p-a.p; });
     return { fams:fams, photo:photo, ms:Date.now()-t0, real:true };
   });

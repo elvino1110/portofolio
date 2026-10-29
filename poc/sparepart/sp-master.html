@@ -24,7 +24,7 @@
   <header class="top">
     <span class="eyebrow">Sparepart &middot; master data</span>
     <h1>Katalog, foto, dan keluarga barang</h1>
-    <p class="lede">Foto per no material dipakai CLIP untuk mencocokkan foto dari mekanik. Makin banyak foto (dari beberapa sisi, termasuk barang bekas), makin tepat hasilnya. Foto unggahan diperkecil otomatis sebelum disimpan.</p>
+    <p class="lede">Foto per no material dipakai untuk mencocokkan foto dari mekanik (foto ke foto). Makin banyak foto (dari beberapa sisi, termasuk barang bekas), makin tepat hasilnya. Foto unggahan diperkecil otomatis sebelum disimpan.</p>
   </header>
   <section>
     <div class="section-head"><h2>Katalog</h2><span class="note" id="cat-n"></span></div>
@@ -38,8 +38,8 @@
     <div class="panel tbl-wrap" style="padding:0"><table class="list" id="fl"></table></div>
   </section>
   <section>
-    <div class="section-head"><h2>Keluarga barang &amp; kata kunci CLIP</h2></div>
-    <p class="note" style="margin-bottom:8px">CLIP membandingkan foto dengan kalimat-kalimat ini (bahasa Inggris, karena model dilatih dengan teks Inggris). Keluarga dengan kemiripan tertinggi jadi tebakan pertama, lalu foto katalog yang sangat mirip ikut menaikkan keluarganya.</p>
+    <div class="section-head"><h2>Keluarga barang &amp; foto</h2></div>
+    <p class="note" style="margin-bottom:8px">Pencarian foto hanya membandingkan foto mekanik dengan foto katalog (foto ke foto). Keluarga yang fotonya paling mirip jadi tebakan pertama, jadi keluarga yang belum punya foto belum bisa ditebak dan harus dipilih manual. Tambahkan foto lewat tombol &ldquo;+ foto&rdquo; di tabel Katalog.</p>
     <div class="panel tbl-wrap" style="padding:0"><table class="list" id="fams"></table></div>
   </section>
   <section>
@@ -72,9 +72,9 @@
         '<label>+ foto<input type="file" accept="image/*" data-up="'+it.mat+'" hidden multiple></label></div></td></tr>';
     }).join("");
     $("#fl").innerHTML = '<tr><th>Mesin</th><th>Bagian</th><th>Functional location</th><th>Komponen BOM (qty terpasang)</th></tr>'+SECTIONS.map(function(x, i){ var first = i===0 || SECTIONS[i-1].m!==x.m; return '<tr><td>'+(first ? '<b>'+esc(machineById(x.m).name)+'</b><div class="note mono">'+esc(machineById(x.m).fl)+'</div>' : '')+'</td><td>'+esc(x.name)+(x.real ? ' <span class="tag info">dari export BOM</span>' : '')+'</td><td class="mono">'+esc(x.fl)+'</td><td class="note">'+x.bom.map(function(b){ return esc(item(b.mat).name)+' &times;'+b.q; }).join(", ")+'</td></tr>'; }).join("");
-    $("#fams").innerHTML = '<tr><th>Keluarga</th><th>Kalimat untuk CLIP</th><th>Barang</th><th>Ada foto</th></tr>'+FAMS.map(function(f){
+    $("#fams").innerHTML = '<tr><th>Keluarga</th><th>Barang</th><th>Barang yang sudah ada foto</th></tr>'+FAMS.map(function(f){
       var its = ITEMS.filter(function(it){ return it.fam===f.id; });
-      return '<tr><td><span style="color:var(--accent); display:inline-block; vertical-align:middle">'+famSvg(f.id, 26)+'</span> '+esc(f.name)+'</td><td class="note">'+f.en.map(esc).join("<br>")+'</td><td class="mono">'+its.length+'</td><td class="mono">'+its.filter(function(it){ return photosOf(it.mat).length; }).length+'</td></tr>';
+      return '<tr><td><span style="color:var(--accent); display:inline-block; vertical-align:middle">'+famSvg(f.id, 26)+'</span> '+esc(f.name)+'</td><td class="mono">'+its.length+'</td><td class="mono">'+its.filter(function(it){ return photosOf(it.mat).length; }).length+'</td></tr>';
     }).join("");
   }
   ["#f-q","#f-fam","#f-ph"].forEach(function(s){ $(s).addEventListener("input", render); $(s).addEventListener("change", render); });
