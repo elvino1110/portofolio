@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Master Data Sparepart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sp.css">
+<style>
+  .ph{display:flex; gap:4px; flex-wrap:wrap; align-items:center}
+  .ph .pi{position:relative}
+  .ph img{width:44px; height:44px; object-fit:cover; border-radius:6px; border:1px solid var(--line)}
+  .ph .pi button{position:absolute; top:-6px; right:-6px; padding:0 5px; font-size:.7rem; border-radius:10px; line-height:1.4}
+  .ph label{font-size:.74rem; padding:5px 9px; border:1px dashed var(--line); border-radius:6px; cursor:pointer; color:var(--accent)}
+  td .thumb{width:44px; height:44px}
+  td .thumb.ill svg{width:30px; height:30px}
+  td input.stk{width:64px; padding:4px 6px; font-family:var(--mono); font-size:.82rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav"><a href="sp-mekanik.html">Mekanik</a><a href="sp-gudang.html">Tim sparepart</a><a href="sp-master.html" class="on">Master data</a><span id="store-st"></span></nav>
+  <header class="top">
+    <span class="eyebrow">Sparepart &middot; master data</span>
+    <h1>Katalog, foto, dan keluarga barang</h1>
+    <p class="lede">Foto per no material dipakai CLIP untuk mencocokkan foto dari mekanik. Makin banyak foto (dari beberapa sisi, termasuk barang bekas), makin tepat hasilnya. Foto unggahan diperkecil otomatis sebelum disimpan.</p>
+  </header>
+  <section>
+    <div class="section-head"><h2>Katalog</h2><span class="note" id="cat-n"></span></div>
+    <div class="row" style="margin-bottom:10px"><input id="f-q" class="grow" placeholder="Cari no material / nama / brand"><select id="f-fam" style="width:auto"></select><label class="row note" style="gap:4px"><input type="checkbox" id="f-ph" style="width:auto"> hanya yang belum ada foto</label></div>
+    <div class="panel tbl-wrap" style="padding:0"><table class="list" id="cat"></table></div>
+    <div class="msg" id="cat-msg"></div>
+  </section>
+  <section>
+    <div class="section-head"><h2>Struktur mesin &amp; BOM</h2><span class="note">mesin (fun loc) &rarr; bagian (fun loc) &rarr; komponen</span></div>
+    <p class="note" style="margin-bottom:8px">Nama mesin, kode functional location, dan bagian Facial 26 mengikuti export BOM SAP 27 Okt 2026. BOM <b>Folding Facial 26</b> memakai 49 dari 90 baris export (no material disamarkan); bagian dan mesin lain masih contoh. Di versi sungguhan semuanya diambil dari SAP.</p>
+    <div class="panel tbl-wrap" style="padding:0"><table class="list" id="fl"></table></div>
+  </section>
+  <section>
+    <div class="section-head"><h2>Keluarga barang &amp; kata kunci CLIP</h2></div>
+    <p class="note" style="margin-bottom:8px">CLIP membandingkan foto dengan kalimat-kalimat ini (bahasa Inggris, karena model dilatih dengan teks Inggris). Keluarga dengan kemiripan tertinggi jadi tebakan pertama, lalu foto katalog yang sangat mirip ikut menaikkan keluarganya.</p>
+    <div class="panel tbl-wrap" style="padding:0"><table class="list" id="fams"></table></div>
+  </section>
+  <section>
+    <div class="section-head"><h2>Reset data simulasi</h2></div>
+    <div class="panel"><p class="note" style="margin-bottom:8px">Mengembalikan stok, history mesin, dan menghapus semua pesanan serta foto unggahan.</p><div class="row"><button type="button" id="rs">Reset</button><span id="rs-c" hidden><b>Yakin?</b> <button type="button" class="primary" id="rs-y">Ya, reset</button> <button type="button" id="rs-n">Batal</button></span></div><div class="msg" id="rs-msg"></div></div>
+  </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js"></script>
+<script src="sp-core.js"></script>
+<script>
+(function(){
+  "use strict";
+  $("#f-fam").innerHTML = '<option value="">Semua keluarga</option>'+FAMS.map(function(f){ return '<option value="'+f.id+'">'+esc(f.name)+'</option>'; }).join("");
+  function render(){
+    $("#store-st").innerHTML = storeBadge();
+    var q = $("#f-q").value.trim(), fam = $("#f-fam").value, noPh = $("#f-ph").checked;
+    var list = q ? searchText(q) : ITEMS.slice();
+    if(fam) list = list.filter(function(it){ return it.fam===fam; });
+    if(noPh) list = list.filter(function(it){ return !photosOf(it.mat).length; });
+    var nPh = ITEMS.filter(function(it){ return photosOf(it.mat).length; }).length;
+    $("#cat-n").textContent = ITEMS.length+" no material · "+nPh+" sudah ada foto";
+    $("#cat").innerHTML = '<tr><th></th><th>No material</th><th>Nama &amp; spesifikasi</th><th>Keluarga</th><th>Bin</th><th>Status</th><th>Stok</th><th>Foto katalog</th></tr>'+list.map(function(it){
+      var base = BASE_PHOTOS[it.mat]||[], up = PHOTOS[it.mat]||[];
+      return '<tr><td>'+thumbHtml(it)+'</td><td class="mono">'+it.mat+'</td><td><b>'+esc(it.name)+'</b><div class="note">'+esc(it.brand)+' &middot; '+esc(it.spec)+'</div></td><td>'+esc(famById(it.fam).name)+'</td><td class="mono">'+esc(it.bin)+'</td><td><span class="tag">'+it.status+'</span></td>'+
+        '<td><input class="stk" type="text" inputmode="numeric" data-stk="'+it.mat+'" value="'+stockOf(it.mat)+'" aria-label="Stok '+it.mat+'"></td>'+
+        '<td><div class="ph">'+base.map(function(s){ return '<span class="pi"><img src="'+esc(s)+'" alt="" title="foto asli POC"></span>'; }).join("")+
+        up.map(function(s, i){ return '<span class="pi"><img src="'+esc(s)+'" alt=""><button type="button" data-del="'+it.mat+'|'+i+'" aria-label="Hapus foto">&times;</button></span>'; }).join("")+
+        '<label>+ foto<input type="file" accept="image/*" data-up="'+it.mat+'" hidden multiple></label></div></td></tr>';
+    }).join("");
+    $("#fl").innerHTML = '<tr><th>Mesin</th><th>Bagian</th><th>Functional location</th><th>Komponen BOM (qty terpasang)</th></tr>'+SECTIONS.map(function(x, i){ var first = i===0 || SECTIONS[i-1].m!==x.m; return '<tr><td>'+(first ? '<b>'+esc(machineById(x.m).name)+'</b><div class="note mono">'+esc(machineById(x.m).fl)+'</div>' : '')+'</td><td>'+esc(x.name)+(x.real ? ' <span class="tag info">dari export BOM</span>' : '')+'</td><td class="mono">'+esc(x.fl)+'</td><td class="note">'+x.bom.map(function(b){ return esc(item(b.mat).name)+' &times;'+b.q; }).join(", ")+'</td></tr>'; }).join("");
+    $("#fams").innerHTML = '<tr><th>Keluarga</th><th>Kalimat untuk CLIP</th><th>Barang</th><th>Ada foto</th></tr>'+FAMS.map(function(f){
+      var its = ITEMS.filter(function(it){ return it.fam===f.id; });
+      return '<tr><td><span style="color:var(--accent); display:inline-block; vertical-align:middle">'+famSvg(f.id, 26)+'</span> '+esc(f.name)+'</td><td class="note">'+f.en.map(esc).join("<br>")+'</td><td class="mono">'+its.length+'</td><td class="mono">'+its.filter(function(it){ return photosOf(it.mat).length; }).length+'</td></tr>';
+    }).join("");
+  }
+  ["#f-q","#f-fam","#f-ph"].forEach(function(s){ $(s).addEventListener("input", render); $(s).addEventListener("change", render); });
+  document.addEventListener("change", function(e){
+    var mat = e.target.getAttribute && e.target.getAttribute("data-up");
+    if(mat){
+      var files = Array.prototype.slice.call(e.target.files||[]); if(!files.length) return;
+      Promise.all(files.map(function(f){ return shrinkImage(f, 420, 0.78); })).then(function(urls){
+        PHOTOS[mat] = (PHOTOS[mat]||[]).concat(urls).slice(-6); saveState(); render();
+        var m = $("#cat-msg"); m.className = "msg show ok"; m.textContent = urls.length+" foto ditambahkan ke "+mat+". CLIP di halaman mekanik ikut memakainya.";
+      });
+      return;
+    }
+    var sm = e.target.getAttribute && e.target.getAttribute("data-stk");
+    if(sm){ var v = parseInt(e.target.value, 10); if(isFinite(v) && v>=0){ S.stock[sm] = v; saveState(); } render(); }
+  });
+  document.addEventListener("click", function(e){
+    var t = e.target.closest ? e.target.closest("button") : null; if(!t) return;
+    var a = t.getAttribute("data-del");
+    if(a){ var p = a.split("|"); (PHOTOS[p[0]]||[]).splice(+p[1], 1); if(PHOTOS[p[0]] && !PHOTOS[p[0]].length) delete PHOTOS[p[0]]; saveState(); render(); return; }
+    if(t.id==="rs"){ $("#rs-c").hidden = false; return; }
+    if(t.id==="rs-n"){ $("#rs-c").hidden = true; return; }
+    if(t.id==="rs-y"){ resetAll(); $("#rs-c").hidden = true; var m = $("#rs-msg"); m.className = "msg show ok"; m.textContent = "Data simulasi dikembalikan ke awal."; render(); }
+  });
+  initStore(function(){ render(); });
+  render();
+})();
+</script>
+</body>
+</html>

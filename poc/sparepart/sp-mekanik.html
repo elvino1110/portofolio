@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Katalog Sparepart Mekanik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sp.css">
+<div class="wrap">
+  <nav class="topnav"><a href="sp-mekanik.html" class="on">Mekanik</a><a href="sp-gudang.html">Tim sparepart</a><a href="sp-master.html">Master data</a><span id="store-st"></span></nav>
+  <header class="top">
+    <span class="eyebrow">Sparepart &middot; katalog untuk mekanik / produksi</span>
+    <h1>Cari &amp; pesan sparepart</h1>
+    <p class="lede">Cek dulu sebelum ke gudang: pilih mesin dan bagiannya untuk melihat komponen dari BOM beserta yang terakhir dipakai, cari dengan nama / kode, atau foto barang yang rusak. Pesanan langsung masuk ke tim sparepart untuk disiapkan.</p>
+  </header>
+  <div class="banner"><b>Data ilustratif.</b> No material, stok, bin, dan history mesin hanya contoh. 4 barang memakai foto asli dari gudang (rod end, 2 bearing, potensiometer); sisanya gambar ilustrasi.</div>
+
+  <div class="panel" style="display:flex; flex-direction:column; gap:10px">
+    <label class="f">Mesin<input id="mc" list="mc-dl" placeholder="ketik / pilih, mis. Facial 26" autocomplete="off"><datalist id="mc-dl"></datalist></label>
+    <div id="sec-box" hidden><div class="f" style="font-size:.74rem; color:var(--ink-dim); font-family:var(--mono); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px">Bagian mesin (functional location)</div><div class="chips" id="sec-chips"></div></div>
+  </div>
+
+  <section>
+    <div class="tabs" role="tablist"><button type="button" data-tab="hist">Komponen mesin</button><button type="button" data-tab="text">Cari nama / kode</button><button type="button" data-tab="photo">Cari dengan foto</button><button type="button" data-tab="mine">Pesanan saya</button></div>
+    <div id="tab-hist"></div>
+    <div id="tab-text" hidden>
+      <div class="searchbar"><input id="q" type="search" placeholder="Nama, no material, brand, atau kode di barang (mis. 6205, B-52, rod end)" autocomplete="off"></div>
+      <p class="note" style="margin:8px 0 6px">Atau lihat per keluarga barang:</p>
+      <div class="chips" id="fam-chips"></div>
+      <div id="text-res" style="margin-top:12px"></div>
+    </div>
+    <div id="tab-photo" hidden>
+      <div class="panel" style="display:flex; flex-direction:column; gap:10px">
+        <div class="row">
+          <label class="grow"><input type="file" id="ph-file" accept="image/*" capture="environment" hidden><button type="button" class="primary big" id="ph-btn">Ambil / pilih foto barang</button></label>
+        </div>
+        <div class="clipst" id="clip-st"></div>
+        <div class="bar" id="clip-bar" hidden><i style="width:0%"></i></div>
+        <div><p class="note" style="margin-bottom:6px">Contoh foto dari gudang (bukan foto katalog):</p><div class="samples" id="samples"></div></div>
+      </div>
+      <div id="photo-res" style="margin-top:12px"></div>
+    </div>
+    <div id="tab-mine" hidden></div>
+  </section>
+  <footer>POC &middot; Cari dengan foto memakai CLIP (Xenova/clip-vit-base-patch32) yang berjalan langsung di browser: foto dibandingkan dengan nama keluarga barang dan foto katalog. Di pratinjau Claude model tidak bisa diunduh, jadi contoh foto memakai hasil simulasi.</footer>
+</div>
+<button type="button" class="primary cartbtn" id="cart-btn">Keranjang (0)</button>
+<div class="sheet" id="sheet" hidden><div class="in" role="dialog" aria-label="Keranjang pesanan">
+  <div class="row" style="justify-content:space-between"><h2 style="color:var(--ink)">Keranjang</h2><button type="button" id="sheet-x">Tutup</button></div>
+  <div id="cart-lines"></div>
+  <p class="note">Belum yakin ukurannya? Masukkan beberapa ukuran sebagai <b>kandidat</b>. Tim sparepart menyiapkan semuanya; yang tidak cocok dikembalikan saat serah terima.</p>
+  <label class="f">Nama pemesan<input id="who" placeholder="mis. Budi (mekanik shift 2)" autocomplete="name"></label>
+  <label class="f">Keterangan kerusakan<textarea id="c-note" rows="2" placeholder="mis. bearing roller unwind bunyi, belt putus"></textarea></label>
+  <label class="row" style="font-size:.86rem"><input type="checkbox" id="c-urgent" style="width:auto"> Mendesak (mesin berhenti)</label>
+  <div class="msg" id="c-msg"></div>
+  <button type="button" class="primary big" id="c-send">Kirim pesanan ke tim sparepart</button>
+</div></div>
+
+<div class="sheet" id="dsheet" hidden><div class="in" role="dialog" aria-label="Detail barang"><div class="row" style="justify-content:space-between"><h2 style="color:var(--ink)">Detail barang</h2><button type="button" id="dsheet-x">Tutup</button></div><div id="dbody"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js"></script>
+<script src="sp-core.js"></script>
+<script>
+(function(){
+  "use strict";
+  function lsg(k, d){ try{ var v = localStorage.getItem(k); return v==null ? d : v; }catch(e){ return d; } }
+  function lss(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+  var UI = { tab:lsg("sp-tab", "hist"), fam:null, photo:null, res:null, famSel:null, busy:false, sec:lsg("sp-sec", "") || null };
+  var CART = (function(){ try{ return JSON.parse(lsg("sp-cart", "[]")) || []; }catch(e){ return []; } })();
+  function saveCart(){ lss("sp-cart", JSON.stringify(CART)); renderCartBtn(); }
+  $("#mc-dl").innerHTML = MACHINES.map(function(m){ return '<option value="'+esc(m.name)+' · '+m.id+'"></option>'; }).join("");
+  $("#who").value = lsg("sp-who", ""); $("#mc").value = lsg("sp-mc", "");
+  function machine(){
+    var v = $("#mc").value.trim().toUpperCase(); if(!v) return null;
+    var parts = v.split(/[·|]/).map(function(x){ return x.trim(); });
+    for(var k=0;k<parts.length;k++){ if(machineById(parts[k])) return parts[k]; var byName = MACHINES.filter(function(m){ return m.name.toUpperCase()===parts[k]; }); if(byName.length===1) return byName[0].id; }
+    var hit = MACHINES.filter(function(m){ return (m.name+" "+m.id).toUpperCase().indexOf(v)>=0; });
+    return hit.length===1 ? hit[0].id : null;
+  }
+  $("#who").addEventListener("input", function(){ lss("sp-who", this.value); });
+  $("#mc").addEventListener("input", function(){ lss("sp-mc", this.value); UI.sec = null; lss("sp-sec", ""); renderAll(); });
+  $("#mc").addEventListener("change", function(){ var id = machine(); if(id){ this.value = machineById(id).name+" · "+id; lss("sp-mc", this.value); } renderAll(); });
+
+  function inCart(mat){ for(var i=0;i<CART.length;i++) if(CART[i].mat===mat) return CART[i]; return null; }
+  function avail(mat){ return stockOf(mat) - reservedOf(mat); }
+  function card(it, opt){
+    opt = opt || {};
+    var m = machine(), sec = curSec(), lu = m ? (lastUse(m, it.mat, sec) || lastUse(m, it.mat)) : null, st = stockOf(it.mat), av = avail(it.mat), c = inCart(it.mat), f = famById(it.fam);
+    var stock = st<=0 ? '<span class="tag crit">Stok kosong</span>' : '<span class="tag ok">Stok '+st+' '+it.unit+(st-av>0 ? ' &middot; '+(st-av)+' dipesan' : '')+'</span>';
+    var btn = st<=0 ? '<button type="button" disabled>'+(it.status==="S1" ? 'S1 &middot; reservasi SRM' : 'Stok kosong')+'</button>'
+      : '<button type="button" class="'+(c ? '' : 'primary')+'" data-add="'+it.mat+'">'+(c ? '&#10003; Di keranjang' : '+ Siapkan')+'</button>';
+    return '<div class="card'+(c ? ' sel' : '')+'"><button type="button" class="tlink" data-detail="'+it.mat+'" aria-label="Detail '+esc(it.name)+'">'+thumbHtml(it)+'</button><div class="body">'+
+      '<button type="button" class="tlink nm" data-detail="'+it.mat+'">'+esc(it.name)+'</button>'+
+      '<div class="sp"><span class="mono">'+it.mat+'</span> &middot; '+esc(it.brand)+' &middot; '+esc(f.name)+'</div>'+
+      '<div class="sp">'+esc(it.spec)+'</div>'+
+      (lu ? '<div class="lastuse">&#9679; Terakhir dipakai '+esc(machineById(m).name)+(lu.s ? ' &rsaquo; '+esc(secName(m, lu.s)) : '')+': '+tgFull(lu.d)+' ('+ago(lu.d)+')</div>' : '')+(opt.otherUse ? '<div class="sp">'+opt.otherUse+'</div>' : '')+
+      '<div class="meta">'+stock+'<span class="tag">'+it.status+'</span>'+(opt.sim!=null ? '<span class="tag info">mirip foto '+Math.round(opt.sim*100)+'%</span>' : '')+'</div>'+
+      '<div class="act">'+btn+'</div></div></div>';
+  }
+  function cards(list, opt){ return list.length ? '<div class="cards">'+list.map(function(it){ return card(it, opt && opt(it)); }).join("")+'</div>' : '<p class="note">Tidak ada barang yang cocok.</p>'; }
+
+  /* ---------- detail barang (informasi untuk mekanik; lokasi bin hanya di halaman tim sparepart) ---------- */
+  var DET = null;
+  var STATUS_TXT = { VM:"VM · rutin dipakai, selalu ada stok", VB:"VB · kritis, stok dijaga sesuai BOM engineering", S1:"S1 · tidak di-stock, harus reservasi lewat SRM" };
+  function renderDetail(){
+    if(!DET) return;
+    var it = item(DET), f = famById(it.fam), ph = photosOf(it.mat), m = machine(), c = inCart(it.mat), st = stockOf(it.mat);
+    var wu = whereUsed(it.mat), hist = S.hist.filter(function(h){ return h.mat===it.mat; }).sort(function(a, b){ return a.d<b.d ? 1 : -1; });
+    var h = '<div class="gal">'+(ph.length ? ph.map(function(src){ return '<img src="'+esc(src)+'" alt="'+esc(it.name)+'">'; }).join("") : '<span class="thumb ill big-ill">'+famSvg(it.fam)+'</span>')+'</div>'+
+      '<div><div style="font-weight:600; font-size:1.05rem">'+esc(it.name)+'</div><div class="note"><span class="mono">'+it.mat+'</span> &middot; '+esc(f.name)+'</div></div>'+
+      '<table class="list"><tr><th>Brand</th><td>'+esc(it.brand)+'</td></tr><tr><th>Spesifikasi</th><td>'+esc(it.spec)+'</td></tr><tr><th>Status</th><td>'+STATUS_TXT[it.status]+'</td></tr><tr><th>Stok</th><td>'+(st>0 ? st+' '+it.unit+(st-avail(it.mat)>0 ? ' ('+(st-avail(it.mat))+' sudah dipesan)' : '') : '<span style="color:var(--crit)">kosong</span>')+'</td></tr>'+(ph.length ? '' : '<tr><th>Foto</th><td class="note">belum ada foto katalog</td></tr>')+'</table>'+
+      '<div><h3 style="margin-bottom:4px">Terpasang di (BOM)</h3>'+(wu.length ? '<table class="list">'+wu.map(function(x){ var b = x.bom.filter(function(y){ return y.mat===it.mat; })[0]; var lu = lastUse(x.m, it.mat, x.code); return '<tr'+(m===x.m ? ' style="background:var(--accent-2)"' : '')+'><td>'+esc(machineById(x.m).name)+' &rsaquo; '+esc(x.name)+'<div class="note mono">'+esc(x.fl)+'</div></td><td class="mono">&times;'+b.q+'</td><td class="note">'+(lu ? 'terakhir '+tgFull(lu.d) : '')+'</td></tr>'; }).join("")+'</table>' : '<p class="note">Belum ada di BOM mesin mana pun.</p>')+'</div>'+
+      '<div><h3 style="margin-bottom:4px">Riwayat pemakaian</h3>'+(hist.length ? '<table class="list">'+hist.slice(0,8).map(function(x){ return '<tr><td class="mono">'+tgFull(x.d)+'</td><td>'+esc((machineById(x.m)||{}).name||x.m)+(x.s ? ' &rsaquo; '+esc(secName(x.m, x.s)) : '')+'</td><td class="mono">'+x.q+'</td></tr>'; }).join("")+'</table>'+(hist.length>8 ? '<p class="note">'+(hist.length-8)+' lainnya</p>' : '') : '<p class="note">Belum pernah dipakai.</p>')+'</div>'+
+      (st>0 ? '<button type="button" class="'+(c ? '' : 'primary ')+'big" data-add="'+it.mat+'">'+(c ? '&#10003; Di keranjang (tap untuk batal)' : '+ Siapkan barang ini')+'</button>' : '<button type="button" class="big" disabled>'+(it.status==="S1" ? 'S1 · reservasi lewat SRM' : 'Stok kosong · tanya tim sparepart')+'</button>');
+    $("#dbody").innerHTML = h;
+  }
+  $("#dsheet-x").addEventListener("click", function(){ DET = null; $("#dsheet").hidden = true; });
+  $("#dsheet").addEventListener("click", function(e){ if(e.target.id==="dsheet"){ DET = null; $("#dsheet").hidden = true; } });
+
+  /* ---------- tab riwayat mesin ---------- */
+  function curSec(){ var m = machine(); return (m && UI.sec && sectionOf(m, UI.sec)) ? UI.sec : null; }
+  function renderSecs(){
+    var m = machine(), box = $("#sec-box"); box.hidden = !m; if(!m) return;
+    var sec = curSec();
+    $("#sec-chips").innerHTML = '<button type="button" class="chip'+(!sec ? ' on' : '')+'" data-sec="">Semua bagian</button>'+sectionsOf(m).map(function(x){ return '<button type="button" class="chip'+(sec===x.code ? ' on' : '')+'" data-sec="'+x.code+'">'+esc(x.name)+' <span class="pc">'+esc(x.fl)+'</span></button>'; }).join("");
+  }
+  function renderHist(){
+    var m = machine(), el = $("#tab-hist");
+    if(!m){ el.innerHTML = '<div class="panel"><p>Pilih mesin di atas untuk melihat komponennya (BOM per bagian, seperti struktur functional location di SAP PM) dan yang terakhir dipakai.</p><div class="chips" style="margin-top:10px">'+MACHINES.map(function(x){ return '<button type="button" class="chip" data-mc="'+x.id+'">'+esc(x.name)+' <span class="pc">'+x.id+'</span></button>'; }).join("")+'</div></div>'; return; }
+    var sec = curSec(), mm = machineById(m), bom = bomOf(m, sec);
+    bom.sort(function(a, b){ var la = lastUse(m, a.mat, sec), lb = lastUse(m, b.mat, sec); if(!!la!==!!lb) return la ? -1 : 1; if(la && lb && la.d!==lb.d) return la.d<lb.d ? 1 : -1; return item(a.mat).name.localeCompare(item(b.mat).name); });
+    var h = '<div class="section-head"><h2>'+esc(mm.name)+(sec ? ' &rsaquo; '+esc(secName(m, sec)) : '')+'</h2><span class="note mono">'+esc(sec ? sectionOf(m, sec).fl : mm.fl)+' &middot; '+bom.length+' komponen BOM, terakhir dipakai di atas</span></div>';
+    h += cards(bom.map(function(b){ return item(b.mat); }), function(it){ var b = bom.filter(function(x){ return x.mat===it.mat; })[0]; return { otherUse:'Terpasang &times;'+b.q+(sec ? '' : ' di '+b.secs.map(function(c){ return esc(secName(m, c)); }).join(", ")) }; });
+    var extra = machineHistory(m).filter(function(x){ return !inBom(m, null, x.mat) && (!sec || lastUse(m, x.mat, sec)); });
+    if(extra.length) h += '<div class="section-head" style="margin-top:16px"><h2>Pernah dipakai, tapi tidak ada di BOM</h2><span class="note">perlu dicek: alternatif / BOM belum lengkap</span></div>'+cards(extra.map(function(x){ return item(x.mat); }), function(){ return {}; });
+    el.innerHTML = h;
+  }
+  /* ---------- tab cari teks ---------- */
+  function renderText(){
+    var q = $("#q").value, m = machine();
+    $("#fam-chips").innerHTML = FAMS.map(function(f){ return '<button type="button" class="chip'+(UI.fam===f.id ? ' on' : '')+'" data-fam="'+f.id+'">'+esc(f.name)+'</button>'; }).join("");
+    var list = q.trim() ? searchText(q, m) : (UI.fam ? rankFamily([UI.fam], m) : null);
+    $("#text-res").innerHTML = list ? cards(list, function(it){ var u = usedOn(it.mat), ks = Object.keys(u); var wu = whereUsed(it.mat), ms = {}; wu.forEach(function(x){ ms[x.m] = 1; }); var mk = Object.keys(ms); return { otherUse: mk.length ? "Ada di BOM "+mk.length+" mesin: "+mk.slice(0,3).map(function(id){ return esc(machineById(id).name); }).join(", ")+(mk.length>3 ? " +"+(mk.length-3) : "") : "Belum ada di BOM mesin mana pun" }; }) : '<p class="note">Ketik kata kunci atau pilih keluarga barang.</p>';
+  }
+  /* ---------- tab foto ---------- */
+  function renderClipSt(){
+    var st = CLIP.state, el = $("#clip-st"), bar = $("#clip-bar");
+    var t = { sim:"Mode simulasi: di pratinjau ini model CLIP tidak bisa diunduh. Pakai contoh foto di bawah, atau buka link Netlify untuk CLIP sungguhan.", off:"CLIP belum dimuat.", loading:CLIP.msg, ready:CLIP.msg, error:CLIP.msg }[st];
+    el.textContent = t || ""; bar.hidden = st!=="loading"; bar.firstChild.style.width = (CLIP.pct||0)+"%";
+  }
+  CLIP.listeners.push(renderClipSt);
+  $("#samples").innerHTML = SAMPLE_SHOTS.map(function(s, i){ return '<button type="button" data-shot="'+i+'"><img src="'+s.src+'" alt="">'+esc(s.label)+'</button>'; }).join("");
+  function runPhoto(src, shot){
+    UI.photo = src; UI.res = null; UI.famSel = null; UI.busy = true; renderPhoto();
+    var useReal = CLIP.state!=="sim" && CLIP.state!=="error";
+    var p = useReal ? clipLoad().then(function(ok){ if(!ok) throw new Error("clip"); return clipSearch(src); }) : Promise.reject(new Error("sim"));
+    p.then(function(r){ UI.res = r; }).catch(function(){
+      UI.res = shot ? simSearch(shot) : { fams:null, err:true };
+    }).then(function(){ UI.busy = false; if(UI.res && UI.res.fams) UI.famSel = [UI.res.fams[0].id]; renderPhoto(); });
+  }
+  function renderPhoto(){
+    var el = $("#photo-res"), m = machine();
+    if(!UI.photo){ el.innerHTML = ''; return; }
+    var r = UI.res, h = '<div class="panel"><div class="shot"><img src="'+esc(UI.photo)+'" alt="Foto barang">';
+    if(UI.busy) h += '<div class="famres"><p>Menganalisis foto&hellip;</p><p class="clipst">'+esc(CLIP.msg||"")+'</p></div>';
+    else if(!r || r.err) h += '<div class="famres"><p>Foto belum bisa dianalisis di sini (mode simulasi hanya untuk contoh foto). Pilih keluarga barangnya:</p><div class="chips">'+FAMS.map(function(f){ return '<button type="button" class="chip'+(UI.famSel && UI.famSel.indexOf(f.id)>=0 ? ' on' : '')+'" data-pfam="'+f.id+'">'+esc(f.name)+'</button>'; }).join("")+'</div></div>';
+    else {
+      h += '<div class="famres"><p><b>Kemungkinan keluarga barang</b> <span class="note">'+(r.real ? '(CLIP, '+(r.ms/1000).toFixed(1).replace(".",",")+' detik)' : '(simulasi)')+' &middot; tap untuk memilih</span></p>'+
+        r.fams.slice(0,4).map(function(f){ var on = UI.famSel && UI.famSel.indexOf(f.id)>=0; return '<div class="famrow"><button type="button" class="chip'+(on ? ' on' : '')+'" data-pfam="'+f.id+'">'+esc(famById(f.id).name)+'</button><div class="bar"><i style="width:'+Math.round(f.p*100)+'%"></i></div><span class="mono" style="font-size:.74rem">'+Math.round(f.p*100)+'%</span></div>'; }).join("")+
+        '<p class="note">Bukan semuanya? <a href="#" data-allfam="1">Pilih keluarga lain</a></p></div>';
+    }
+    h += '</div></div>';
+    if(UI.famSel && UI.famSel.length){
+      var sec = curSec(), list = rankFamily(UI.famSel, m, r && r.photo, sec);
+      var nUsed = m ? list.filter(function(it){ return inBom(m, sec, it.mat); }).length : 0;
+      h += '<div class="section-head" style="margin-top:14px"><h2>'+UI.famSel.map(function(id){ return esc(famById(id).name); }).join(" + ")+' &middot; '+list.length+' barang</h2><span class="note">'+(m ? (nUsed ? nUsed+' ada di BOM '+esc(machineById(m).name)+(sec ? ' &rsaquo; '+esc(secName(m, sec)) : '')+' (diurutkan paling atas)' : 'tidak ada di BOM '+esc(machineById(m).name)+(sec ? ' &rsaquo; '+esc(secName(m, sec)) : '')) : 'pilih mesin &amp; bagian untuk mendahulukan komponen BOM-nya')+'</span></div>'+
+        '<p class="note" style="margin-bottom:8px">Ukurannya belum pasti? Tambahkan 2&ndash;3 ukuran yang paling mungkin sebagai kandidat, nanti dicocokkan di gudang.</p>'+
+        cards(list, function(it){ return { sim:(r && r.photo && r.photo[it.mat]) || null }; });
+    }
+    if(UI.showAll) h += '<div class="panel" style="margin-top:10px"><p class="note">Pilih keluarga barang:</p><div class="chips">'+FAMS.map(function(f){ return '<button type="button" class="chip'+(UI.famSel && UI.famSel.indexOf(f.id)>=0 ? ' on' : '')+'" data-pfam="'+f.id+'">'+esc(f.name)+'</button>'; }).join("")+'</div></div>';
+    el.innerHTML = h;
+  }
+  $("#ph-btn").addEventListener("click", function(){ $("#ph-file").click(); });
+  $("#ph-file").addEventListener("change", function(){
+    var f = this.files && this.files[0]; if(!f) return;
+    shrinkImage(f, 480, 0.82).then(function(url){ runPhoto(url, null); });
+    this.value = "";
+  });
+  /* ---------- pesanan saya ---------- */
+  var STEPS = ["baru","siapkan","siap","selesai"];
+  function renderMine(){
+    var who = $("#who").value.trim().toLowerCase(), list = ORDERS.filter(function(o){ return !who || o.name.toLowerCase()===who; }).slice().reverse();
+    $("#tab-mine").innerHTML = (who ? '<p class="note" style="margin-bottom:8px">Pesanan atas nama <b>'+esc($("#who").value.trim())+'</b>.</p>' : '<p class="note" style="margin-bottom:8px">Nama pemesan diisi saat mengirim pesanan di keranjang. Sekarang menampilkan semua pesanan.</p>')+
+      (list.length ? list.map(function(o){
+        var si = STEPS.indexOf(o.status);
+        return '<div class="order'+(o.urgent ? ' urgent' : '')+'" style="margin-bottom:10px"><div class="hd"><b class="mono">'+o.id+'</b><span class="tag '+STATUS_LBL[o.status][1]+'">'+STATUS_LBL[o.status][0]+'</span></div>'+
+          '<div class="note">'+esc(o.name)+' &middot; '+esc(machineById(o.machine).name)+(o.sec ? ' &rsaquo; '+esc(secName(o.machine, o.sec)) : '')+' &middot; '+tgFull(ymd(new Date(o.ts)))+' '+nowTime(o.ts)+(o.urgent ? ' &middot; <b style="color:var(--crit)">mendesak</b>' : '')+'</div>'+
+          (o.status!=="batal" ? '<div class="steps">'+["Dikirim","Disiapkan","Siap diambil","Diserahkan"].map(function(x, k){ return '<span class="'+(k<si ? "done" : (k===si ? "now" : ""))+'">'+x+'</span>'; }).join("")+'</div>' : '')+
+          '<div class="tbl-wrap"><table><tr><th>Barang</th><th>Qty</th><th></th></tr>'+o.items.map(function(x){ var it = item(x.mat); return '<tr><td>'+esc(it.name)+'<div class="note mono">'+it.mat+'</div></td><td class="mono">'+x.q+'</td><td>'+(x.cand ? '<span class="tag">kandidat</span> ' : '')+(x.res==="pakai" ? '<span class="tag ok">dipakai</span>' : (x.res==="kembali" ? '<span class="tag dim">dikembalikan</span>' : ''))+'</td></tr>'; }).join("")+'</table></div>'+
+          (o.status==="baru" ? '<div><button type="button" data-cancel="'+o.id+'">Batalkan</button></div>' : '')+'</div>';
+      }).join("") : '<p class="note">Belum ada pesanan.</p>');
+  }
+  /* ---------- keranjang ---------- */
+  function renderCartBtn(){ var n = CART.reduce(function(a, x){ return a+x.q; }, 0); $("#cart-btn").textContent = "Keranjang ("+n+")"; $("#cart-btn").hidden = !CART.length && UI.tab!=="mine" ? false : false; }
+  function renderCart(){
+    var fc = {}; CART.forEach(function(x){ var f = item(x.mat).fam; fc[f] = (fc[f]||0)+1; });
+    $("#cart-lines").innerHTML = CART.length ? CART.map(function(x, i){ var it = item(x.mat); return '<div class="cart-line">'+thumbHtml(it)+'<div style="min-width:0"><div style="font-weight:600; font-size:.88rem">'+esc(it.name)+'</div><div class="note"><span class="mono">'+it.mat+'</span> &middot; stok '+stockOf(it.mat)+'</div>'+
+      '<label class="row note" style="gap:4px"><input type="checkbox" data-cand="'+i+'" style="width:auto"'+(x.cand ? ' checked' : '')+'> kandidat (belum pasti ukuran)</label></div>'+
+      '<div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px"><div class="qty"><button type="button" data-qm="'+i+'">&minus;</button><span>'+x.q+'</span><button type="button" data-qp="'+i+'">+</button></div><button type="button" class="ghost note" data-rm="'+i+'">Hapus</button></div></div>'; }).join("")
+      : '<p class="note">Keranjang kosong. Tekan "+ Siapkan" pada barang.</p>';
+    var multi = Object.keys(fc).filter(function(k){ return fc[k]>1; });
+    $("#c-send").disabled = !CART.length;
+    if(multi.length && !CART.some(function(x){ return x.cand; })) { var m = $("#c-msg"); m.className = "msg show info"; m.textContent = "Ada beberapa ukuran dari keluarga yang sama. Tandai sebagai kandidat kalau hanya salah satu yang akan dipakai."; }
+  }
+  function openSheet(){ $("#c-msg").className = "msg"; renderCart(); $("#sheet").hidden = false; }
+  $("#cart-btn").addEventListener("click", openSheet);
+  $("#sheet-x").addEventListener("click", function(){ $("#sheet").hidden = true; });
+  $("#sheet").addEventListener("click", function(e){ if(e.target.id==="sheet") $("#sheet").hidden = true; });
+  $("#c-send").addEventListener("click", function(){
+    var who = $("#who").value.trim(), m = machine(), msg = $("#c-msg");
+    if(!who || !m){ msg.className = "msg show crit"; msg.textContent = !who ? "Isi nama pemesan dulu." : "Pilih mesin dulu (di halaman, di atas)."; return; }
+    var short = CART.filter(function(x){ return avail(x.mat) < x.q; });
+    if(short.length){ msg.className = "msg show crit"; msg.textContent = "Stok tidak cukup: "+short.map(function(x){ return item(x.mat).name; }).join(", ")+"."; return; }
+    var o = newOrder({ name:who, machine:m, sec:curSec(), note:$("#c-note").value.trim(), urgent:$("#c-urgent").checked, items:CART });
+    saveState(); CART = []; saveCart(); $("#c-note").value = ""; $("#c-urgent").checked = false;
+    $("#sheet").hidden = true; setTab("mine");
+    var t = $("#tab-mine"); t.insertAdjacentHTML("afterbegin", '<div class="msg show ok">Pesanan <b>'+o.id+'</b> terkirim. Tim sparepart menyiapkan barangnya; datang ke gudang saat status "Siap diambil".</div>');
+  });
+
+  /* ---------- umum ---------- */
+  function setTab(t){ UI.tab = t; lss("sp-tab", t); renderAll(); if(t==="photo" && CLIP.state==="off") clipLoad(); }
+  function renderAll(){
+    $("#store-st").innerHTML = storeBadge(); renderSecs();
+    Array.prototype.forEach.call(document.querySelectorAll("[data-tab]"), function(b){ b.className = b.getAttribute("data-tab")===UI.tab ? "on" : ""; });
+    ["hist","text","photo","mine"].forEach(function(k){ $("#tab-"+k).hidden = UI.tab!==k; });
+    if(UI.tab==="hist") renderHist(); if(UI.tab==="text") renderText(); if(UI.tab==="photo"){ renderClipSt(); renderPhoto(); } if(UI.tab==="mine") renderMine();
+    renderCartBtn(); if(!$("#sheet").hidden) renderCart(); if(!$("#dsheet").hidden) renderDetail();
+  }
+  $("#q").addEventListener("input", function(){ UI.fam = null; renderText(); });
+  document.addEventListener("click", function(e){
+    var t = e.target.closest ? e.target.closest("button, a") : null; if(!t) return;
+    var a;
+    if((a = t.getAttribute("data-tab"))){ setTab(a); return; }
+    if((a = t.getAttribute("data-mc"))){ $("#mc").value = machineById(a).name+" · "+a; lss("sp-mc", $("#mc").value); UI.sec = null; lss("sp-sec", ""); renderAll(); return; }
+    if((a = t.getAttribute("data-sec"))!==null){ UI.sec = a || null; lss("sp-sec", a||""); renderAll(); return; }
+    if((a = t.getAttribute("data-fam"))){ UI.fam = UI.fam===a ? null : a; $("#q").value = ""; renderText(); return; }
+    if((a = t.getAttribute("data-detail"))){ DET = a; renderDetail(); $("#dsheet").hidden = false; return; }
+    if((a = t.getAttribute("data-add"))){ var c = inCart(a); if(c) CART = CART.filter(function(x){ return x!==c; }); else CART.push({ mat:a, q:1, cand:false }); saveCart(); renderAll(); return; }
+    if((a = t.getAttribute("data-shot"))!==null){ var s = SAMPLE_SHOTS[+a]; runPhoto(s.src, s); return; }
+    if((a = t.getAttribute("data-pfam"))){ UI.famSel = UI.famSel || []; var k = UI.famSel.indexOf(a); if(k>=0) UI.famSel.splice(k, 1); else UI.famSel.push(a); renderPhoto(); return; }
+    if(t.getAttribute("data-allfam")){ e.preventDefault(); UI.showAll = !UI.showAll; renderPhoto(); return; }
+    if((a = t.getAttribute("data-qm"))!==null){ var x = CART[+a]; x.q = Math.max(1, x.q-1); saveCart(); renderCart(); return; }
+    if((a = t.getAttribute("data-qp"))!==null){ CART[+a].q++; saveCart(); renderCart(); return; }
+    if((a = t.getAttribute("data-rm"))!==null){ CART.splice(+a, 1); saveCart(); renderCart(); renderAll(); return; }
+    if((a = t.getAttribute("data-cancel"))){ var o = orderById(a); if(o && o.status==="baru"){ setOrderStatus(o, "batal"); saveState(); renderAll(); } return; }
+  });
+  document.addEventListener("change", function(e){ var a = e.target.getAttribute && e.target.getAttribute("data-cand"); if(a!==null && a!==undefined){ CART[+a].cand = e.target.checked; saveCart(); } });
+  initStore(function(){ renderAll(); });
+  renderAll();
+  if(UI.tab==="photo" && CLIP.state==="off") clipLoad();
+})();
+</script>
+
+</body>
+</html>
