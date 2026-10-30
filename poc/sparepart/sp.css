@@ -146,3 +146,34 @@ a{color:var(--accent)}
 .gal img{height:200px; width:auto; max-width:100%; border-radius:10px; border:1px solid var(--line); object-fit:cover}
 .big-ill{width:160px; height:160px} .big-ill svg{width:110px !important; height:110px !important}
 .sheet .in table.list th{width:110px}
+
+/* pemilih mesin & bagian */
+.pick{display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; align-items:end}
+.pick .pick-fl{grid-column:1 / -1; margin:0; color:var(--ink-dim); font-size:.74rem}
+.pick select{appearance:none; -webkit-appearance:none; padding-right:34px; font-size:1rem; font-weight:500; cursor:pointer; background-image:linear-gradient(45deg,transparent 50%,var(--ink-dim) 50%),linear-gradient(135deg,var(--ink-dim) 50%,transparent 50%); background-position:calc(100% - 18px) 55%, calc(100% - 12px) 55%; background-size:6px 6px; background-repeat:no-repeat}
+.pick select:disabled{opacity:.55; cursor:not-allowed}
+@media (max-width:560px){ .pick{grid-template-columns:1fr} }
+
+/* kombo mesin: ketik atau pilih */
+.cb{position:relative; text-transform:none; letter-spacing:0; font-family:var(--body)}
+.cb input{padding-right:40px; font-size:1rem; font-weight:500}
+.cb-btn{position:absolute; right:0; top:0; bottom:0; width:40px; padding:0; border:none; background:transparent; cursor:pointer; border-radius:0 8px 8px 0}
+.cb-btn::after{content:""; position:absolute; left:50%; top:50%; width:7px; height:7px; border-right:2px solid var(--ink-dim); border-bottom:2px solid var(--ink-dim); transform:translate(-50%,-70%) rotate(45deg)}
+.cb-list{position:absolute; z-index:30; left:0; right:0; top:calc(100% + 4px); max-height:min(46vh,320px); overflow-y:auto; margin:0; padding:4px; list-style:none; background:var(--surface); border:1px solid var(--line); border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.cb-list li{display:flex; flex-direction:column; gap:1px; padding:9px 10px; border-radius:7px; cursor:pointer; font-size:.95rem; color:var(--ink)}
+.cb-list li .mono{font-size:.72rem; color:var(--ink-dim)}
+.cb-list li:hover, .cb-list li.hi{background:var(--accent-2)}
+.cb-list li.cur b::after{content:" \2713"; color:var(--accent)}
+.cb-list li.none{cursor:default; color:var(--ink-dim); font-size:.86rem}
+.cb-list li.none:hover{background:transparent}
+div.f{display:flex; flex-direction:column; gap:3px; font-size:.74rem; color:var(--ink-dim); font-family:var(--mono); text-transform:uppercase; letter-spacing:.05em}
+
+/* angka pesanan baru di menu */
+.topnav a{display:inline-flex; align-items:center; gap:6px}
+.nbadge{display:inline-block; min-width:19px; height:19px; padding:0 6px; border-radius:10px; background:var(--accent); color:var(--accent-ink); font-size:.7rem; font-weight:700; line-height:19px; text-align:center; box-sizing:border-box}
+.topnav a.on .nbadge{background:var(--accent-ink); color:var(--accent)}
+.nbadge.urg{background:var(--crit); color:#fff; animation:nbp 1.6s ease-in-out infinite}
+@keyframes nbp{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--crit) 55%, transparent)} 50%{box-shadow:0 0 0 6px color-mix(in srgb, var(--crit) 0%, transparent)}}
+@media (prefers-reduced-motion:reduce){.nbadge.urg{animation:none}}
+.newbar{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; padding:10px 12px; border-radius:8px; background:var(--accent-2); border:1px solid var(--accent); color:var(--ink); font-size:.9rem}
+.newbar button{padding:4px 10px; font-size:.78rem}

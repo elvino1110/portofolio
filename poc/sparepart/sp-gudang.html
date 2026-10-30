@@ -17,6 +17,7 @@
     <p class="lede">Pesanan dari mekanik masuk di sini: siapkan barang menurut bin, tandai siap diambil, lalu serah terima. Kandidat ukuran yang tidak cocok dikembalikan ke rak; yang dipakai mengurangi stok dan masuk history mesin.</p>
   </header>
   <div class="tabs"><button type="button" data-f="aktif">Aktif</button><button type="button" data-f="selesai">Selesai / batal</button></div>
+  <div id="newbar"></div>
   <div id="sum" class="row" style="margin-bottom:10px"></div>
   <div id="list"></div>
   <footer>POC &middot; Di lapangan GI tetap dicatat di SAP (MB1A) setelah order engineering masuk (YI94); halaman ini membantu menyiapkan barang lebih dulu.</footer>
@@ -29,9 +30,18 @@
 (function(){
   "use strict";
   var F = (function(){ try{ return localStorage.getItem("sp-g-f") || "aktif"; }catch(e){ return "aktif"; } })();
-  var DONE = {};
+  var DONE = {}, SEEN = null, NEWMSG = "";
+  function checkNew(){
+    var ids = ORDERS.map(function(o){ return o.id; });
+    if(SEEN){
+      var fresh = ORDERS.filter(function(o){ return SEEN.indexOf(o.id)<0 && o.status==="baru"; });
+      if(fresh.length){ var f = fresh[fresh.length-1]; NEWMSG = (fresh.length>1 ? fresh.length+" pesanan baru masuk, terakhir " : "Pesanan baru masuk: ")+f.id+" \u00b7 "+(machineById(f.machine)||{}).name+(f.urgent ? " (MENDESAK)" : ""); }
+    }
+    SEEN = ids;
+    $("#newbar").innerHTML = NEWMSG ? '<div class="newbar" role="status"><span><b>'+esc(NEWMSG)+'</b></span><button type="button" id="newbar-x">Tutup</button></div>' : '';
+  }
   function render(){
-    $("#store-st").innerHTML = storeBadge();
+    $("#store-st").innerHTML = storeBadge(); checkNew();
     Array.prototype.forEach.call(document.querySelectorAll("[data-f]"), function(b){ b.className = b.getAttribute("data-f")===F ? "on" : ""; });
     var act = ORDERS.filter(function(o){ return o.status!=="selesai" && o.status!=="batal"; });
     var cnt = { baru:0, siapkan:0, siap:0 }; act.forEach(function(o){ cnt[o.status]++; });
@@ -64,6 +74,7 @@
   document.addEventListener("click", function(e){
     var t = e.target.closest ? e.target.closest("button") : null; if(!t) return;
     var a;
+    if(t.id==="newbar-x"){ NEWMSG = ""; render(); return; }
     if((a = t.getAttribute("data-f"))){ F = a; try{ localStorage.setItem("sp-g-f", a); }catch(x){} render(); return; }
     if((a = t.getAttribute("data-go"))){ var p = a.split("|"), o = orderById(p[0]); if(o){ if(p[1]==="siap") o.items.forEach(function(x){ if(!x.cand && !x.res) x.res = "pakai"; }); setOrderStatus(o, p[1]); saveState(); render(); } return; }
     if((a = t.getAttribute("data-res"))){ var q = a.split("|"), o2 = orderById(q[0]); if(o2){ o2.items[+q[1]].res = q[2]; saveState(); render(); } return; }
