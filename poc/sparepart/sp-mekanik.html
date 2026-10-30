@@ -15,13 +15,16 @@
   <header class="top">
     <span class="eyebrow">Sparepart &middot; katalog untuk mekanik / produksi</span>
     <h1>Cari &amp; pesan sparepart</h1>
-    <p class="lede">Cek dulu sebelum ke gudang: pilih mesin dan bagiannya untuk melihat komponen dari BOM beserta yang terakhir dipakai, cari dengan nama / kode, atau foto barang yang rusak. Pesanan langsung masuk ke tim sparepart untuk disiapkan.</p>
+    <p class="lede">Pilih mesin dan bagiannya untuk melihat komponen dan yang terakhir dipakai, atau cari dengan nama dan foto. Pesanan langsung masuk ke tim sparepart.</p>
   </header>
-  <div class="banner"><b>Data ilustratif.</b> No material, stok, bin, dan history mesin hanya contoh. 4 barang memakai foto asli dari gudang (rod end, 2 bearing, potensiometer); sisanya gambar ilustrasi.</div>
+  <div class="banner" id="banner"><b>Data ilustratif.</b> No material, stok, bin, dan history mesin hanya contoh.</div>
 
-  <div class="panel" style="display:flex; flex-direction:column; gap:10px">
-    <label class="f">Mesin<input id="mc" list="mc-dl" placeholder="ketik / pilih, mis. Facial 26" autocomplete="off"><datalist id="mc-dl"></datalist></label>
-    <div id="sec-box" hidden><div class="f" style="font-size:.74rem; color:var(--ink-dim); font-family:var(--mono); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px">Bagian mesin (functional location)</div><div class="chips" id="sec-chips"></div></div>
+  <div class="panel pick">
+    <div class="f">1 &middot; Mesin
+      <div class="cb" id="mc-cb"><input id="mc" role="combobox" aria-expanded="false" aria-controls="mc-list" autocomplete="off" placeholder="Ketik atau pilih mesin, mis. Facial 26"><button type="button" class="cb-btn" id="mc-btn" aria-label="Tampilkan daftar mesin" tabindex="-1"></button><ul class="cb-list" id="mc-list" role="listbox" hidden></ul></div>
+    </div>
+    <label class="f">2 &middot; Bagian mesin<select id="sec" disabled></select></label>
+    <p class="note mono pick-fl" id="sec-fl" hidden></p>
   </div>
 
   <section>
@@ -45,7 +48,7 @@
     </div>
     <div id="tab-mine" hidden></div>
   </section>
-  <footer>POC &middot; Cari dengan foto memakai CLIP (Xenova/clip-vit-base-patch32) yang berjalan langsung di browser: foto dibandingkan dengan nama keluarga barang dan foto katalog. Di pratinjau Claude model tidak bisa diunduh, jadi contoh foto memakai hasil simulasi.</footer>
+  <footer>POC &middot; Cari dengan foto memakai CLIP (Xenova/clip-vit-base-patch32) yang berjalan langsung di browser: foto dibandingkan dengan foto katalog. Di pratinjau Claude model tidak bisa diunduh; uji pencarian foto lewat link Netlify.</footer>
 </div>
 <button type="button" class="primary cartbtn" id="cart-btn">Keranjang (0)</button>
 <div class="sheet" id="sheet" hidden><div class="in" role="dialog" aria-label="Keranjang pesanan">
@@ -72,7 +75,6 @@
   var UI = { tab:lsg("sp-tab", "hist"), fam:null, photo:null, res:null, famSel:null, busy:false, sec:lsg("sp-sec", "") || null };
   var CART = (function(){ try{ return JSON.parse(lsg("sp-cart", "[]")) || []; }catch(e){ return []; } })();
   function saveCart(){ lss("sp-cart", JSON.stringify(CART)); renderCartBtn(); }
-  $("#mc-dl").innerHTML = MACHINES.map(function(m){ return '<option value="'+esc(m.name)+' · '+m.id+'"></option>'; }).join("");
   $("#who").value = lsg("sp-who", ""); $("#mc").value = lsg("sp-mc", "");
   function machine(){
     var v = $("#mc").value.trim().toUpperCase(); if(!v) return null;
@@ -82,7 +84,33 @@
     return hit.length===1 ? hit[0].id : null;
   }
   $("#who").addEventListener("input", function(){ lss("sp-who", this.value); });
-  $("#mc").addEventListener("input", function(){ lss("sp-mc", this.value); UI.sec = null; lss("sp-sec", ""); renderAll(); });
+  var lastM = machine();
+  function mcChanged(){ lss("sp-mc", $("#mc").value); var nm = machine(); if(nm!==lastM){ lastM = nm; UI.sec = null; lss("sp-sec", ""); } renderAll(); }
+  var CB = { idx:-1, items:[] };
+  function cbRender(all){
+    var v = $("#mc").value.trim().toLowerCase(), cur = machine();
+    var terms = (all || (cur && v.indexOf("·")>=0)) ? [] : v.split(/\s+/).filter(Boolean);
+    CB.items = MACHINES.filter(function(x){ var t = (x.name+" "+x.id).toLowerCase(); return terms.every(function(w){ return t.indexOf(w)>=0; }); });
+    var ul = $("#mc-list");
+    ul.innerHTML = CB.items.length ? CB.items.map(function(x, i){ return '<li role="option" data-cb="'+x.id+'" class="'+(x.id===cur ? 'cur ' : '')+(i===CB.idx ? 'hi' : '')+'"><b>'+esc(x.name)+'</b><span class="mono">'+esc(x.fl)+'</span></li>'; }).join("") : '<li class="none">Tidak ada mesin yang cocok</li>';
+    ul.hidden = false; $("#mc").setAttribute("aria-expanded", "true");
+  }
+  function cbClose(){ $("#mc-list").hidden = true; $("#mc").setAttribute("aria-expanded", "false"); CB.idx = -1; }
+  function cbPick(id){ $("#mc").value = machineById(id).name+" · "+id; cbClose(); mcChanged(); }
+  $("#mc").addEventListener("focus", function(){ CB.idx = -1; cbRender(true); });
+  $("#mc").addEventListener("click", function(){ if($("#mc-list").hidden){ CB.idx = -1; cbRender(true); } });
+  $("#mc").addEventListener("input", function(){ CB.idx = -1; cbRender(false); mcChanged(); });
+  $("#mc").addEventListener("keydown", function(e){
+    if($("#mc-list").hidden && (e.key==="ArrowDown")){ cbRender(true); e.preventDefault(); return; }
+    if(e.key==="ArrowDown" || e.key==="ArrowUp"){ e.preventDefault(); if(!CB.items.length) return; CB.idx = (CB.idx + (e.key==="ArrowDown" ? 1 : -1) + CB.items.length) % CB.items.length; cbRender(false); var hi = $("#mc-list .hi"); if(hi && hi.scrollIntoView) hi.scrollIntoView({block:"nearest"}); }
+    else if(e.key==="Enter"){ if(!$("#mc-list").hidden){ e.preventDefault(); var it = CB.items[CB.idx >= 0 ? CB.idx : (CB.items.length===1 ? 0 : -1)]; if(it) cbPick(it.id); else cbClose(); } }
+    else if(e.key==="Escape"){ cbClose(); }
+  });
+  $("#mc-btn").addEventListener("mousedown", function(e){ e.preventDefault(); if($("#mc-list").hidden){ $("#mc").focus(); CB.idx = -1; cbRender(true); } else cbClose(); });
+  $("#mc-list").addEventListener("mousedown", function(e){ e.preventDefault(); var li = e.target.closest ? e.target.closest("[data-cb]") : null; if(li) cbPick(li.getAttribute("data-cb")); });
+  document.addEventListener("mousedown", function(e){ if(!$("#mc-cb").contains(e.target)) cbClose(); });
+  $("#mc").addEventListener("blur", function(){ setTimeout(cbClose, 120); });
+  $("#sec").addEventListener("change", function(){ UI.sec = this.value || null; lss("sp-sec", this.value || ""); renderAll(); });
   $("#mc").addEventListener("change", function(){ var id = machine(); if(id){ this.value = machineById(id).name+" · "+id; lss("sp-mc", this.value); } renderAll(); });
 
   function inCart(mat){ for(var i=0;i<CART.length;i++) if(CART[i].mat===mat) return CART[i]; return null; }
@@ -124,9 +152,14 @@
   /* ---------- tab riwayat mesin ---------- */
   function curSec(){ var m = machine(); return (m && UI.sec && sectionOf(m, UI.sec)) ? UI.sec : null; }
   function renderSecs(){
-    var m = machine(), box = $("#sec-box"); box.hidden = !m; if(!m) return;
-    var sec = curSec();
-    $("#sec-chips").innerHTML = '<button type="button" class="chip'+(!sec ? ' on' : '')+'" data-sec="">Semua bagian</button>'+sectionsOf(m).map(function(x){ return '<button type="button" class="chip'+(sec===x.code ? ' on' : '')+'" data-sec="'+x.code+'">'+esc(x.name)+' <span class="pc">'+esc(x.fl)+'</span></button>'; }).join("");
+    var m = machine(), sel = $("#sec"), fl = $("#sec-fl");
+    if(!m){ sel.innerHTML = '<option value="">Pilih mesin dulu</option>'; sel.disabled = true; fl.hidden = true; return; }
+    var sec = curSec(), list = sectionsOf(m);
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">Semua bagian ('+list.length+')</option>'+list.map(function(x){ return '<option value="'+x.code+'"'+(sec===x.code ? ' selected' : '')+'>'+esc(x.name)+' ('+x.bom.length+' komponen)</option>'; }).join("");
+    sel.value = sec || "";
+    var s = sec ? sectionOf(m, sec) : null, mm = machineById(m);
+    fl.hidden = false; fl.textContent = (s ? s.fl : mm.fl);
   }
   function renderHist(){
     var m = machine(), el = $("#tab-hist");
@@ -234,6 +267,7 @@
   function setTab(t){ UI.tab = t; lss("sp-tab", t); renderAll(); if(t==="photo" && CLIP.state==="off") clipLoad(); }
   function renderAll(){
     $("#store-st").innerHTML = storeBadge(); renderSecs();
+    var nph = ITEMS.filter(function(it){ return photosOf(it.mat).length; }).length; $("#banner").innerHTML = "<b>Data ilustratif.</b> No material, stok, bin, dan history mesin hanya contoh. "+nph+" barang memakai foto asli dari gudang; sisanya gambar ilustrasi.";
     Array.prototype.forEach.call(document.querySelectorAll("[data-tab]"), function(b){ b.className = b.getAttribute("data-tab")===UI.tab ? "on" : ""; });
     ["hist","text","photo","mine"].forEach(function(k){ $("#tab-"+k).hidden = UI.tab!==k; });
     if(UI.tab==="hist") renderHist(); if(UI.tab==="text") renderText(); if(UI.tab==="photo"){ renderClipSt(); renderPhoto(); } if(UI.tab==="mine") renderMine();
@@ -244,8 +278,7 @@
     var t = e.target.closest ? e.target.closest("button, a") : null; if(!t) return;
     var a;
     if((a = t.getAttribute("data-tab"))){ setTab(a); return; }
-    if((a = t.getAttribute("data-mc"))){ $("#mc").value = machineById(a).name+" · "+a; lss("sp-mc", $("#mc").value); UI.sec = null; lss("sp-sec", ""); renderAll(); return; }
-    if((a = t.getAttribute("data-sec"))!==null){ UI.sec = a || null; lss("sp-sec", a||""); renderAll(); return; }
+    if((a = t.getAttribute("data-mc"))){ cbPick(a); return; }
     if((a = t.getAttribute("data-fam"))){ UI.fam = UI.fam===a ? null : a; $("#q").value = ""; renderText(); return; }
     if((a = t.getAttribute("data-detail"))){ DET = a; renderDetail(); $("#dsheet").hidden = false; return; }
     if((a = t.getAttribute("data-add"))){ var c = inCart(a); if(c) CART = CART.filter(function(x){ return x!==c; }); else CART.push({ mat:a, q:1, cand:false }); saveCart(); renderAll(); return; }

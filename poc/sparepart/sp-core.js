@@ -119,6 +119,9 @@ var BASE_PHOTOS = {
   "2001012": ["sp-img/timken6309-1.jpg"],
   "2001061": ["sp-img/pot-1.jpg","sp-img/pot-2.jpg","sp-img/pot-3.jpg"],
   "2001202": ["sp-img/2001202-1.jpg", "sp-img/2001202-2.jpg"],
+  "2001004": ["sp-img/2001004-1.jpg","sp-img/2001004-2.jpg","sp-img/2001004-3.jpg"],
+  "2005040": ["sp-img/2001004-1.jpg","sp-img/2001004-2.jpg","sp-img/2001004-3.jpg"],
+  "2001014": ["sp-img/2001014-1.jpg","sp-img/2001014-2.jpg"],
   "2001460": ["sp-img/2001460-1.jpg", "sp-img/2001460-2.jpg", "sp-img/2001460-3.jpg"],
   "2001442": ["sp-img/2001442-1.jpg", "sp-img/2001442-2.jpg"],
   "2001441": ["sp-img/2001441-1.jpg", "sp-img/2001441-2.jpg"],
@@ -190,7 +193,7 @@ var ITEMS_SRC = [
   ["2001341","mt","Motor 0,75 kW 4P","Siemens","380 V, kaki B3","0.75KW"],
   ["2001360","kt","Kontaktor 9 A 220 VAC","Schneider","LC1D09, 1NO+1NC","9A"],
   ["2001361","kt","Kontaktor 25 A 220 VAC","Schneider","LC1D25, 1NO+1NC","25A"],
-  // dari list lapangan 29 Okt 2026 (foto sebagian sudah ada; 6305-ZZ & 6205-ZZ belum); 6205-ZZ sudah ada di atas (2001004)
+  // dari list lapangan 29 Okt 2026 (foto sebagian sudah ada); 6205-ZZ sudah ada di atas (2001004)
   ["2001014","bb","Bearing 6305-ZZ","–","25 × 62 × 17 mm, tutup besi 2 sisi (seri 63, lebih tebal dari 6205)","6305"],
   ["2001015","bb","Bearing 61807-ZZ","–","35 × 47 × 7 mm, seri tipis (thin section), tutup besi 2 sisi","61807"],
   ["2001380","hc","Hose clamp HLB 3\" SUS 304","HLB","Klem selang Ø3\" (±76 mm), bahan stainless SUS 304","3IN"],
@@ -432,6 +435,7 @@ function lsGet(){ try{ var j = localStorage.getItem(LS_KEY); return j ? JSON.par
 function lsSet(o){ try{ localStorage.setItem(LS_KEY, JSON.stringify(o)); }catch(e){} }
 function saveState(){
   var snap = snapshotAll();
+  navBadge();
   if(STORE.mode!=="fb"){ lsSet(snap); STORE.synced = snap; return; }
   var db = STORE.db, b = db.batch(), n = 0;
   if(snap.meta!==STORE.synced.meta){ b.set(db.collection("sp_meta").doc("state"), { j:snap.meta, t:Date.now() }); n++; }
@@ -441,6 +445,24 @@ function saveState(){
   Object.keys(STORE.synced.photos).forEach(function(k){ if(!snap.photos[k]){ b.delete(db.collection("sp_photo").doc(k)); n++; } });
   STORE.synced = snap;
   if(n) b.commit().catch(function(e){ setStoreState("err", (e && (e.code||e.message)) || String(e)); });
+}
+// angka pesanan baru di menu "Tim sparepart" (dan di judul tab pada halaman tim sparepart)
+function navBadge(){
+  try{
+    var n = 0, u = 0; ORDERS.forEach(function(o){ if(o.status==="baru"){ n++; if(o.urgent) u++; } });
+    var a = document.querySelector('.topnav a[href="sp-gudang.html"]');
+    if(a){
+      var b = a.querySelector(".nbadge");
+      if(!n){ if(b) b.parentNode.removeChild(b); }
+      else{
+        if(!b){ b = document.createElement("span"); a.appendChild(b); }
+        b.className = "nbadge"+(u ? " urg" : ""); b.textContent = n>99 ? "99+" : String(n);
+        b.title = n+" pesanan baru"+(u ? ", "+u+" mendesak" : "");
+        a.setAttribute("aria-label", "Tim sparepart, "+b.title);
+      }
+      if(a.className.indexOf("on")>=0){ var t = document.title.replace(/^\(\d+\+?\)\s*/, ""); document.title = n ? "("+n+") "+t : t; }
+    }
+  }catch(e){}
 }
 function resetAll(){ resetState(); saveState(); }
 function setStoreState(st, msg){ STORE.state = st; STORE.msg = msg||""; if(STORE.onChange) STORE.onChange("status"); }
@@ -466,8 +488,8 @@ function fbRemote(){
   if(STORE.state!=="on") setStoreState("on");
 }
 function initStore(onChange){
-  STORE.onChange = onChange;
-  bootLocal();
+  STORE.onChange = function(k){ navBadge(); if(onChange) onChange(k); };
+  bootLocal(); navBadge();
   if(IN_FRAME || !window.firebase || !window.firebase.initializeApp){ setStoreState("off"); return; }
   setStoreState("wait");
   try{
