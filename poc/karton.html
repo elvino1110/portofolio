@@ -69,6 +69,21 @@
   .pager button{min-width:34px; height:34px; padding:0 8px; border-radius:99px}
   .pager button.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600}
   .pager button:disabled{opacity:.4; cursor:not-allowed}
+  .dnai{border:1px dashed var(--line); border-radius:14px; padding:12px; margin-bottom:12px; display:flex; flex-direction:column; gap:10px; background:var(--surface-2)}
+  .dnai-top{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .dnai-top .muted{font-size:.78rem; flex:1 1 200px}
+  .dnai button.cam{border-radius:99px; padding:8px 16px}
+  .dnai-res{display:grid; grid-template-columns:96px minmax(0,1fr); gap:12px; align-items:start}
+  @media (max-width:520px){ .dnai-res{grid-template-columns:1fr} }
+  .dnai-res img{width:96px; height:128px; object-fit:cover; border-radius:10px; border:1px solid var(--line); background:var(--surface)}
+  .dnai .kvgrid{font-size:.8rem}
+  .dnai table{font-size:.78rem; background:var(--surface); border-radius:10px}
+  .dnai .warn-l{color:var(--warn); font-size:.74rem}
+  .dnai .crit-l{color:var(--crit); font-size:.74rem}
+  .dnai .act{display:flex; gap:8px; flex-wrap:wrap}
+  .spin{display:inline-block; width:14px; height:14px; border:2px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:sp .8s linear infinite; vertical-align:-2px; margin-right:6px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion: reduce){ .spin{animation:none} }
   .chat-log{max-height:340px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:6px 2px; scrollbar-width:thin}
   .chat-m{max-width:88%; padding:10px 14px; border-radius:20px; font-size:.88rem; line-height:1.5; min-width:0; overflow-wrap:anywhere}
   .chat-m.user{align-self:flex-end; background:var(--accent); color:var(--accent-ink); border-bottom-right-radius:6px}
@@ -377,6 +392,7 @@
   <section class="layout">
     <div class="panel">
       <div class="section-head"><h2>3 · Barang datang (input admin)</h2><p class="lede">Sementara diinput manual (nanti otomatis dari SAP). Sistem menyarankan bin dan pembagian blok. QR dicetak di kantor, barang ditaruh di <b>transit point</b>, lalu petugas shift berikutnya menaruh ke bin.</p></div>
+      <div id="dn-ai"></div>
       <div id="in-form"></div>
       <div class="row">
         <div class="field"><label for="in-dn">No DN (opsional)</label><input type="text" id="in-dn" placeholder="mis. 80012345" style="width:140px" class="txtin"></div>
@@ -471,7 +487,7 @@
     <div class="panel"><div class="tablewrap"><table id="bin-table"></table></div><div class="pager" id="bin-pager"></div><div class="labels" id="bin-labels"></div></div>
   </section>
   <section>
-    <div class="section-head"><h2>Master karton</h2><p class="lede">30 karton yang dipakai di simulator. Lembar datar dihitung dari deskripsi SAP: panjang = L+W, lebar = W+H (mm). Ukuran dipakai sistem = ukuran desain × (1 + toleransi), atau ukuran aktual kalau sudah diukur. Ubah toleransi atau ukuran aktual di sini; perubahan langsung dipakai untuk blok baru, blok yang sudah ada tidak berubah.</p></div>
+    <div class="section-head"><h2>Master karton</h2><p class="lede">Karton yang dipakai di simulator (31). Lembar datar dihitung dari deskripsi SAP: panjang = L+W, lebar = W+H (mm). Ukuran dipakai sistem = ukuran desain × (1 + toleransi), atau ukuran aktual kalau sudah diukur. Ubah toleransi atau ukuran aktual di sini; perubahan langsung dipakai untuk blok baru, blok yang sudah ada tidak berubah.</p></div>
     <div class="panel">
       <div class="mst-bar">
         <div class="field"><label for="mst-q">Cari no material / nama</label><input type="search" id="mst-q" placeholder="mis. 20986756 atau facial" style="min-width:220px"></div>
@@ -563,7 +579,8 @@
     { id:"c21114813", code:"21114813", name:"Hokben Napkin 50'sx60pack", cat:"C", token:"--m6", flat:[88,70], dim:[630,250,450], tol:null, aktual:null },
     { id:"c21114815", code:"21114815", name:"A&W Napkin Luncheon 300'sX20pack", cat:"C", token:"--m7", flat:[76.5,63.5], dim:[455,310,325], tol:null, aktual:null },
     { id:"c21114816", code:"21114816", name:"Yoshinoya Luncheon Napkin 50's x60pack", cat:"C", token:"--m1", flat:[81,68.5], dim:[485,325,360], tol:null, aktual:null },
-    { id:"c21120620", code:"21120620", name:"Larrist Napkin 100s Banded 4", cat:"C", token:"--m2", flat:[69,99], dim:[470,220,770], tol:null, aktual:null }
+    { id:"c21120620", code:"21120620", name:"Larrist Napkin 100s Banded 4", cat:"C", token:"--m2", flat:[69,99], dim:[470,220,770], tol:null, aktual:null },
+    { id:"c21183145", code:"21183145", name:"Paseo Elegant Facial Travelpack 108 ply GT", cat:"A", token:"--m4", flat:[75,55.5], dim:[435,315,240], tol:null, aktual:null }
   ];
   MATS.forEach(function(m){ m.pcs = 10; m.maxIkat = Math.floor(MAX_PCS_TUM/m.pcs); m.maxPcs = MAX_PCS_TUM; var t = (m.tol==null ? TOL_DEFAULT : m.tol); if(m.aktual){ m.a = m.aktual[0]/1000; m.b = m.aktual[1]/1000; } else { m.a = m.flat[0]/100*(1+t); m.b = m.flat[1]/100*(1+t); } }); // m.pcs = langkah 10 pcs untuk perataan & gambar saja
   function mat(id){ for(var i=0;i<MATS.length;i++) if(MATS[i].id===id) return MATS[i]; }
@@ -2087,7 +2104,7 @@
     $("#bin-pager").innerHTML = pagerHtml(BP, S.length, BPS, "bin");
   }
   /* ---------- Master karton (bisa diatur dari web) ---------- */
-  var CBOX = [["20666453","L500",730,510,410,"K150/M125",1,"Lion Facial Kiloan 500's MS","Facial",1],["20758947","LNL1",485,455,310,"550GSM",1,"Livi Napkin 100's x 30 Maldives","Napkin",1],["20762686","NVT150S",440,370,505,"550G",1,"Nice Value Toilet Rolls 150's 10Roll","Toilet",1],["20826994","LEJP",460,460,365,"K200/M150",1,"Livi EVO JRT 200M x 16Roll OL (Philipine)","Toilet",1],["20890916","SAR1",885,395,325,"K150/M125",1,"Jolly facial Kiloan 700 gr (Limited Edition)","Facial",1],["20910979","PPBL",370,310,319,"WK200/M150",1,"Paperblue Interfold Toilet 250's","Toilet",1],["20980322","LEMN",510,310,430,"K125/M125",1,"Livi EVO Napkin MG White Full Embossed Potong 2 100's","Napkin",1],["20980684","I900",570,510,410,"K200/M150",2,"Indomaret Facial Kiloan 900gr MS","Facial",1],["20980686","LEC1",655,505,405,"K200/M150",1,"Livi ECO Facial Refill Pop Up 1000gr","Facial",1],["20980795","LFSP",510,405,395,"K150/M150",1,"Larisst Facial Softpack 220's MS","Facial",1],["20983409","LRT5",430,370,220,"K125/M125",2,"Larisst Facial Travel Pack 50's MS","Facial",1],["20984355","LFCP",610,510,455,"K200/M150",2,"Livi EVO Facial Tissue Plain Flat Box 50'sx72boxes","Facial",1],["20984368","LFPB",560,450,450,"K125/M125",2,"Livi EVO Facial Tissue Plain Cube Box, 50'sx60boxes","Facial",1],["20986756","NPUS",530,370,375,"K150/M150",4,"Nice Facial Pop Up 200's Attractive","Facial",1],["20996167","JTCL",480,400,540,"K125/M125",1,"Jolly Kuliner Facial Core Lunak Emboss 10 Roll","Toilet",1],["21001983","PST8",360,360,450,"K150/M150",1,"Paseo Towel 3 Roll Calorie Absorb","Toilet",1],["21015195","PB4N",465,365,405,"K150/M150",1,"Paseo Luxuri Bathroom Tissue 3ply 300's 4 roll","Toilet",1],["21015196","PBRN",420,315,400,"K150/M150",1,"Paseo Luxuri Bathroom 300s 3ply 12rolls x 4 pack","Toilet",1],["21015197","NB1R",485,390,475,"K150/M150",2,"Nice Bathroom Tissue 150's 2ply Single roll MT","Toilet",1],["21015198","NB4R",390,390,570,"K150/M150",2,"Nice Bathroom Tissue 150's 4 roll x 24 pack","Toilet",1],["21040762","LEP1",410,320,420,"K150/M150",1,"Livi EVO Pop Up Napkin 200's","Napkin",1],["21053374","LPN1",500,210,400,"K125/M125",1,"Livi Pop Up 200's Napkin","Napkin",1],["21058722","NLSG",375,320,540,"K125/M150",2,"Nice Living Facial Softpack 250's GT","Facial",1],["21060170","CLNP",470,300,610,"K125/M125",1,"LotteMart Choice L Napkin Luncheon 250'sx 12Pack","Napkin",1],["21109752","NKFC",410,330,480,"K125/M125",1,"KFC Napkin Luncheon 60's","Napkin",1],["21114813","NHKN",630,250,450,"K125/M125",1,"Hokben Napkin 50'sx60pack","Napkin",1],["21114815","NAWN",455,310,325,"K125/M125",1,"A&W Napkin Luncheon  300'sX20pack","Napkin",1],["21114816","NYSN",485,325,360,"K125/M125",1,"Yoshinoya Luncheon Napkin 50's x60pack","Napkin",1],["21120620","LNLN",470,220,770,"K125/M125",1,"Larrist Napkin 100s Banded 4","Napkin",1],["21152713","N10B",530,420,575,"K125/M112",2,"Nice Toilet 10 Roll Emboss 510 Helai Bogof","Toilet",1]];  // [no material, kode, L, W, H, flute, jml SKU, contoh produk, kategori, pilot]
+  var CBOX = [["20666453","L500",730,510,410,"K150/M125",1,"Lion Facial Kiloan 500's MS","Facial",1],["20758947","LNL1",485,455,310,"550GSM",1,"Livi Napkin 100's x 30 Maldives","Napkin",1],["20762686","NVT150S",440,370,505,"550G",1,"Nice Value Toilet Rolls 150's 10Roll","Toilet",1],["20826994","LEJP",460,460,365,"K200/M150",1,"Livi EVO JRT 200M x 16Roll OL (Philipine)","Toilet",1],["20890916","SAR1",885,395,325,"K150/M125",1,"Jolly facial Kiloan 700 gr (Limited Edition)","Facial",1],["20910979","PPBL",370,310,319,"WK200/M150",1,"Paperblue Interfold Toilet 250's","Toilet",1],["20980322","LEMN",510,310,430,"K125/M125",1,"Livi EVO Napkin MG White Full Embossed Potong 2 100's","Napkin",1],["20980684","I900",570,510,410,"K200/M150",2,"Indomaret Facial Kiloan 900gr MS","Facial",1],["20980686","LEC1",655,505,405,"K200/M150",1,"Livi ECO Facial Refill Pop Up 1000gr","Facial",1],["20980795","LFSP",510,405,395,"K150/M150",1,"Larisst Facial Softpack 220's MS","Facial",1],["20983409","LRT5",430,370,220,"K125/M125",2,"Larisst Facial Travel Pack 50's MS","Facial",1],["20984355","LFCP",610,510,455,"K200/M150",2,"Livi EVO Facial Tissue Plain Flat Box 50'sx72boxes","Facial",1],["20984368","LFPB",560,450,450,"K125/M125",2,"Livi EVO Facial Tissue Plain Cube Box, 50'sx60boxes","Facial",1],["20986756","NPUS",530,370,375,"K150/M150",4,"Nice Facial Pop Up 200's Attractive","Facial",1],["20996167","JTCL",480,400,540,"K125/M125",1,"Jolly Kuliner Facial Core Lunak Emboss 10 Roll","Toilet",1],["21001983","PST8",360,360,450,"K150/M150",1,"Paseo Towel 3 Roll Calorie Absorb","Toilet",1],["21015195","PB4N",465,365,405,"K150/M150",1,"Paseo Luxuri Bathroom Tissue 3ply 300's 4 roll","Toilet",1],["21015196","PBRN",420,315,400,"K150/M150",1,"Paseo Luxuri Bathroom 300s 3ply 12rolls x 4 pack","Toilet",1],["21015197","NB1R",485,390,475,"K150/M150",2,"Nice Bathroom Tissue 150's 2ply Single roll MT","Toilet",1],["21015198","NB4R",390,390,570,"K150/M150",2,"Nice Bathroom Tissue 150's 4 roll x 24 pack","Toilet",1],["21040762","LEP1",410,320,420,"K150/M150",1,"Livi EVO Pop Up Napkin 200's","Napkin",1],["21053374","LPN1",500,210,400,"K125/M125",1,"Livi Pop Up 200's Napkin","Napkin",1],["21058722","NLSG",375,320,540,"K125/M150",2,"Nice Living Facial Softpack 250's GT","Facial",1],["21060170","CLNP",470,300,610,"K125/M125",1,"LotteMart Choice L Napkin Luncheon 250'sx 12Pack","Napkin",1],["21109752","NKFC",410,330,480,"K125/M125",1,"KFC Napkin Luncheon 60's","Napkin",1],["21114813","NHKN",630,250,450,"K125/M125",1,"Hokben Napkin 50'sx60pack","Napkin",1],["21114815","NAWN",455,310,325,"K125/M125",1,"A&W Napkin Luncheon  300'sX20pack","Napkin",1],["21114816","NYSN",485,325,360,"K125/M125",1,"Yoshinoya Luncheon Napkin 50's x60pack","Napkin",1],["21120620","LNLN",470,220,770,"K125/M125",1,"Larrist Napkin 100s Banded 4","Napkin",1],["21152713","N10B",530,420,575,"K125/M112",2,"Nice Toilet 10 Roll Emboss 510 Helai Bogof","Toilet",1],["21183145","P109",435,315,240,"K125/M125",1,"Paseo Elegant Facial Travelpack 108 ply GT","Facial",1]];  // [no material, kode, L, W, H, flute, jml SKU, contoh produk, kategori, pilot]
   var MOV = {};   // { noMaterial: { tol:% , aktual:[p,l] mm } }
   function mstSize(code, L, W, H){
     var o = MOV[code] || {}, tol = (o.tol!=null ? o.tol/100 : TOL_DEFAULT), p = L+W, l = W+H;
@@ -2134,6 +2151,74 @@
     $("#mst-table").addEventListener("change", function(e){ var inp = e.target; if(inp.tagName==="INPUT" && inp.dataset.f) mstChange(inp.closest("tr"), inp); });
   }
   wireMaster(); applyMaster();
+
+  /* ---------- Tahap 2 AI: foto DN -> draft barang datang ---------- */
+  var DNAI = { st:"idle", img:null, res:null, err:"" }, DN_URL = "/api/karton-dn";
+  // Foto dipecah: 1 gambar utuh kecil (tata letak) + 4 potongan horizontal resolusi asli (angka kecil tetap tajam)
+  function dnPrepare(file, cb){
+    var fr = new FileReader();
+    fr.onload = function(){ var im = new Image(); im.onload = function(){
+      var W = im.width, H = im.height, k = Math.min(1, 2000/W);   // lebar maks 2000 px
+      function cut(sy, sh, scale, q){ var c = document.createElement("canvas"); c.width = Math.round(W*scale); c.height = Math.round(sh*scale); c.getContext("2d").drawImage(im, 0, sy, W, sh, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", q); }
+      var full = cut(0, H, Math.min(1, 1024/Math.max(W, H)), 0.8), strips = [], n = 4, step = H/n, ov = step*0.12;
+      for(var i=0;i<n;i++){ var y0 = Math.max(0, i*step - ov), y1 = Math.min(H, (i+1)*step + ov); strips.push(cut(y0, y1-y0, k, 0.85)); }
+      cb({ full:full, strips:strips }); }; im.onerror = function(){ cb(null); }; im.src = fr.result; };
+    fr.onerror = function(){ cb(null); }; fr.readAsDataURL(file);
+  }
+  function dnRead(file){
+    DNAI = { st:"busy", img:null, res:null, err:"" }; renderDnAi();
+    dnPrepare(file, function(pk){
+      if(!pk){ DNAI.st = "err"; DNAI.err = "Foto tidak bisa dibuka."; renderDnAi(); return; }
+      DNAI.img = pk.full; renderDnAi();
+      fetch(DN_URL, { method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify({ image:pk.full, strips:pk.strips, today:isoToday() }) })
+        .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+        .then(function(x){ if(x.ok){ DNAI.st = "done"; DNAI.res = x.j; } else { DNAI.st = "err"; DNAI.err = x.j.error || "gagal"; } })
+        .catch(function(){ DNAI.st = "err"; DNAI.err = "Layanan AI tidak terjangkau. Fitur ini hanya jalan di versi Netlify dengan kunci Azure terpasang."; })
+        .then(renderDnAi);
+    });
+  }
+  function dnLineMat(b){ return b.no_material ? matByCode(b.no_material) : null; }
+  function renderDnAi(){
+    var box = $("#dn-ai"); if(!box) return;
+    var h = '<div class="dnai"><div class="dnai-top"><button class="primary cam" id="dn-cam"'+(DNAI.st==="busy"?' disabled':'')+'>📷 Isi dari foto DN</button>'+
+      '<span class="muted">Foto surat jalan, AI membaca no DN, tanggal, no material, dan qty. Hasilnya dicek dulu sebelum masuk form.</span>'+
+      '<input type="file" id="dn-file" accept="image/*" capture="environment" hidden></div>';
+    if(DNAI.st==="busy") h += '<div class="muted"><span class="spin"></span>Membaca foto… biasanya 5–15 detik.</div>';
+    if(DNAI.st==="err") h += '<div class="msg crit">'+esc(DNAI.err)+'</div>';
+    if(DNAI.st==="done"){
+      var r = DNAI.res, L = r.baris || [];
+      if(!r.dokumen_dn) h += '<div class="msg warn">Foto ini sepertinya bukan surat jalan. Coba foto ulang.</div>';
+      h += '<div class="dnai-res">'+(DNAI.img?'<img src="'+DNAI.img+'" alt="Foto DN">':'<span></span>')+'<div style="min-width:0;display:flex;flex-direction:column;gap:8px">'+
+        '<div class="kvgrid"><span class="k">No DN</span><span class="v">'+esc(r.no_dn||"— tidak terbaca")+'</span><span class="k">Tanggal</span><span class="v">'+esc(r.tanggal||"— tidak terbaca")+'</span>'+(r.no_po?'<span class="k">No PO</span><span class="v">'+esc(r.no_po)+'</span>':'')+(r.supplier?'<span class="k">Pengirim</span><span class="v n">'+esc(r.supplier)+'</span>':'')+'</div>'+
+        '<div class="tablewrap"><table><tr><th>No material</th><th>Qty</th><th>Hasil cek</th></tr>'+(L.length ? L.map(function(b){
+          var m = dnLineMat(b), st;
+          if(m) st = '<span class="tag ok">cocok</span> '+esc(m.name);
+          else if(b.di_master) st = '<span class="tag warn">belum di simulator</span> '+esc(b.di_master.nama);
+          else st = '<span class="tag crit">tidak ditemukan</span>'+(b.kandidat&&b.kandidat.length?'<div class="warn-l">Ukuran sama dengan: '+b.kandidat.map(function(k){ return esc(k.no_material+" "+k.nama); }).join("; ")+'</div>':'');
+          var uk = b.ukuran_status==="cocok" ? '<div class="muted" style="font-size:.72rem">✓ ukuran '+esc(b.ukuran_dn)+' cocok dengan master</div>' : (b.ukuran_status==="tidak terbaca" ? '<div class="muted" style="font-size:.72rem">Ukuran di DN tidak terbaca jelas ('+esc(b.ukuran_dn)+'), tidak dipakai. Material ditentukan dari no material.</div>' : '');
+          var extra = uk + (b.cek||[]).map(function(c){ return '<div class="warn-l">⚠ '+esc(c)+'</div>'; }).join("") + (b.yakin<0.7?'<div class="warn-l">⚠ AI kurang yakin, cek foto</div>':'');
+          return '<tr><td class="mono">'+esc(b.no_material||"?")+(b.kode_supplier?'<div class="muted" style="font-size:.66rem">supplier '+esc(b.kode_supplier)+'</div>':'')+'</td><td class="mono">'+(b.qty!=null?fmt(b.qty):"?")+(b.jumlah_bundle&&b.isi_per_bundle?'<div class="muted" style="font-size:.66rem">'+b.jumlah_bundle+' × '+b.isi_per_bundle+'</div>':'')+'</td><td>'+st+extra+'</td></tr>';
+        }).join("") : '<tr><td colspan="3" class="muted">Tidak ada baris barang yang terbaca.</td></tr>')+'</table></div>'+
+        ((r.tertutup||[]).length?'<div class="warn-l">Tertutup / buram: '+r.tertutup.map(esc).join("; ")+'</div>':'')+
+        '<div class="act"><button class="primary" id="dn-apply"'+(L.length?'':' disabled')+'>Isi ke form barang datang</button><button id="dn-cancel">Batal</button></div></div></div>';
+    }
+    box.innerHTML = h + '</div>';
+    $("#dn-cam").addEventListener("click", function(){ $("#dn-file").click(); });
+    $("#dn-file").addEventListener("change", function(){ var f = this.files && this.files[0]; if(f) dnRead(f); this.value = ""; });
+    var c = $("#dn-cancel"); if(c) c.addEventListener("click", function(){ DNAI = { st:"idle" }; renderDnAi(); });
+    var a = $("#dn-apply"); if(a) a.addEventListener("click", dnApply);
+  }
+  function dnApply(){
+    var r = DNAI.res; if(!r) return;
+    IN_DRAFT = (r.baris||[]).map(function(b){ var m = dnLineMat(b); return { matId:m?m.id:null, qty:Math.max(1, Math.round(b.qty||1)), raw:m?"":(b.no_material||"") }; });
+    if(!IN_DRAFT.length) IN_DRAFT = [{ matId:null, qty:100, raw:"" }];
+    if(r.no_dn) $("#in-dn").value = r.no_dn;
+    if(r.tanggal && /^\d{4}-\d{2}-\d{2}$/.test(r.tanggal)) $("#arr-date").value = r.tanggal;
+    plan = null; renderInForm(); renderOptions();
+    var bad = IN_DRAFT.filter(function(x){ return !x.matId; }).length;
+    DNAI = { st:"idle" }; renderDnAi();
+    $("#arr-msg").innerHTML = '<div class="msg '+(bad?'warn':'ok')+'">Form terisi dari foto DN. '+(bad?bad+' baris belum cocok dengan master simulator (kotak merah), perbaiki dulu. ':'')+'Cek no DN, tanggal, dan qty, lalu tekan <b>Cari saran bin</b>.</div>';
+  }
 
   /* ---------- QR order (laptop → HP, tanpa server) ---------- */
   function buildPayload(order){
@@ -2540,7 +2625,7 @@
     camCtx.refresh = function(){ if(FB.on) renderAll(); else renderKamera(); };
   })();
 
-  function renderAll(){ fillSelects(); renderStats(); renderChips(); renderPickInfo(); renderSearch(); renderPutaway(); renderKonsol(); renderReturAdmin(); if(!$("#chat-log")) renderChat(); renderOrderForm(); renderOrderAdmin(); renderOrderList(); renderPicker(simCtx, $("#sim-scr")); renderLog(); update3D(); if(VIEW==="label") renderLabels(); if(VIEW==="kamera") renderKamera(); flush(); }
+  function renderAll(){ fillSelects(); renderStats(); renderChips(); renderPickInfo(); renderSearch(); renderPutaway(); renderKonsol(); renderReturAdmin(); if(!$("#chat-log")) renderChat(); if(!$("#dn-cam")) renderDnAi(); renderOrderForm(); renderOrderAdmin(); renderOrderList(); renderPicker(simCtx, $("#sim-scr")); renderLog(); update3D(); if(VIEW==="label") renderLabels(); if(VIEW==="kamera") renderKamera(); flush(); }
 
   /* ---------- 3D (denah lapangan: 3 line karton + racking plastik) ---------- */
   function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888888"; }
