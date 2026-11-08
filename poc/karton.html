@@ -84,6 +84,18 @@
   .spin{display:inline-block; width:14px; height:14px; border:2px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:sp .8s linear infinite; vertical-align:-2px; margin-right:6px}
   @keyframes sp{to{transform:rotate(360deg)}}
   @media (prefers-reduced-motion: reduce){ .spin{animation:none} }
+  .rsv{margin-top:8px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:10px 12px; display:flex; flex-direction:column; gap:8px; color:var(--ink)}
+  .rsv-h{display:flex; justify-content:space-between; gap:8px; align-items:center; font-weight:600; font-size:.84rem}
+  .rsv-l{border-top:1px dashed var(--line); padding-top:7px; font-size:.8rem; display:flex; flex-direction:column; gap:2px}
+  .rsv-l .t{display:flex; justify-content:space-between; gap:8px; align-items:baseline}
+  .rsv-l .t b{font-family:var(--mono)}
+  .rsv-l .t .mono{white-space:nowrap; flex:none; font-weight:600}
+  .rsv-l .s{font-size:.7rem; color:var(--ink-dim)}
+  .rsv-act{display:flex; gap:6px; flex-wrap:wrap}
+  .rsv-act button{border-radius:99px; padding:6px 14px; font-size:.8rem}
+  .rsv.done{border-color:var(--ok)} .rsv.off{opacity:.55}
+  .rsv .res{font-size:.8rem; font-weight:600}
+  .rsv.done .res{color:var(--ok)}
   .chat-log{max-height:340px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:6px 2px; scrollbar-width:thin}
   .chat-m{max-width:88%; padding:10px 14px; border-radius:20px; font-size:.88rem; line-height:1.5; min-width:0; overflow-wrap:anywhere}
   .chat-m.user{align-self:flex-end; background:var(--accent); color:var(--accent-ink); border-bottom-right-radius:6px}
@@ -513,7 +525,7 @@
 <!-- AI floating -->
 <button class="ai-fab" id="ai-fab" aria-haspopup="dialog" aria-controls="ai-pop">✦ Tanya AI</button>
 <div class="ai-pop" id="ai-pop" role="dialog" aria-label="Tanya gudang" hidden>
-  <div class="ai-head"><div><b>Tanya gudang</b><small>AI hanya membaca data, tidak mengubah apa pun</small></div><button id="ai-x" aria-label="Tutup">×</button></div>
+  <div class="ai-head"><div><b>Tanya gudang</b><small>Tanya data gudang atau buat reservasi. Order dibuat setelah kamu konfirmasi.</small></div><button id="ai-x" aria-label="Tutup">×</button></div>
   <div id="chat-box"></div>
 </div>
 
@@ -594,7 +606,7 @@
   /* ---------- state ---------- */
   var S, seq, LOG, selPos, selCard, plan = null, lastAlloc = {}, G = null;
   var cadSeq = 10;
-  var ORDER = null, ORDERS = [], DRAFT, orderSeq = 1, searchQ = "", searchHit = {}, paMsg = {}, paDone = [], VIEW = "admin";
+  var ORDER = null, ORDERS = [], DRAFT, DRAFT_SHIFT = 2, orderSeq = 1, searchQ = "", searchHit = {}, paMsg = {}, paDone = [], VIEW = "admin";
   function newBins(){
     var list = [];
     CATS.forEach(function(c, li){
@@ -1086,7 +1098,7 @@
 
   var simCtx = {
     mode:"sim", sc:newSc(), msg:"",
-    order:function(){ return ORDER && !ORDER.posted ? ORDER : null; },
+    order:function(){ return ORDER && !ORDER.posted && !ORDER.cancel && !ORDER.q ? ORDER : null; },
     stacks:function(){ return allCards().map(function(x){ return { id:x.c.id, pos:x.p.id, matId:x.c.matId, qty:cardQty(x.c), date:x.c.lots[0].date, pending:x.c.status==="pending", tum:x.c.tum.slice(), cols:x.c.cols, pola:blockText(x.c) }; }); },
     take:function(st, q, gap, fifo, li){
       var f = findCard(st.id), c = f.c, p = f.p, m = mat(c.matId), L = ORDER.lines[li], t = today();
@@ -1195,7 +1207,7 @@
     var steps = [];
     o.lines.forEach(function(L, li){ lineSteps(ctx, L).forEach(function(st, si){ steps.push({ li:li, si:si, id:st.id, pos:st.pos, q:st.q, date:st.date, parts:st.parts }); }); });
     var nDone = o.lines.filter(function(L){ return lineStatus(ctx, L).k==="selesai"; }).length;
-    h += '<div class="ohead"><div><div class="k">No order</div><b class="mono">'+esc(o.no)+'</b></div><div><div class="k">Tujuan</div>Produksi</div><div><div class="k">Progres</div><span class="mono">'+nDone+' / '+o.lines.length+'</span> material</div></div>';
+    h += '<div class="ohead"><div><div class="k">No order</div><b class="mono">'+esc(o.no)+'</b></div><div><div class="k">Tujuan</div>Produksi</div><div><div class="k">Progres</div><span class="mono">'+nDone+' / '+o.lines.length+'</span> material</div>'+(o.shift?'<div><div class="k">Untuk</div><b>Shift '+o.shift+'</b></div>':'')+(ctx===simCtx && queueList().length?'<div><div class="k">Antrean</div><span class="mono">'+queueList().length+'</span> order lagi</div>':'')+'</div>';
 
     o.lines.forEach(function(L, li){
       var m = mat(L.matId), s = lineStatus(ctx, L), rem = Math.max(0, L.qty-L.picked);
@@ -2047,10 +2059,55 @@
     var blok = [];
     allCards().forEach(function(x){ var m = mat(x.c.matId); blok.push({ qr:x.c.id, bin:x.p.id, kode:m.code, nama:m.name, qty:cardQty(x.c), tgl_masuk:minDate(x.c), status:x.c.status==="ok"?"ok":"belum dikonfirmasi" }); });
     var bin = S.map(function(p){ return { id:p.id, persen:posPct(p) }; });
-    var order = ORDERS.slice(-20).map(function(o){ return { no:o.no, tanggal:o.date, posting:!!o.posted, baris:o.lines.map(function(l){ var m = mat(l.matId); return { kode:m?m.code:l.matId, nama:m?m.name:"", diminta:l.qty, diambil:l.picked }; }) }; });
+    var order = ORDERS.slice(-25).map(function(o){ return { no:o.no, tanggal:o.date, shift:o.shift||null, status:o.cancel?"dibatalkan":(o.posted?"terposting":(o.q?"antre":(o===activeOrder()?"aktif":"lain"))), urutan_antrean:o.q&&!o.cancel?queueList().indexOf(o)+1:null, dari:o.by||"form", posting:!!o.posted, baris:o.lines.map(function(l){ var m = mat(l.matId); return { kode:m?m.code:l.matId, nama:m?m.name:"", diminta:l.qty, diambil:l.picked }; }) }; });
+    var material = MATS.map(function(m){ return { kode:m.code, nama:m.name, kategori:cat(m.cat).name }; });
     var log = LOG.slice(-150).map(function(r){ var t = LT[r.type]; return { tanggal:r.t, jenis:t?t[1]:r.type, qr:r.id, material:r.mat, bin:r.pos, qty:r.qty||0, ket:String(r.note||"").slice(0,80) }; });
-    return { blok:blok, bin:bin, order:order, log:log };
+    return { blok:blok, bin:bin, order:order, log:log, material:material };
   }
+  /* ---------- kartu draft reservasi di chat ---------- */
+  function rsvPreview(kode, qty, selfNo){
+    var m = matByCode(kode); if(!m) return { m:null };
+    var bl = []; allCards().forEach(function(x){ if(x.c.matId===m.id && x.c.status==="ok") bl.push({ id:x.c.id, bin:x.p.id, q:cardQty(x.c), d:minDate(x.c) }); });
+    bl.sort(function(a,b){ return a.d<b.d ? -1 : a.d>b.d ? 1 : 0; });
+    var stok = bl.reduce(function(s,b){ return s+b.q; },0), dip = 0;
+    ORDERS.forEach(function(o){ if(o.posted || o.cancel || o.no===selfNo || !(o.q || o===activeOrder())) return; o.lines.forEach(function(L){ if(L.matId===m.id) dip += Math.max(0, L.qty-L.picked); }); });
+    var skip = dip, need = qty, picks = [];
+    bl.forEach(function(b){ var av = b.q; if(skip>0){ var k = Math.min(skip, av); skip -= k; av -= k; } if(need>0 && av>0){ var t = Math.min(need, av); picks.push({ bin:b.bin, q:t, d:b.d }); need -= t; } });
+    return { m:m, stok:stok, dip:dip, picks:picks, kurang:need };
+  }
+  function rsvCard(msg, idx){
+    var d = msg.draft, h = '<div class="rsv'+(d.st==="ok"?' done':(d.st!=="open"?' off':''))+'"><div class="rsv-h"><span>Draft reservasi</span><span class="tag info">Shift '+d.shift+'</span></div>';
+    d.baris.forEach(function(r){
+      var p = rsvPreview(r.no_material, r.qty, d.no);
+      if(!p.m){ h += '<div class="rsv-l"><div class="t"><b>'+esc(r.no_material)+'</b><span class="tag crit">tidak ada di master</span></div></div>'; return; }
+      h += '<div class="rsv-l"><div class="t"><span><b>'+p.m.code+'</b> '+esc(p.m.name)+'</span><span class="mono">'+fmt(r.qty)+'</span></div>'+
+        '<div class="s">stok '+fmt(p.stok)+(p.dip?' · sudah diminta order lain '+fmt(p.dip):'')+'</div>'+
+        (p.picks.length?'<div class="s">ambil (FIFO): '+p.picks.map(function(x){ return x.bin+' '+fmt(x.q)+' ('+x.d.slice(5).split("-").reverse().join("/")+')'; }).join(" → ")+'</div>':'')+
+        (p.kurang>0?'<div class="s" style="color:var(--crit)">kurang '+fmt(p.kurang)+' pcs · petugas mengambil yang ada</div>':'<div class="s" style="color:var(--ok)">✓ cukup</div>')+'</div>';
+    });
+    if(d.catatan) h += '<div class="s muted" style="font-size:.72rem">Catatan: '+esc(d.catatan)+'</div>';
+    if(d.st==="open"){
+      var act = activeOrder(), ql = queueList().length;
+      h += '<div class="s muted" style="font-size:.72rem">'+(act?'Akan masuk antrean urutan ke-'+(ql+1)+' (setelah '+act.no+(ql?' dan '+ql+' order lain':'')+').':'Akan langsung dikirim ke scanner petugas.')+' Daftar ambil dihitung ulang saat order naik.</div>'+
+        '<div class="rsv-act"><button class="primary" data-rsv-ok="'+idx+'">Konfirmasi &amp; kirim</button><button data-rsv-no="'+idx+'">Batal</button></div>';
+    } else if(d.st==="ok") h += '<div class="res">✓ '+d.no+' · shift '+d.shift+(d.pos?' · masuk antrean ke-'+d.pos:' · langsung di scanner petugas')+'</div>';
+    else h += '<div class="res muted">'+(d.st==="ganti"?'Diganti draft baru':'Dibatalkan')+'</div>';
+    return h+'</div>';
+  }
+  function rsvConfirm(i){
+    var msg = CHAT[i]; if(!msg || !msg.draft || msg.draft.st!=="open") return;
+    var lines = msg.draft.baris.map(function(r){ var m = matByCode(r.no_material); return m ? { matId:m.id, qty:r.qty } : null; }).filter(Boolean);
+    if(!lines.length) return;
+    var r = createOrder(lines, msg.draft.shift, "chat");
+    msg.draft.st = "ok"; msg.draft.no = r.order.no; msg.draft.pos = r.pos;
+    renderAll(); renderChat();
+  }
+  function rsvNote(m){
+    if(!m.draft) return "";
+    var d = m.draft, st = d.st==="ok" ? "dikonfirmasi "+d.no : (d.st==="open" ? "menunggu konfirmasi" : (d.st==="ganti" ? "diganti" : "dibatalkan"));
+    return "\n[draft shift "+d.shift+": "+d.baris.map(function(r){ return r.no_material+" "+r.qty+" pcs"; }).join(", ")+" · status: "+st+"]";
+  }
+
   function chatMd(t){
     var h = esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"), lines = h.split("\n"), out = [], tb = [];
     function flush(){ if(tb.length){ var rows = tb.filter(function(r){ return !/^\s*\|?\s*:?-{2,}/.test(r); }); out.push('<div class="tablewrap"><table>'+rows.map(function(r,i){ var c = r.replace(/^\s*\|/,"").replace(/\|\s*$/,"").split("|"); return '<tr>'+c.map(function(x){ return (i===0?'<th>':'<td>')+x.trim()+(i===0?'</th>':'</td>'); }).join("")+'</tr>'; }).join("")+'</table></div>'); tb = []; } }
@@ -2064,24 +2121,29 @@
   }
   function renderChat(){
     var box = $("#chat-box"); if(!box) return;
-    var ex = ["Berapa stok 20986756 dan ada di bin mana?","5 blok tertua sekarang","Apa isi bin A2?","Ringkasan aktivitas hari ini","Permintaan produksi yang belum diposting"];
+    var ex = ["Berapa stok 20986756 dan ada di bin mana?","5 blok tertua sekarang","Apa isi bin A2?","Ringkasan aktivitas hari ini","Permintaan produksi yang belum diposting","Reservasi 1.500 pcs 20986756 untuk shift 2"];
     box.innerHTML =
-      '<div class="chat-log" id="chat-log" aria-live="polite">'+(CHAT.length ? CHAT.map(function(m){ return '<div class="chat-m '+m.role+'">'+(m.role==="user"?esc(m.text):chatMd(m.text))+(m.alat&&m.alat.length?'<div class="chat-tools">dicek lewat: '+m.alat.map(function(a){ return esc(a.nama); }).join(", ")+'</div>':'')+'</div>'; }).join("") : '<div class="chat-empty"><div class="hi">Halo, mau tanya apa?</div><div class="muted" style="font-size:.84rem">Saya membaca data gudang di halaman ini. Coba salah satu contoh:</div></div>')+(chatBusy?'<div class="chat-m ai muted">sedang mencari…</div>':'')+'</div>'+
+      '<div class="chat-log" id="chat-log" aria-live="polite">'+(CHAT.length ? CHAT.map(function(m){ return '<div class="chat-m '+m.role+'">'+(m.role==="user"?esc(m.text):chatMd(m.text))+(m.draft?rsvCard(m, CHAT.indexOf(m)):'')+(m.alat&&m.alat.length?'<div class="chat-tools">dicek lewat: '+m.alat.map(function(a){ return esc(a.nama); }).join(", ")+'</div>':'')+'</div>'; }).join("") : '<div class="chat-empty"><div class="hi">Halo, mau tanya apa?</div><div class="muted" style="font-size:.84rem">Saya membaca data gudang di halaman ini. Coba salah satu contoh:</div></div>')+(chatBusy?'<div class="chat-m ai muted">sedang mencari…</div>':'')+'</div>'+
       '<div class="chat-ex">'+chatChips(ex).map(function(q){ return '<button class="chip" data-q="'+esc(q)+'"'+(chatBusy?' disabled':'')+'>'+esc(q)+'</button>'; }).join("")+'</div>'+
       '<div class="chat-in"><input type="text" id="chat-q" placeholder="Tanya stok, bin, blok tertua, order…" aria-label="Pertanyaan"'+(chatBusy?' disabled':'')+'><button class="primary" id="chat-go" aria-label="Kirim"'+(chatBusy?' disabled':'')+'>➤</button>'+'</div>';
     var lg = $("#chat-log"); if(lg) lg.scrollTop = lg.scrollHeight;
     $("#chat-go").addEventListener("click", function(){ askChat($("#chat-q").value); });
     $("#chat-q").addEventListener("keydown", function(e){ if(e.key==="Enter") askChat(this.value); });
     Array.prototype.forEach.call(box.querySelectorAll("[data-q]"), function(b){ b.addEventListener("click", function(){ askChat(b.dataset.q); }); });
+    Array.prototype.forEach.call(box.querySelectorAll("[data-rsv-ok]"), function(b){ b.addEventListener("click", function(){ rsvConfirm(+b.dataset.rsvOk); }); });
+    Array.prototype.forEach.call(box.querySelectorAll("[data-rsv-no]"), function(b){ b.addEventListener("click", function(){ var m = CHAT[+b.dataset.rsvNo]; if(m && m.draft && m.draft.st==="open"){ m.draft.st = "batal"; renderChat(); } }); });
   }
   function askChat(q){
     q = (q||"").trim(); if(!q || chatBusy) return;
     CHAT.push({ role:"user", text:q }); chatBusy = true; renderChat();
     var d = new Date(today()+"T00:00:00");
-    var body = { code:chatCode(), today:today(), todayName:["minggu","senin","selasa","rabu","kamis","jumat","sabtu"][d.getDay()], snapshot:snapshotChat(), history:CHAT.map(function(m){ return { role:m.role, text:m.text }; }) };
+    var body = { code:chatCode(), today:today(), todayName:["minggu","senin","selasa","rabu","kamis","jumat","sabtu"][d.getDay()], snapshot:snapshotChat(), history:CHAT.map(function(m){ return { role:m.role, text:m.text+rsvNote(m) }; }) };
     fetch(CHAT_URL, { method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify(body) })
       .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
-      .then(function(x){ CHAT.push({ role:"ai", text: x.ok ? x.j.reply : "Maaf, gagal: "+(x.j.error||"tidak diketahui"), alat: x.ok ? x.j.alat : null, saran: x.ok ? x.j.saran : null }); })
+      .then(function(x){
+        var dr = x.ok && x.j.draft && x.j.draft.baris && x.j.draft.baris.length ? { baris:x.j.draft.baris, shift:x.j.draft.shift, catatan:x.j.draft.catatan||"", st:"open" } : null;
+        if(dr) CHAT.forEach(function(m){ if(m.draft && m.draft.st==="open") m.draft.st = "ganti"; });
+        CHAT.push({ role:"ai", text: x.ok ? x.j.reply : "Maaf, gagal: "+(x.j.error||"tidak diketahui"), alat: x.ok ? x.j.alat : null, saran: x.ok ? x.j.saran : null, draft: dr }); })
       .catch(function(){ CHAT.push({ role:"ai", text:"Maaf, layanan AI tidak terjangkau. Fitur ini hanya jalan di versi yang sudah di-deploy ke Netlify dengan kunci Azure terpasang." }); })
       .then(function(){ chatBusy = false; renderChat(); });
   }
@@ -2262,17 +2324,42 @@
   }
 
   /* ---------- order produksi (admin) ---------- */
+  /* ---------- antrean order ---------- */
+  function queueList(){ return ORDERS.filter(function(o){ return o.q && !o.cancel && !o.posted; }).sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); }
+  function activeOrder(){ return ORDER && !ORDER.posted && !ORDER.cancel && !ORDER.q ? ORDER : null; }
+  function syncQueue(){
+    if(activeOrder()) return false;
+    var nx = queueList()[0]; if(!nx) return false;
+    nx.q = false; ORDER = nx; simCtx.sc = newSc(); simCtx.msg = ""; selCard = null;
+    LOG.push({ t:today(), type:"ANTRE", id:nx.no, mat:nx.lines.length+" no material", pos:nx.shift?"shift "+nx.shift:"-", qty:nx.lines.reduce(function(s,L){ return s+L.qty; },0), saldo:null, note:"naik dari antrean ke scanner petugas" });
+    return true;
+  }
+  function createOrder(lines, shift, by){
+    var merged = {};
+    lines.forEach(function(r){ merged[r.matId] = (merged[r.matId]||0) + r.qty; });
+    var o = { no:"ORD-"+pad4(orderSeq++), date:today(), ts:Date.now(), shift:shift||null, by:by||"form", q:!!activeOrder(), cancel:false,
+              lines:Object.keys(merged).map(function(k){ return { matId:k, qty:merged[k], picked:0 }; }), done:[], posted:false, doc:null };
+    ORDERS.push(o);
+    if(!o.q){ ORDER = o; simCtx.sc = newSc(); simCtx.msg = ""; selCard = null; }
+    return { order:o, pos: o.q ? queueList().indexOf(o)+1 : 0 };
+  }
+  function cancelOrder(no){
+    var o = ORDERS.filter(function(x){ return x.no===no; })[0]; if(!o || !o.q || o.cancel) return;
+    o.cancel = true; LOG.push({ t:today(), type:"BATAL", id:o.no, mat:o.lines.length+" no material", pos:o.shift?"shift "+o.shift:"-", qty:0, saldo:null, note:"order antrean dibatalkan admin" });
+    renderAll();
+  }
+  function shiftSel(id, v){ return '<select id="'+id+'" aria-label="Untuk shift">'+[1,2,3].map(function(n){ return '<option value="'+n+'"'+(n===v?' selected':'')+'>Shift '+n+'</option>'; }).join("")+'</select>'; }
   function renderOrderForm(){
     var box = $("#order-form");
-    var busy = ORDER && !ORDER.posted;
-    if(busy){ box.innerHTML = '<div class="msg">Order <b class="mono">'+ORDER.no+'</b> sedang dikerjakan petugas. Order berikutnya bisa dibuat setelah order ini diposting (satu petugas satu order).</div>'; return; }
     var h = '';
     DRAFT.forEach(function(r, i){
-      h += '<div class="orow"><div class="field" style="flex:1 1 220px"><label>No material · nama (ketik untuk cari)</label><input class="matin'+(r.matId?'':' bad')+'" list="mat-full" data-i="'+i+'" data-k="m" value="'+(r.matId?esc(matLabel(mat(r.matId))):esc(r.raw||''))+'" placeholder="ketik no material atau nama" autocomplete="off"></div>'+
+      h += '<div class="orow"><div class="field" style="flex:1 1 220px"><label>No material · nama (ketik untuk cari)</label><input class="matin'+(r.matId?'':' bad')+'" list="mat-full" data-i="'+i+'" data-k="m" value="'+(r.matId?esc(matLabel(mat(r.matId))):esc(r.raw||''))+'" placeholder="ketik no material atau nama"></div>'+
         '<div class="field"><label>Qty (pcs)</label><input type="number" min="1" step="50" value="'+r.qty+'" data-i="'+i+'" data-k="q"></div>'+
         '<button data-i="'+i+'" data-k="x" aria-label="Hapus baris">Hapus</button></div>';
     });
-    h += '<div class="row"><button id="btn-addline">+ Tambah baris</button><button class="primary" id="btn-order">Buat daftar ambil &amp; kirim ke scanner</button></div><div id="order-msg"></div>';
+    var act = activeOrder();
+    h += '<div class="row"><div class="field"><label for="ord-shift">Untuk shift</label>'+shiftSel("ord-shift", DRAFT_SHIFT)+'</div><button id="btn-addline">+ Tambah baris</button><button class="primary" id="btn-order">'+(act?'Masukkan ke antrean':'Buat daftar ambil &amp; kirim ke scanner')+'</button></div>'+
+      (act?'<div class="muted" style="font-size:.76rem">'+act.no+' sedang dikerjakan petugas. Order baru masuk antrean dan otomatis naik setelah order di depannya diposting.</div>':'')+'<div id="order-msg"></div>';
     box.innerHTML = h;
     Array.prototype.forEach.call(box.querySelectorAll("[data-k]"), function(el){
       var i = +el.dataset.i;
@@ -2280,25 +2367,26 @@
       if(el.dataset.k==="q") el.addEventListener("input", function(){ DRAFT[i].qty = Math.max(1, parseInt(el.value||"1",10)); });
       if(el.dataset.k==="x") el.addEventListener("click", function(){ DRAFT.splice(i,1); if(!DRAFT.length) DRAFT.push({ matId:null, qty:100, raw:"" }); renderOrderForm(); });
     });
+    $("#ord-shift").addEventListener("change", function(){ DRAFT_SHIFT = +this.value; });
     $("#btn-addline").addEventListener("click", function(){ DRAFT.push({ matId:null, qty:100, raw:"" }); renderOrderForm(); var ins = box.querySelectorAll(".matin"); ins[ins.length-1].focus(); });
     $("#btn-order").addEventListener("click", function(){
       if(DRAFT.some(function(r){ return !r.matId; })){ $("#order-msg").innerHTML = '<div class="msg crit">Ada baris yang no materialnya belum valid (kotak merah). Pilih dari saran yang muncul saat mengetik.</div>'; return; }
-      var merged = {};
-      DRAFT.forEach(function(r){ merged[r.matId] = (merged[r.matId]||0) + r.qty; });
-      ORDER = { no:"ORD-"+pad4(orderSeq++), date:today(), lines:Object.keys(merged).map(function(k){ return { matId:k, qty:merged[k], picked:0 }; }), done:[], posted:false, doc:null };
-      ORDERS.push(ORDER);
-      simCtx.sc = newSc(); simCtx.msg = ""; selCard = null;
+      var r = createOrder(DRAFT, DRAFT_SHIFT, "form");
       renderAll();
+      $("#order-msg").innerHTML = '<div class="msg ok">'+r.order.no+(r.pos?' masuk antrean urutan ke-'+r.pos:' dikirim ke scanner petugas')+' · shift '+DRAFT_SHIFT+'.</div>';
     });
   }
   function renderOrderAdmin(){
     var box = $("#order-admin");
-    if(!ORDER || ORDER.posted){
-      box.innerHTML = '<div class="muted" style="font-size:.84rem">Tidak ada order aktif.'+(ORDER&&ORDER.posted?' Order terakhir '+ORDER.no+' sudah diposting (dok '+ORDER.doc+').':'')+' Contoh di kiri: tiga no material, salah satunya punya kembaran (GT dan MT).</div>';
-      return;
+    var ql = queueList();
+    var qh = ql.length ? '<div style="margin-top:14px"><h3>Antrean · '+ql.length+' order</h3><div class="tablewrap"><table><tr><th>#</th><th>No order</th><th>Shift</th><th>Isi</th><th>Dari</th><th></th></tr>'+
+      ql.map(function(o,i){ return '<tr><td class="mono">'+(i+1)+'</td><td class="mono"><b>'+o.no+'</b></td><td>'+(o.shift?'Shift '+o.shift:'-')+'</td><td style="font-size:.76rem">'+o.lines.map(function(L){ return mat(L.matId).code+' · '+fmt(L.qty); }).join("<br>")+'</td><td class="muted" style="font-size:.74rem">'+(o.by==="chat"?'chat AI':'form')+'</td><td><button class="small" data-cancel="'+o.no+'">Batalkan</button></td></tr>'; }).join("")+'</table></div></div>' : '';
+    if(!activeOrder()){
+      box.innerHTML = '<div class="muted" style="font-size:.84rem">Tidak ada order aktif.'+(ORDER&&ORDER.posted?' Order terakhir '+ORDER.no+' sudah diposting (dok '+ORDER.doc+').':'')+' Contoh di kiri: tiga no material, salah satunya punya kembaran (GT dan MT).</div>'+qh;
+      wireCancel(box); return;
     }
     var done = orderDone(simCtx);
-    var h = '<div class="optline" style="margin-top:0"><div class="optline-h"><b class="mono">'+ORDER.no+'</b><span class="muted">'+ORDER.date+' · ke produksi</span><span class="tot">'+(done?'<span class="tag ok">siap posting</span>':'<span class="tag info">di scanner petugas</span>')+'</span></div>';
+    var h = '<div class="optline" style="margin-top:0"><div class="optline-h"><b class="mono">'+ORDER.no+'</b><span class="muted">'+ORDER.date+' · ke produksi'+(ORDER.shift?' · <b>shift '+ORDER.shift+'</b>':'')+(ORDER.by==="chat"?' · dari chat AI':'')+'</span><span class="tot">'+(done?'<span class="tag ok">siap posting</span>':'<span class="tag info">di scanner petugas</span>')+'</span></div>';
     h += '<div class="tablewrap"><table><tr><th>No material</th><th>Nama material</th><th>Diminta</th><th>Diambil</th><th>Status</th></tr>';
     ORDER.lines.forEach(function(L){
       var m = mat(L.matId), s = lineStatus(simCtx, L), st = lineSteps(simCtx, L);
@@ -2314,22 +2402,25 @@
         ORDER.lines.filter(function(L){ return L.picked>0; }).map(function(L){ var m = mat(L.matId); return '<tr><td class="mono">'+m.code+'</td><td>'+esc(m.name)+'</td><td class="mono">'+fmt(L.picked)+'</td></tr>'; }).join("")+'</table></div>';
       h += '<div class="row" style="margin-top:8px"><button class="primary" id="btn-post">Posting ke SAP (simulasi API)</button></div><div class="muted" style="font-size:.74rem">Di sistem nyata: API/BAPI goods movement. RPA hanya cadangan bila API belum tersedia.</div></div>';
     }
-    box.innerHTML = h + '</div>';
+    box.innerHTML = h + '</div>' + qh;
+    wireCancel(box);
     var bp = $("#btn-post");
     if(bp) bp.addEventListener("click", function(){
       ORDER.posted = true; ORDER.doc = "49" + String(10000000 + orderSeq*7351).slice(-8);
       LOG.push({ t:today(), type:"SAP", id:ORDER.no, mat:ORDER.lines.length+" no material", pos:"→ SLOC produksi", qty:ORDER.lines.reduce(function(s,L){ return s+L.picked; },0), saldo:0, note:"posting API · dok "+ORDER.doc });
+      syncQueue();
       renderAll();
     });
   }
+  function wireCancel(box){ Array.prototype.forEach.call(box.querySelectorAll("[data-cancel]"), function(b){ b.addEventListener("click", function(){ cancelOrder(b.dataset.cancel); }); }); }
   function renderOrderList(){
     var t = $("#order-list");
     if(!ORDERS.length){ t.innerHTML = '<tr><td class="muted">Belum ada order.</td></tr>'; return; }
-    t.innerHTML = '<tr><th>No order</th><th>Tanggal</th><th>Isi</th><th>Total diminta</th><th>Diambil</th><th>NO FIFO</th><th>Status</th></tr>' +
+    t.innerHTML = '<tr><th>No order</th><th>Tanggal</th><th>Shift</th><th>Isi</th><th>Total diminta</th><th>Diambil</th><th>NO FIFO</th><th>Status</th></tr>' +
       ORDERS.slice().reverse().map(function(o){
         var req = o.lines.reduce(function(s,L){ return s+L.qty; },0), got = o.lines.reduce(function(s,L){ return s+L.picked; },0);
-        var st = o.posted ? '<span class="tag ok">terposting · '+o.doc+'</span>' : (o===ORDER && orderDone(simCtx) ? '<span class="tag ok">siap posting</span>' : '<span class="tag info">di petugas</span>');
-        return '<tr><td class="mono"><b>'+o.no+'</b></td><td class="mono">'+o.date+'</td><td>'+o.lines.map(function(L){ return mat(L.matId).code; }).join(", ")+'</td><td class="mono">'+fmt(req)+'</td><td class="mono">'+fmt(got)+'</td><td class="mono">'+o.done.filter(function(d){ return !d.fifo; }).length+'</td><td>'+st+'</td></tr>';
+        var st = o.cancel ? '<span class="tag">dibatalkan</span>' : (o.posted ? '<span class="tag ok">terposting · '+o.doc+'</span>' : (o.q ? '<span class="tag warn">antrean ke-'+(queueList().indexOf(o)+1)+'</span>' : (o===ORDER && orderDone(simCtx) ? '<span class="tag ok">siap posting</span>' : '<span class="tag info">di petugas</span>')));
+        return '<tr><td class="mono"><b>'+o.no+'</b></td><td class="mono">'+o.date+'</td><td>'+(o.shift?o.shift:'-')+'</td><td>'+o.lines.map(function(L){ return mat(L.matId).code; }).join(", ")+'</td><td class="mono">'+fmt(req)+'</td><td class="mono">'+fmt(got)+'</td><td class="mono">'+o.done.filter(function(d){ return !d.fifo; }).length+'</td><td>'+st+'</td></tr>';
       }).join("");
   }
   function orderSteps(){
@@ -2375,14 +2466,14 @@
   document.addEventListener("click", function(e){ var a = e.target.closest ? e.target.closest("[data-pr]") : null; if(a){ e.preventDefault(); goPrint(a.dataset.pr); } });
   function renderLabels(){
     renderPrint();
-    var o = ORDER && !ORDER.posted && !orderDone(simCtx) ? ORDER : null;
+    var o = activeOrder() && !orderDone(simCtx) ? ORDER : null;
     $("#lbl-order").innerHTML = "";
     renderBinTable(); renderMaster();
     $("#stack-labels").innerHTML = allCards().map(function(x){ var m = mat(x.c.matId); return '<div class="label"><div class="qr">'+qrSvg(x.c.id)+'</div><b>'+x.c.id+'</b><b style="font-size:.95rem">'+m.code+'</b>'+esc(m.name)+'<br>Tgl masuk '+minDate(x.c)+(x.c.status==="pending"?'<br>(belum dikonfirmasi)':'')+'</div>'; }).join("") || '<div class="muted">Tidak ada blok.</div>';
     $("#carton-labels").innerHTML = MATS.map(function(m){ return '<div class="label" style="border-style:solid"><div class="qr">'+qrSvg(m.code)+'</div><b style="font-size:.85rem">'+m.code+'</b><b style="font-size:.85rem">'+esc(m.name)+'</b></div>'; }).join("");
   }
 
-  var LT = { IN:["ok","MASUK","+"], OUT:["info","KELUAR","-"], KONF:["ok","DITARUH",""], SELISIH:["crit","SELISIH","-"], SAP:["warn","POSTING SAP",""], BIN:["","STATUS BIN",""], PINDAH:["info","PINDAH",""], GABUNG:["ok","GABUNG",""], RETUR:["warn","RETUR","+"] };
+  var LT = { IN:["ok","MASUK","+"], OUT:["info","KELUAR","-"], KONF:["ok","DITARUH",""], SELISIH:["crit","SELISIH","-"], SAP:["warn","POSTING SAP",""], BIN:["","STATUS BIN",""], PINDAH:["info","PINDAH",""], GABUNG:["ok","GABUNG",""], ANTRE:["info","ANTREAN",""], BATAL:["","BATAL",""], RETUR:["warn","RETUR","+"] };
   function renderLog(){
     var rows = LOG.slice(-14).reverse();
     $("#log").innerHTML = '<tr><th>Tanggal</th><th>Jenis</th><th>QR / order</th><th>Material</th><th>Posisi</th><th>Qty</th><th>Saldo</th><th>FIFO</th><th>Ket.</th></tr>' +
@@ -2469,8 +2560,8 @@
              tumpukan:c.tum.slice() };
   }
   function orderDoc(o){
-    var st = o.posted ? "TERPOSTING" : (o===ORDER && orderDone(simCtx) ? "SIAP_POSTING" : "DI_PETUGAS");
-    return { noOrder:o.no, tanggal:o.date, ts:o.ts||0, status:st, noDokSap:o.doc||null,
+    var st = o.cancel ? "DIBATALKAN" : (o.posted ? "TERPOSTING" : (o.q ? "ANTRE" : (o===ORDER && orderDone(simCtx) ? "SIAP_POSTING" : "DI_PETUGAS")));
+    return { noOrder:o.no, tanggal:o.date, ts:o.ts||0, status:st, noDokSap:o.doc||null, shift:o.shift||null, sumber:o.by||"form",
              baris:o.lines.map(function(L){ var m = mat(L.matId); return { noMaterial:m.code, nama:m.name, qtyDiminta:L.qty, qtyDiambil:L.picked }; }),
              ambil:o.done.map(function(d){ return { baris:d.li, idQr:d.id, bin:d.pos, qty:d.q, fifo:!!d.fifo, tumpukan:d.tum||"", tanggal:d.date||null, at:d.at||0 }; }) };
   }
@@ -2497,11 +2588,11 @@
       if(cardQty(c)>0 || c.status==="pending" || c.adds.length) p.cards.push(c);
     });
     ORDERS = Object.keys(FB.raw.order).map(function(k){ var d = FB.raw.order[k]; return {
-      no:d.noOrder, date:d.tanggal, ts:d.ts||0, posted:d.status==="TERPOSTING", doc:d.noDokSap||null,
+      no:d.noOrder, date:d.tanggal, ts:d.ts||0, posted:d.status==="TERPOSTING", doc:d.noDokSap||null, shift:d.shift||null, by:d.sumber||"form", q:d.status==="ANTRE", cancel:d.status==="DIBATALKAN",
       lines:(d.baris||[]).map(function(b){ var m = matByCode(b.noMaterial); return m ? { matId:m.id, qty:b.qtyDiminta, picked:b.qtyDiambil||0 } : null; }).filter(Boolean),
       done:(d.ambil||[]).map(function(a){ return { li:a.baris, id:a.idQr, pos:a.bin, q:a.qty, fifo:!!a.fifo, tum:a.tumpukan||"", date:a.tanggal||null, at:a.at||0 }; }) }; });
     ORDERS.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
-    ORDER = ORDERS.length ? ORDERS[ORDERS.length-1] : null;
+    ORDER = ORDERS.filter(function(o){ return !o.posted && !o.cancel && !o.q; })[0] || (ORDERS.filter(function(o){ return !o.cancel && !o.q; }).slice(-1)[0] || null);
     LOG = Object.keys(FB.raw.transaksi).map(function(k){ var d = FB.raw.transaksi[k]; return {
       _id:k, ts:d.ts||0, t:d.waktu, type:d.jenis, id:d.idQr, mat:d.nama, pos:d.bin, qty:d.qty, saldo:d.saldoSetelah, fifo:(d.fifo===null||d.fifo===undefined)?undefined:d.fifo, note:d.catatan, oleh:d.oleh }; });
     LOG.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
