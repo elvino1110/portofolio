@@ -2,7 +2,7 @@
 // Hanya membaca dan mengusulkan. Admin yang mengecek dan menyimpan di halaman.
 // Environment Variables (sama dengan karton-chat):
 //   AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT atau AZURE_OPENAI_API_INSTANCE_NAME,
-//   AZURE_OPENAI_API_DEPLOYMENT_NAME (model yang bisa membaca gambar, mis. gpt-4.1),
+//   AZURE_OPENAI_API_DEPLOYMENT_NAME (deployment model yang bisa membaca gambar),
 //   AZURE_OPENAI_API_VERSION (wajib), ACCESS_CODE (opsional)
 
 import { AzureChatOpenAI } from "@langchain/openai";
