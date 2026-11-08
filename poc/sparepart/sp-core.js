@@ -50,8 +50,10 @@ function famById(id){ for(var i=0;i<FAMS.length;i++) if(FAMS[i].id===id) return 
 var FAC_SECS = [["UNW00","Unwind 01","UNW"],["UNW01","Unwind 02","UNW"],["DCR00","Dancer roll","DCR"],["MBS00","Emboss","EMB"],["FLD00","Folding","FLD"],["LGS00","Log saw","LSW"],["ABSW0","Auto bandsaw","SAW"],["APCKL","Auto pack kiloan","PCK"],["MTR00","Motor","DRV"],["VCP00","Vacuum pump A","VCP"]];
 var IFD_SECS = [["UNW00","Unwind 01","UNW"],["UNW01","Unwind 02","UNW"],["MBS00","Emboss","EMB"],["FLD00","Interfolder","FLD"],["CUT00","Cutting","CUT"],["STK00","Stacker / counter","STK"],["MTR00","Motor","DRV"]];
 var OTH_SECS = [["UNW00","Unwind 01","UNW"],["MBS00","Emboss","EMB"],["FLD00","Folding","FLD"],["STK00","Stacker / counter","STK"],["PCK00","Packing","WRAP"],["MTR00","Motor","DRV"]];
+var F26_SECS = [["UNW00","Unwind 01","UNW"],["UNW01","Unwind 02","UNW"],["UNW02","Unwind 03","UNW"],["UNW03","Unwind 04","UNW"],["DCR00","Dancer roll","DCR"],["MBS00","Emboss","EMB"],["FLD00","Folding","FLD26"],["LGS00","Log saw","LSW"],["ABSW0","Auto bandsaw","SAW"],["MBSW0","Bandsaw manual","SAW"],["APCKL","Auto pack kiloan","PCK"],["MTR00","Motor","DRV"],["PNL00","Panel control folding","PNL"],["PNLCT","Panel cutting auto bandsaw","PNL"],["PNLPC","Panel packing kiloan","PNL"],["VCP00","Vacuum pump A","VCP"],["VCP01","Vacuum pump B","VCP"]];
 var MACHINES = [
-  { id:"FCI26", name:"Facial 26", fl:"UVD5-FCI26", secs:[["UNW00","Unwind 01","UNW"],["UNW01","Unwind 02","UNW"],["UNW02","Unwind 03","UNW"],["UNW03","Unwind 04","UNW"],["DCR00","Dancer roll","DCR"],["MBS00","Emboss","EMB"],["FLD00","Folding","FLD26"],["LGS00","Log saw","LSW"],["ABSW0","Auto bandsaw","SAW"],["MBSW0","Bandsaw manual","SAW"],["APCKL","Auto pack kiloan","PCK"],["MTR00","Motor","DRV"],["PNL00","Panel control folding","PNL"],["PNLCT","Panel cutting auto bandsaw","PNL"],["PNLPC","Panel packing kiloan","PNL"],["VCP00","Vacuum pump A","VCP"],["VCP01","Vacuum pump B","VCP"]] },
+  { id:"FCI26", name:"Facial 26", fl:"UVD5-FCI26", secs:F26_SECS },
+  { id:"FCI40", name:"Facial 40", fl:"UVD5-FCI40", secs:F26_SECS },   // mesin uji foto: bagian sama dengan Facial 26, semua barang berfoto asli ada di BOM-nya
   { id:"FCI28", name:"Facial 28", fl:"UVD5-FCI28", secs:FAC_SECS },
   { id:"FCI29", name:"Facial 29", fl:"UVD5-FCI29", secs:FAC_SECS },
   { id:"FCI30", name:"Facial 30", fl:"UVD5-FCI30", secs:FAC_SECS },
@@ -93,6 +95,27 @@ var SECTIONS = [];
       var bom = t.bom.filter(function(b, i){ return real || i<3 || keep[b[0]] || rnd()<0.8; }).map(function(b){ return { mat:b[0], q:b[1] }; });
       SECTIONS.push({ m:m.id, code:code, name:sx[1], fl:m.fl+"-"+code, bom:bom, real:real });
     });
+  });
+})();
+// Facial 40 = mesin uji pencarian foto: semua barang yang punya foto asli dimasukkan ke fun loc yang masuk akal
+var F40_PHOTO_BOM = {
+  UNW00:[["2001012",2],["2001061",1],["2001041",2]],
+  UNW01:[["2001014",2],["2001061",1]],
+  DCR00:[["2001041",2],["2001061",1],["2001007",2]],
+  MBS00:[["2001014",2],["2001123",1],["2001460",1]],
+  FLD00:[["2001004",4],["2005040",2],["2001015",4],["2001007",6],["2001041",4],["2001302",6],["2001303",4],["2001441",8],["2001442",8]],
+  LGS00:[["2001012",2],["2001440",4]],
+  ABSW0:[["2001202",1],["2001123",1]],
+  APCKL:[["2001400",1],["2001420",1],["2001380",2],["2001303",4]],
+  MTR00:[["2001202",1],["2001460",1],["2001440",4]],
+  PNL00:[["2001061",2]],
+  VCP00:[["2001380",2],["2001302",2]],
+  VCP01:[["2001380",2],["2001302",2]]
+};
+(function(){
+  Object.keys(F40_PHOTO_BOM).forEach(function(code){
+    var sc = SECTIONS.filter(function(z){ return z.m==="FCI40" && z.code===code; })[0]; if(!sc) return;
+    F40_PHOTO_BOM[code].slice().reverse().forEach(function(x){ if(!sc.bom.some(function(b){ return b.mat===x[0]; })) sc.bom.unshift({ mat:x[0], q:x[1] }); });
   });
 })();
 // part drawing hanya untuk mesin tertentu (dibuat workshop atas request user)
@@ -428,6 +451,8 @@ function snapshotAll(){
 function importAll(o){
   var m = JSON.parse(o.meta); if(!m || m.v!==4) throw new Error("versi");
   S = m;
+  // data lama belum punya riwayat Facial 40 (mesin uji foto): tambahkan riwayat contohnya saja, data lain tidak diubah
+  if(!S.hist.some(function(h){ return h.m==="FCI40"; })) S.hist = S.hist.concat(seedHistory().filter(function(h){ return h.m==="FCI40"; }));
   ORDERS = Object.keys(o.orders||{}).map(function(k){ return JSON.parse(o.orders[k]); }).sort(function(a, b){ return a.ts-b.ts; });
   PHOTOS = {}; Object.keys(o.photos||{}).forEach(function(k){ PHOTOS[k] = JSON.parse(o.photos[k]); });
 }
@@ -506,40 +531,96 @@ function initStore(onChange){
 
 /* ================= CLIP: menebak keluarga barang dari foto (jalan di browser) ================= */
 // Model: Xenova/clip-vit-base-patch32 (ONNX, kuantisasi 8-bit) lewat transformers.js. Di pratinjau Claude model tidak bisa diunduh -> mode simulasi.
-var CLIP = { state:IN_FRAME ? "sim" : "off", msg:"", pct:0, T:null, proc:null, vis:null, famEmb:null, imgEmb:{}, listeners:[] };
-var CLIP_MODEL = "Xenova/clip-vit-base-patch32";
+var CLIP = { state:IN_FRAME ? "sim" : "off", msg:"", pct:0, T:null, proc:null, vis:null, famEmb:null, imgEmb:{}, cache:null, listeners:[] };
+// Pilihan model pencarian foto: ?model=clip | dino-small | dino-base (boleh diberi akhiran -mean / -clsmean untuk DINO), atau lewat Master data.
+var MODEL_BASE = {
+  "clip":       { id:"Xenova/clip-vit-base-patch32", kind:"clip", name:"CLIP",          temp:50 },
+  "dino-small": { id:"Xenova/dinov2-small",          kind:"dino", name:"DINOv2 small",  temp:25 },
+  "dino-base":  { id:"Xenova/dinov2-base",           kind:"dino", name:"DINOv2 base",   temp:25 }
+};
+function pickModel(){
+  var q = "", fromUrl = false;
+  try{ q = new URLSearchParams(location.search).get("model") || ""; fromUrl = !!q; }catch(e){}
+  if(!q){ try{ q = localStorage.getItem("sp-model") || ""; }catch(e){} }
+  var m = /^(clip|dino-small|dino-base)(?:-(mean|clsmean))?$/.exec(q);
+  if(!m || (m[1]==="clip" && m[2])){ m = ["clip", "clip"]; fromUrl = false; }
+  var base = MODEL_BASE[m[1]], pool = base.kind==="dino" ? (m[2] || "cls") : null, label = m[1]+(pool && pool!=="cls" ? "-"+pool : "");
+  if(fromUrl){ try{ localStorage.setItem("sp-model", label); }catch(e){} }
+  return { key:m[1], label:label, id:base.id, kind:base.kind, name:base.name, pool:pool, dtype:"q8", temp:base.temp, file:(m[1]==="clip" ? "sp-img/embeddings.json" : "sp-img/embeddings-"+label+".json") };
+}
+var MODEL = pickModel();
+var CLIP_MODEL = MODEL.id, CLIP_DTYPE = MODEL.dtype;
 var CLIP_LIB = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/transformers.min.js";
+// File embedding foto katalog yang dihitung lebih dulu (dibuat dari halaman Master data), supaya HP tidak menghitung ulang semua foto katalog tiap kali.
+var EMB_FILE = MODEL.file;
 function clipNotify(){ CLIP.listeners.forEach(function(f){ try{ f(); }catch(e){} }); }
 function l2(v){ var s = 0, i; for(i=0;i<v.length;i++) s += v[i]*v[i]; s = Math.sqrt(s)||1; var o = new Float32Array(v.length); for(i=0;i<v.length;i++) o[i] = v[i]/s; return o; }
 function dot(a, b){ var s = 0; for(var i=0;i<a.length;i++) s += a[i]*b[i]; return s; }
+function f32b64(v){ var u = new Uint8Array(new Float32Array(v).buffer), s = "", i; for(i=0;i<u.length;i+=8192) s += String.fromCharCode.apply(null, u.subarray(i, i+8192)); return btoa(s); }
+function b64f32(t){ var s = atob(t), u = new Uint8Array(s.length), i; for(i=0;i<s.length;i++) u[i] = s.charCodeAt(i); return new Float32Array(u.buffer); }
+// baca embeddings.json (bila ada) ke memori; hanya dipakai kalau modelnya sama dengan model yang dipakai pencarian
+function clipLoadCache(){
+  if(CLIP.cacheP) return CLIP.cacheP;
+  CLIP.cacheP = fetch(EMB_FILE, { cache:"no-cache" }).then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); }).then(function(d){
+    if(!d || !d.e || d.model!==CLIP_MODEL || d.dtype!==CLIP_DTYPE || (MODEL.kind==="dino" && (d.pool || "cls")!==MODEL.pool)){ CLIP.cache = { bad:true, model:d && d.model || "" }; return CLIP.cache; }
+    var n = 0; Object.keys(d.e).forEach(function(k){ var v = b64f32(d.e[k]); if(d.dim && v.length!==d.dim) return; CLIP.imgEmb[k] = l2(v); n++; });
+    CLIP.cache = { n:n, made:d.made||"", model:d.model }; return CLIP.cache;
+  }).catch(function(){ CLIP.cache = { none:true }; return CLIP.cache; });
+  return CLIP.cacheP;
+}
+// memuat model (dan file embedding) tanpa menghitung foto katalog
+function clipLoadModel(){
+  if(CLIP.modelP) return CLIP.modelP;
+  var files = {};
+  function prog(p){ if(p && p.status==="progress" && p.file){ files[p.file] = [p.loaded||0, p.total||0]; var a = 0, b = 0; Object.keys(files).forEach(function(k){ a += files[k][0]; b += files[k][1]; }); CLIP.pct = b ? Math.round(a/b*100) : 0; CLIP.msg = "Mengunduh model "+MODEL.name+" "+CLIP.pct+"% ("+Math.round(b/1048576)+" MB, sekali saja)"; clipNotify(); } }
+  CLIP.modelP = clipLoadCache().then(function(){ CLIP.msg = "Memuat pustaka…"; clipNotify(); return import(CLIP_LIB); }).then(function(T){
+    CLIP.T = T; T.env.allowLocalModels = false;
+    var opt = { dtype:MODEL.dtype, progress_callback:prog };
+    var mp = MODEL.kind==="clip" ? T.CLIPVisionModelWithProjection.from_pretrained(MODEL.id, opt) : T.AutoModel.from_pretrained(MODEL.id, opt);
+    return Promise.all([ T.AutoProcessor.from_pretrained(MODEL.id), mp ]);
+  }).then(function(r){ CLIP.proc = r[0]; CLIP.vis = r[1]; });
+  CLIP.modelP.catch(function(){ CLIP.modelP = null; });
+  return CLIP.modelP;
+}
 function clipLoad(){
   if(CLIP.state==="ready" || CLIP.state==="loading") return CLIP.ready;
   if(IN_FRAME){ CLIP.state = "sim"; clipNotify(); return Promise.resolve(false); }
   CLIP.state = "loading"; CLIP.msg = "Memuat pustaka…"; CLIP.pct = 0; clipNotify();
-  var files = {};
-  function prog(p){ if(p && p.status==="progress" && p.file){ files[p.file] = [p.loaded||0, p.total||0]; var a = 0, b = 0; Object.keys(files).forEach(function(k){ a += files[k][0]; b += files[k][1]; }); CLIP.pct = b ? Math.round(a/b*100) : 0; CLIP.msg = "Mengunduh model CLIP "+CLIP.pct+"% ("+Math.round(b/1048576)+" MB, sekali saja)"; clipNotify(); } }
-  CLIP.ready = import(CLIP_LIB).then(function(T){
-    CLIP.T = T; T.env.allowLocalModels = false;
-    var opt = { dtype:"q8", progress_callback:prog };
-    return Promise.all([ T.AutoProcessor.from_pretrained(CLIP_MODEL), T.CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, opt) ]);
-  }).then(function(r){
-    CLIP.proc = r[0]; CLIP.vis = r[1];
-  }).then(function(){
+  CLIP.ready = clipLoadModel().then(function(){
     CLIP.msg = "Membaca foto katalog…"; clipNotify();
     return clipIndexCatalog();
-  }).then(function(){ CLIP.state = "ready"; CLIP.msg = "CLIP siap · berjalan di perangkat ini"; clipNotify(); return true; })
-  .catch(function(e){ console.error("CLIP", e); CLIP.state = "error"; CLIP.msg = "CLIP gagal dimuat ("+String(e && e.message || e).slice(0,120)+"). Pakai pencarian nama atau pilih keluarga barangnya."; clipNotify(); return false; });
+  }).then(function(){ CLIP.state = "ready"; var c = CLIP.cache; CLIP.msg = MODEL.name+" siap · berjalan di perangkat ini"+(c && c.n ? " · "+c.n+" foto katalog dari file embedding" : ""); clipNotify(); return true; })
+  .catch(function(e){ console.error("CLIP", e); CLIP.state = "error"; CLIP.msg = MODEL.name+" gagal dimuat ("+String(e && e.message || e).slice(0,120)+"). Pakai pencarian nama atau pilih keluarga barangnya."; clipNotify(); return false; });
   return CLIP.ready;
 }
+// foto katalog bawaan (file di folder sp-img), tanpa foto unggahan
+function staticPhotos(){ var o = [], seen = {}; ITEMS.forEach(function(it){ (BASE_PHOTOS[it.mat]||[]).forEach(function(s){ if(!seen[s]){ seen[s] = 1; o.push(s); } }); }); return o; }
+// hitung ulang embedding semua foto bawaan dan kembalikan isi embeddings.json
+function clipBuildFile(){
+  var srcs = staticPhotos(), out = {}, dim = 0;
+  var p = clipLoadModel();
+  srcs.forEach(function(s, i){ p = p.then(function(){ CLIP.msg = "Menghitung embedding "+(i+1)+"/"+srcs.length+"…"; clipNotify(); return clipEmbed(s).then(function(v){ dim = v.length; out[s] = f32b64(v); CLIP.imgEmb[s] = v; }).catch(function(e){ throw new Error("Foto "+s+" gagal dibaca ("+String(e && e.message || e).slice(0,80)+")"); }); }); });
+  return p.then(function(){ return { model:MODEL.id, dtype:MODEL.dtype, pool:MODEL.pool || undefined, dim:dim, made:new Date().toISOString().slice(0,10), n:srcs.length, e:out }; });
+}
+// DINOv2: token pertama = CLS, sisanya token patch. Sama dengan perhitungan di tools/buat-embedding.mjs.
+function dinoPool(h, pool){
+  var T = h.dims[1], D = h.dims[2], d = h.data, cls = l2(d.slice(0, D)), mean = new Float32Array(D), t, i;
+  for(t=1;t<T;t++) for(i=0;i<D;i++) mean[i] += d[t*D+i]/(T-1);
+  if(pool==="cls") return cls;
+  if(pool==="mean") return l2(mean);
+  var o = new Float32Array(2*D); o.set(cls, 0); o.set(l2(mean), D); return l2(o);
+}
 function clipEmbed(src){
-  return CLIP.T.RawImage.read(src).then(function(img){ return CLIP.proc(img); }).then(function(inp){ return CLIP.vis(inp); }).then(function(out){ return l2(out.image_embeds.data); });
+  return CLIP.T.RawImage.read(src).then(function(img){ return CLIP.proc(img); }).then(function(inp){ return CLIP.vis(inp); }).then(function(out){ return MODEL.kind==="clip" ? l2(out.image_embeds.data) : dinoPool(out.last_hidden_state, MODEL.pool); });
 }
 // embedding semua foto katalog (foto asli + foto unggahan); disimpan di memori per sumber foto
 function clipIndexCatalog(){
   var jobs = [];
-  ITEMS.forEach(function(it){ photosOf(it.mat).forEach(function(src){ if(!CLIP.imgEmb[src]) jobs.push(src); }); });
+  var seen = {};
+  ITEMS.forEach(function(it){ photosOf(it.mat).forEach(function(src){ if(!CLIP.imgEmb[src] && !seen[src]){ seen[src] = 1; jobs.push(src); } }); });
   var p = Promise.resolve();
-  jobs.forEach(function(src, i){ p = p.then(function(){ CLIP.msg = "Membaca foto katalog "+(i+1)+"/"+jobs.length+"…"; clipNotify(); return clipEmbed(src).then(function(v){ CLIP.imgEmb[src] = v; }).catch(function(){}); }); });
+  var c = CLIP.cache, hint = c && c.bad ? "File embedding tidak cocok dengan model "+MODEL.name+" (isinya model "+(c.model||"lain")+"), jadi foto katalog dihitung ulang di perangkat ini. " : (c && c.none ? "File "+EMB_FILE.split("/").pop()+" tidak ditemukan, jadi foto katalog dihitung di perangkat ini. " : "");
+  jobs.forEach(function(src, i){ p = p.then(function(){ CLIP.msg = hint+"Membaca foto katalog "+(i+1)+"/"+jobs.length+"…"; clipNotify(); return clipEmbed(src).then(function(v){ CLIP.imgEmb[src] = v; }).catch(function(){}); }); });
   return p;
 }
 // hasil: { fams:[{id, p}], photo:{mat: kemiripan 0..1}, ms }
@@ -551,10 +632,10 @@ function clipSearch(src){
     ITEMS.forEach(function(it){ var best = 0; photosOf(it.mat).forEach(function(s){ var e = CLIP.imgEmb[s]; if(e){ var c = dot(v, e); if(c>best) best = c; } }); if(best){ photo[it.mat] = best; if(!(famBest[it.fam]>best)) famBest[it.fam] = best; } });
     // keluarga = foto katalog terdekat per keluarga, diubah jadi persen dengan softmax (hanya keluarga yang punya foto)
     var ks = Object.keys(famBest), mx = Math.max.apply(null, ks.map(function(k){ return famBest[k]; }));
-    var fams = ks.map(function(k){ return { id:k, p:Math.exp(50*(famBest[k]-mx)) }; }), tot = fams.reduce(function(a, b){ return a+b.p; }, 0);
+    var fams = ks.map(function(k){ return { id:k, p:Math.exp(MODEL.temp*(famBest[k]-mx)) }; }), tot = fams.reduce(function(a, b){ return a+b.p; }, 0);
     fams.forEach(function(f){ f.p /= tot; });
     fams.sort(function(a, b){ return b.p-a.p; });
-    return { fams:fams, photo:photo, ms:Date.now()-t0, real:true };
+    return { fams:fams, photo:photo, temp:MODEL.temp, ms:Date.now()-t0, real:true };
   });
 }
 // simulasi untuk pratinjau: hasil yang sudah ditentukan untuk contoh foto
@@ -563,7 +644,7 @@ function simSearch(shot){
   fams.forEach(function(f){ f.p /= tot; }); fams.sort(function(a, b){ return b.p-a.p; });
   var photo = {}; photo[shot.near] = 0.91;
   ITEMS.forEach(function(it){ if(it.fam===item(shot.near).fam && it.mat!==shot.near && photosOf(it.mat).length) photo[it.mat] = 0.78; });
-  return { fams:fams, photo:photo, ms:0, real:false };
+  return { fams:fams, photo:photo, temp:30, ms:0, real:false };
 }
 // kecilkan foto unggahan (master data / mekanik) supaya ringan disimpan
 function shrinkImage(file, max, q){

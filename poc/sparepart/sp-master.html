@@ -43,6 +43,17 @@
     <div class="panel tbl-wrap" style="padding:0"><table class="list" id="fams"></table></div>
   </section>
   <section>
+    <div class="section-head"><h2>Embedding foto katalog</h2><span class="note" id="emb-n"></span></div>
+    <div class="panel">
+      <div class="row" style="margin-bottom:8px"><label class="note" for="emb-model">Model pencarian foto</label><select id="emb-model" style="width:auto"></select></div>
+      <p class="note" style="margin-bottom:8px">Pencarian foto mengubah tiap foto katalog menjadi deretan angka (embedding). Agar HP tidak menghitung ulang semua foto setiap kali, hitung sekali (di sini atau lewat skrip di folder tools) lalu simpan sebagai file. <span id="emb-hint"></span></p>
+      <div class="msg show" id="emb-st"></div>
+      <div class="row" style="margin-top:8px"><button type="button" class="primary" id="emb-go">Hitung embedding &amp; unduh file</button><span class="note" id="emb-prog"></span></div>
+      <div class="msg" id="emb-msg"></div>
+      <p class="note" style="margin-top:8px">Cara pakai: unduh file, taruh di folder <span class="mono">poc/sp-img/</span> di repositori, lalu commit dan push. Netlify memperbarui sendiri. Ulangi kalau foto bawaan bertambah atau diganti. Foto yang ditambahkan lewat &ldquo;+ foto&rdquo; tidak masuk file ini dan tetap dihitung di perangkat saat dipakai.</p>
+    </div>
+  </section>
+  <section>
     <div class="section-head"><h2>Reset data simulasi</h2></div>
     <div class="panel"><p class="note" style="margin-bottom:8px">Mengembalikan stok, history mesin, dan menghapus semua pesanan serta foto unggahan.</p><div class="row"><button type="button" id="rs">Reset</button><span id="rs-c" hidden><b>Yakin?</b> <button type="button" class="primary" id="rs-y">Ya, reset</button> <button type="button" id="rs-n">Batal</button></span></div><div class="msg" id="rs-msg"></div></div>
   </section>
@@ -77,6 +88,27 @@
       return '<tr><td><span style="color:var(--accent); display:inline-block; vertical-align:middle">'+famSvg(f.id, 26)+'</span> '+esc(f.name)+'</td><td class="mono">'+its.length+'</td><td class="mono">'+its.filter(function(it){ return photosOf(it.mat).length; }).length+'</td></tr>';
     }).join("");
   }
+  function renderEmb(){
+    var c = CLIP.cache, all = staticPhotos(), have = c && c.n ? all.filter(function(x){ return CLIP.imgEmb[x]; }).length : 0, miss = all.length-have, st = $("#emb-st"), t;
+    if(!c){ t = "Memeriksa file "+EMB_FILE.split("/").pop()+"…"; st.className = "msg show"; }
+    else if(c.n){ t = "File "+EMB_FILE.split("/").pop()+" terbaca: "+c.n+" foto, model "+c.model+(c.made ? ", dibuat "+c.made : "")+". "+(miss ? miss+" foto bawaan belum punya embedding (akan dihitung di perangkat saat dipakai)." : "Semua "+all.length+" foto bawaan sudah punya embedding."); st.className = "msg show "+(miss ? "" : "ok"); }
+    else if(c.bad){ t = "File "+EMB_FILE.split("/").pop()+" dibuat dengan model lain ("+(c.model||"tidak diketahui")+"), jadi tidak dipakai. Hitung ulang dan ganti filenya."; st.className = "msg show crit"; }
+    else { t = "Belum ada file "+EMB_FILE.split("/").pop()+" di sp-img. Pencarian menghitung embedding "+all.length+" foto bawaan di perangkat saat pertama dipakai."; st.className = "msg show"; }
+    st.textContent = t;
+    $("#emb-n").textContent = all.length+" foto bawaan";
+    var go = $("#emb-go"); go.disabled = IN_FRAME || !!window.__embBusy;
+    if(IN_FRAME && !$("#emb-msg").textContent){ var m = $("#emb-msg"); m.className = "msg show"; m.textContent = "Tombol ini hanya jalan di link Netlify. Pratinjau Claude tidak bisa mengunduh model CLIP."; }
+  }
+  (function(){
+    var list = [["clip","CLIP (ViT-B/32)"],["dino-small","DINOv2 small"],["dino-base","DINOv2 base"]], sel = $("#emb-model");
+    if(!list.some(function(x){ return x[0]===MODEL.label; })) list.push([MODEL.label, MODEL.name+" ("+MODEL.label+")"]);
+    sel.innerHTML = list.map(function(x){ return '<option value="'+x[0]+'"'+(x[0]===MODEL.label ? " selected" : "")+'>'+x[1]+'</option>'; }).join("");
+    sel.addEventListener("change", function(){ try{ localStorage.setItem("sp-model", sel.value); }catch(e){} location.href = location.pathname; });
+    $("#emb-hint").textContent = "Model dipakai: "+MODEL.id+". File yang dibaca: "+EMB_FILE+".";
+  })();
+  function downloadText(name, text){ var b = new Blob([text], { type:"application/json" }), u = URL.createObjectURL(b), a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(u); }, 500); }
+  CLIP.listeners.push(function(){ if(window.__embBusy) $("#emb-prog").textContent = CLIP.msg; });
+  clipLoadCache().then(renderEmb);
   ["#f-q","#f-fam","#f-ph"].forEach(function(s){ $(s).addEventListener("input", render); $(s).addEventListener("change", render); });
   document.addEventListener("change", function(e){
     var mat = e.target.getAttribute && e.target.getAttribute("data-up");
@@ -84,7 +116,7 @@
       var files = Array.prototype.slice.call(e.target.files||[]); if(!files.length) return;
       Promise.all(files.map(function(f){ return shrinkImage(f, 420, 0.78); })).then(function(urls){
         PHOTOS[mat] = (PHOTOS[mat]||[]).concat(urls).slice(-6); saveState(); render();
-        var m = $("#cat-msg"); m.className = "msg show ok"; m.textContent = urls.length+" foto ditambahkan ke "+mat+". CLIP di halaman mekanik ikut memakainya.";
+        var m = $("#cat-msg"); m.className = "msg show ok"; m.textContent = urls.length+" foto ditambahkan ke "+mat+". Pencarian foto di halaman mekanik ikut memakainya.";
       });
       return;
     }
@@ -95,6 +127,15 @@
     var t = e.target.closest ? e.target.closest("button") : null; if(!t) return;
     var a = t.getAttribute("data-del");
     if(a){ var p = a.split("|"); (PHOTOS[p[0]]||[]).splice(+p[1], 1); if(PHOTOS[p[0]] && !PHOTOS[p[0]].length) delete PHOTOS[p[0]]; saveState(); render(); return; }
+    if(t.id==="emb-go"){
+      window.__embBusy = true; renderEmb(); var m = $("#emb-msg"); m.className = "msg"; m.textContent = "";
+      clipBuildFile().then(function(d){
+        var txt = JSON.stringify(d); downloadText(EMB_FILE.split("/").pop(), txt);
+        m.className = "msg show ok"; m.textContent = "Selesai: "+d.n+" foto, "+Math.round(txt.length/1024)+" KB. Taruh "+EMB_FILE.split("/").pop()+" di folder poc/sp-img/ lalu commit ke GitHub.";
+      }).catch(function(err){ m.className = "msg show crit"; m.textContent = "Gagal: "+String(err && err.message || err); })
+      .then(function(){ window.__embBusy = false; $("#emb-prog").textContent = ""; renderEmb(); });
+      return;
+    }
     if(t.id==="rs"){ $("#rs-c").hidden = false; return; }
     if(t.id==="rs-n"){ $("#rs-c").hidden = true; return; }
     if(t.id==="rs-y"){ resetAll(); $("#rs-c").hidden = true; var m = $("#rs-msg"); m.className = "msg show ok"; m.textContent = "Data simulasi dikembalikan ke awal."; render(); }
