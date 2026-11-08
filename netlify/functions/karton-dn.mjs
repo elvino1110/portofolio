@@ -3,7 +3,7 @@
 // Environment Variables (sama dengan karton-chat):
 //   AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT atau AZURE_OPENAI_API_INSTANCE_NAME,
 //   AZURE_OPENAI_API_DEPLOYMENT_NAME (model yang bisa membaca gambar, mis. gpt-4.1),
-//   AZURE_OPENAI_API_VERSION (opsional), ACCESS_CODE (opsional)
+//   AZURE_OPENAI_API_VERSION (wajib), ACCESS_CODE (opsional)
 
 import { AzureChatOpenAI } from "@langchain/openai";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
@@ -71,7 +71,7 @@ export default async (req) => {
   const opts = {
     azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
     azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
-    azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-10-21",
+    azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
     temperature: 0, maxTokens: 1200, timeout: 45000, maxRetries: 1,
   };
   if (process.env.AZURE_OPENAI_ENDPOINT) opts.azureOpenAIEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
