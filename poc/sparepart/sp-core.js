@@ -40,6 +40,8 @@ var FAMS = [
   { id:"sr", name:"Snap ring",           en:["a photo of a circlip snap ring","a steel retaining ring with two holes"] },
   { id:"rg", name:"Regulator & flow control",en:["a photo of a pneumatic air pressure regulator with gauge","a small pneumatic flow control valve"] },
   { id:"gb", name:"Gearbox",             en:["a photo of a worm gearbox","an industrial gear reducer housing"] },
+  { id:"rb", name:"Root blower", en:["a photo of a gold colored regenerative ring blower with an electric motor","an industrial side channel air blower"] },
+  { id:"lb", name:"Linear guide block", en:["a photo of a linear guide carriage block","a metal linear motion bearing block with grease nipple"] },
   { id:"dw", name:"Part drawing (custom)",en:["a photo of a custom machined metal part","a machined steel component made by a workshop"] }
 ];
 function famById(id){ for(var i=0;i<FAMS.length;i++) if(FAMS[i].id===id) return FAMS[i]; return null; }
@@ -155,8 +157,29 @@ var BASE_PHOTOS = {
   "2001123": ["sp-img/2001123-1.jpg", "sp-img/2001123-2.jpg"],
   "2001400": ["sp-img/2001400-1.jpg", "sp-img/2001400-2.jpg", "sp-img/2001400-3.jpg", "sp-img/shot-sb.jpg"],
   "2001015": ["sp-img/2001015-1.jpg", "sp-img/2001015-2.jpg"],
-  "2001380": ["sp-img/2001380-1.jpg", "sp-img/2001380-2.jpg", "sp-img/shot-hc.jpg"]
+  "2001380": ["sp-img/2001380-1.jpg", "sp-img/2001380-2.jpg", "sp-img/shot-hc.jpg"],
+  // foto asli auto wrap (Data_AutoWrap)
+  "21065904": ["sp-img/21065904-1.jpg", "sp-img/21065904-2.jpg", "sp-img/21065904-3.jpg", "sp-img/21065904-4.jpg", "sp-img/21065904-5.jpg"],
+  "20996873": ["sp-img/20996873-1.jpg", "sp-img/20996873-2.jpg"],
+  "20002957": ["sp-img/20002957-1.jpg", "sp-img/20002957-2.jpg", "sp-img/20002957-3.jpg", "sp-img/20002957-4.jpg"],
+  "21135587": ["sp-img/21135587-1.jpg", "sp-img/21135587-2.jpg"],
+  "21102323": ["sp-img/21102323-1.jpg", "sp-img/21102323-2.jpg", "sp-img/21102323-3.jpg", "sp-img/21102323-4.jpg", "sp-img/21102323-5.jpg", "sp-img/21102323-6.jpg"],
+  "21064548": ["sp-img/21064548-1.jpg", "sp-img/21064548-2.jpg", "sp-img/21064548-3.jpg", "sp-img/21064548-4.jpg", "sp-img/21064548-5.jpg", "sp-img/21064548-6.jpg", "sp-img/21064548-7.jpg"]
 };
+// Facial 42 = salinan Facial 40 (bagian & BOM sama), Unwind hanya sampai 03, "Auto pack kiloan" diganti "Auto wrap":
+// isi Auto wrap = barang auto pack Facial 40 yang punya foto + 6 no material baru
+var AW_BOM_NEW = [["21065904",4], ["20996873",1], ["20002957",6], ["21135587",1], ["21102323",2], ["21064548",2]];
+(function(){
+  var f40 = sectionsOf("FCI40"), idx = -1;
+  MACHINES.forEach(function(m, i){ if(m.id==="FCI40") idx = i; });
+  MACHINES.splice(idx+1, 0, { id:"FCI42", name:"Facial 42", fl:"UVD5-FCI42", secs:[] });
+  f40.forEach(function(z){
+    if(z.code==="UNW03") return;
+    var aw = z.code==="APCKL", code = aw ? "AWRAP" : z.code, bom = z.bom.map(function(b){ return { mat:b.mat, q:b.q }; });
+    if(aw){ bom = bom.filter(function(b){ return BASE_PHOTOS[b.mat]; }); AW_BOM_NEW.forEach(function(x){ bom.push({ mat:x[0], q:x[1] }); }); }
+    SECTIONS.push({ m:"FCI42", code:code, name:aw ? "Auto wrap" : z.name, fl:"UVD5-FCI42-"+code, bom:bom, real:z.real });
+  });
+})();
 var SAMPLE_SHOTS = [];
 var ITEMS_SRC = [
   // mat, fam, nama, brand, spesifikasi, kata kunci ukuran
@@ -280,8 +303,16 @@ var ITEMS_SRC = [
   ["2005046","kn","Cutter knife SKH9 6.5T 18W 2908L LOW","–","Bahan SKH9, tebal 6,5 mm, lebar 18 mm, panjang 2.908 mm, bawah","2908"],
   ["2005047","dw","DWG.26B2 Finger folding","Workshop (drawing)","Jari folding sesuai gambar 26B2","26B2"],
   ["2005048","pb","Bearing UC210","SKF","Insert bearing dengan set screw, poros 50 mm","UC210"],
-  ["2005049","cy","Pneumatic cylinder DSNU-16-25-P-A","FESTO","Ø16 mm, stroke 25 mm","DSNU16"]
+  ["2005049","cy","Pneumatic cylinder DSNU-16-25-P-A","FESTO","Ø16 mm, stroke 25 mm","DSNU16"],
+  // 6 no material auto wrap (data asli dari lapangan; lokasi gudang dari list user, stok contoh)
+  ["21065904","bb","Bearing 6604 ZZ","–","Bearing bola tutup besi 2 sisi, seri 6604","6604"],
+  ["20996873","rb","Root blower 600RUI","–","Spesifikasi 6HBH-002-34-IRS","6HBH"],
+  ["20002957","tu","Tube 12 00 PU - 8 00","–","Selang polyurethane, spesifikasi 12 00 PU - 8 00, satuan meter","1200PU"],
+  ["21135587","tb","TM. Belt 12-HTD-SM-3440","–","Timing belt, spesifikasi 12-HTD-SM-3440","3440"],
+  ["21102323","lb","Linear block M6W 15C","–","Spesifikasi M6W 15C","M6W15C"],
+  ["21064548","lb","Linear block HSR 25 YR","–","Spesifikasi HSR 25 YR","HSR25YR"]
 ];
+var AW_NEW = { "21065904":{ bin:"D12", unit:"pcs", stok:10, st:"VM" }, "20996873":{ bin:"H22", unit:"pcs", stok:1, st:"VB" }, "20002957":{ bin:"F62", unit:"m", stok:30, st:"VM" }, "21135587":{ bin:"F42", unit:"pcs", stok:2, st:"VB" }, "21102323":{ bin:"B12", unit:"pcs", stok:3, st:"VB" }, "21064548":{ bin:"D23", unit:"pcs", stok:2, st:"VB" } };
 var UNIT26 = {"2005001": "pcs", "2005002": "pcs", "2005003": "pcs", "2005004": "pcs", "2005005": "pcs", "2005006": "pcs", "2005007": "kg", "2005008": "pcs", "2005009": "pcs", "2005010": "pcs", "2005011": "pcs", "2005012": "pcs", "2005013": "pcs", "2005014": "pcs", "2005015": "pcs", "2005016": "pcs", "2005017": "pcs", "2005018": "m", "2005019": "m", "2005020": "pcs", "2005021": "pcs", "2005022": "set", "2005023": "pcs", "2005024": "pcs", "2005025": "pcs", "2005026": "pcs", "2005027": "pcs", "2005028": "pcs", "2005029": "pcs", "2005030": "pcs", "2005031": "pcs", "2005032": "pcs", "2005033": "pcs", "2005034": "pcs", "2005035": "unit", "2005036": "pcs", "2005037": "pcs", "2005038": "pcs", "2005039": "pcs", "2005040": "pcs", "2005041": "pcs", "2005042": "pcs", "2005043": "pcs", "2005044": "pcs", "2005045": "pcs", "2005046": "pcs", "2005047": "pcs", "2005048": "pcs", "2005049": "pcs"};
 var ITEMS = [], ITEM_BY = {};
 (function(){
@@ -302,6 +333,7 @@ var ITEMS = [], ITEM_BY = {};
     if(r[0]==="2001042") { it.stock0 = 2; it.status = "VB"; }
     var LAP = { "2001004":[8,"VM"], "2001014":[6,"VM"], "2001015":[4,"VB"], "2001380":[12,"VM"], "2001400":[3,"VB"], "2001420":[2,"VB"], "2001123":[5,"VM"], "2001302":[40,"VM"], "2001303":[35,"VM"], "2001440":[20,"VM"], "2001441":[50,"VM"], "2001442":[60,"VM"], "2001460":[2,"VB"], "2001202":[3,"VB"], "2001480":[0,"S1"] };
     if(LAP[r[0]]){ it.stock0 = LAP[r[0]][0]; it.status = LAP[r[0]][1]; it.lap = true; }
+    if(AW_NEW[r[0]]){ var an = AW_NEW[r[0]]; it.bin = an.bin; it.unit = an.unit; it.stock0 = an.stok; it.status = an.st; it.lap = true; }
     ITEMS.push(it); ITEM_BY[it.mat] = it;
   });
 })();
@@ -428,6 +460,8 @@ function famSvg(fam, size){
     case "sr": g = '<path d="M20 50 A20 20 0 1 1 44 50" fill="none" stroke="'+c+'" stroke-width="6" stroke-linecap="round"/><circle cx="18" cy="52" r="3.5" fill="none" stroke="'+c+'" stroke-width="2"/><circle cx="46" cy="52" r="3.5" fill="none" stroke="'+c+'" stroke-width="2"/>'; break;
     case "rg": g = '<rect x="22" y="28" width="20" height="26" rx="2" fill="none" stroke="'+c+'" stroke-width="4"/><circle cx="32" cy="16" r="10" fill="none" stroke="'+c+'" stroke-width="3.5"/><line x1="32" y1="16" x2="37" y2="11" stroke="'+c+'" stroke-width="2.5"/><line x1="8" y1="40" x2="22" y2="40" stroke="'+c+'" stroke-width="4"/><line x1="42" y1="40" x2="56" y2="40" stroke="'+c+'" stroke-width="4"/>'; break;
     case "gb": g = '<rect x="10" y="18" width="34" height="32" rx="4" fill="none" stroke="'+c+'" stroke-width="4"/><circle cx="27" cy="34" r="8" fill="none" stroke="'+c+'" stroke-width="3"/><line x1="44" y1="34" x2="58" y2="34" stroke="'+c+'" stroke-width="5"/><rect x="18" y="8" width="18" height="10" fill="none" stroke="'+c+'" stroke-width="3"/>'; break;
+    case "rb": g = '<circle cx="32" cy="38" r="20" fill="none" stroke="'+c+'" stroke-width="4"/><circle cx="32" cy="38" r="7" fill="none" stroke="'+c+'" stroke-width="3"/><rect x="22" y="6" width="20" height="14" rx="3" fill="none" stroke="'+c+'" stroke-width="3.5"/>'; break;
+    case "lb": g = '<rect x="6" y="40" width="52" height="8" rx="1" fill="none" stroke="'+c+'" stroke-width="3"/><rect x="16" y="18" width="32" height="22" rx="3" fill="none" stroke="'+c+'" stroke-width="4"/><line x1="32" y1="18" x2="32" y2="40" stroke="'+c+'" stroke-width="2"/>'; break;
     default: g = '<rect x="10" y="10" width="44" height="44" rx="6" fill="none" stroke="'+c+'" stroke-width="4"/>';
   }
   return '<svg viewBox="0 0 64 64" width="'+s+'" height="'+s+'" aria-hidden="true">'+g+'</svg>';
@@ -453,6 +487,9 @@ function importAll(o){
   S = m;
   // data lama belum punya riwayat Facial 40 (mesin uji foto): tambahkan riwayat contohnya saja, data lain tidak diubah
   if(!S.hist.some(function(h){ return h.m==="FCI40"; })) S.hist = S.hist.concat(seedHistory().filter(function(h){ return h.m==="FCI40"; }));
+  // data lama: tambah riwayat Facial 42 dan stok 6 no material auto wrap, data lain tidak diubah
+  if(!S.hist.some(function(h){ return h.m==="FCI42"; })) S.hist = S.hist.concat(seedHistory().filter(function(h){ return h.m==="FCI42"; }));
+  ITEMS.forEach(function(it){ if(S.stock[it.mat]==null) S.stock[it.mat] = it.stock0; });
   ORDERS = Object.keys(o.orders||{}).map(function(k){ return JSON.parse(o.orders[k]); }).sort(function(a, b){ return a.ts-b.ts; });
   PHOTOS = {}; Object.keys(o.photos||{}).forEach(function(k){ PHOTOS[k] = JSON.parse(o.photos[k]); });
 }
@@ -534,9 +571,9 @@ function initStore(onChange){
 var CLIP = { state:IN_FRAME ? "sim" : "off", msg:"", pct:0, T:null, proc:null, vis:null, famEmb:null, imgEmb:{}, cache:null, listeners:[] };
 // Pilihan model pencarian foto: ?model=clip | dino-small | dino-base (boleh diberi akhiran -mean / -clsmean untuk DINO), atau lewat Master data.
 var MODEL_BASE = {
-  "clip":       { id:"Xenova/clip-vit-base-patch32", kind:"clip", name:"CLIP",          temp:50 },
-  "dino-small": { id:"Xenova/dinov2-small",          kind:"dino", name:"DINOv2 small",  temp:25 },
-  "dino-base":  { id:"Xenova/dinov2-base",           kind:"dino", name:"DINOv2 base",   temp:25 }
+  "clip":       { id:"Xenova/clip-vit-base-patch32", kind:"clip", name:"CLIP",          temp:50, hi:0.88, mid:0.80 },
+  "dino-small": { id:"Xenova/dinov2-small",          kind:"dino", name:"DINOv2 small",  temp:25, hi:0.70, mid:0.55 },
+  "dino-base":  { id:"Xenova/dinov2-base",           kind:"dino", name:"DINOv2 base",   temp:25, hi:0.70, mid:0.55 }
 };
 function pickModel(){
   var q = "", fromUrl = false;
@@ -546,7 +583,7 @@ function pickModel(){
   if(!m || (m[1]==="clip" && m[2])){ m = ["clip", "clip"]; fromUrl = false; }
   var base = MODEL_BASE[m[1]], pool = base.kind==="dino" ? (m[2] || "cls") : null, label = m[1]+(pool && pool!=="cls" ? "-"+pool : "");
   if(fromUrl){ try{ localStorage.setItem("sp-model", label); }catch(e){} }
-  return { key:m[1], label:label, id:base.id, kind:base.kind, name:base.name, pool:pool, dtype:"q8", temp:base.temp, file:(m[1]==="clip" ? "sp-img/embeddings.json" : "sp-img/embeddings-"+label+".json") };
+  return { key:m[1], label:label, id:base.id, kind:base.kind, name:base.name, pool:pool, dtype:"q8", temp:base.temp, hi:base.hi, mid:base.mid, file:(m[1]==="clip" ? "sp-img/embeddings.json" : "sp-img/embeddings-"+label+".json") };
 }
 var MODEL = pickModel();
 var CLIP_MODEL = MODEL.id, CLIP_DTYPE = MODEL.dtype;
@@ -635,9 +672,12 @@ function clipSearch(src){
     var fams = ks.map(function(k){ return { id:k, p:Math.exp(MODEL.temp*(famBest[k]-mx)) }; }), tot = fams.reduce(function(a, b){ return a+b.p; }, 0);
     fams.forEach(function(f){ f.p /= tot; });
     fams.sort(function(a, b){ return b.p-a.p; });
-    return { fams:fams, photo:photo, temp:MODEL.temp, ms:Date.now()-t0, real:true };
+    return { fams:fams, famSim:famBest, photo:photo, temp:MODEL.temp, ms:Date.now()-t0, real:true };
   });
 }
+// tingkat kemiripan dari nilai kemiripan sebenarnya (cosine foto ke foto), bukan dari peringkat.
+// Batas per model masih perkiraan awal; setel ulang dengan foto uji asli dari HP.
+function simLevel(v){ if(v==null) return null; return v>=MODEL.hi ? { k:"tinggi", c:"ok" } : (v>=MODEL.mid ? { k:"sedang", c:"warn" } : { k:"rendah", c:"crit" }); }
 // simulasi untuk pratinjau: hasil yang sudah ditentukan untuk contoh foto
 function simSearch(shot){
   var fams = FAMS.map(function(f){ return { id:f.id, p:shot.sim[f.id] || 0.003 }; }), tot = fams.reduce(function(a, b){ return a+b.p; }, 0);
