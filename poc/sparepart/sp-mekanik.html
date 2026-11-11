@@ -121,7 +121,7 @@
       '<div class="sp"><span class="mono">'+it.mat+'</span> &middot; '+esc(it.brand)+' &middot; '+esc(f.name)+'</div>'+
       '<div class="sp">'+esc(it.spec)+'</div>'+
       (lu ? '<div class="lastuse">&#9679; Terakhir dipakai '+esc(machineById(m).name)+(lu.s ? ' &rsaquo; '+esc(secName(m, lu.s)) : '')+': '+tgFull(lu.d)+' ('+ago(lu.d)+')</div>' : '')+(opt.otherUse ? '<div class="sp">'+opt.otherUse+'</div>' : '')+
-      '<div class="meta">'+stock+'<span class="tag">'+it.status+'</span>'+(opt.sim!=null ? '<span class="tag info">mirip foto '+Math.round(opt.sim*100)+'%</span>' : '')+'</div>'+
+      '<div class="meta">'+stock+'<span class="tag">'+it.status+'</span>'+(opt.sim!=null ? (function(){ var lv = simLevel(opt.sim); return '<span class="tag '+lv.c+'" title="Kemiripan foto ke foto katalog">mirip foto '+Math.round(opt.sim*100)+'% · '+lv.k+'</span>'; })() : '')+'</div>'+
       '<div class="act">'+btn+'</div></div></div>';
   }
   function cards(list, opt){ return list.length ? '<div class="cards">'+list.map(function(it){ return card(it, opt && opt(it)); }).join("")+'</div>' : '<p class="note">Tidak ada barang yang cocok.</p>'; }
@@ -203,7 +203,7 @@
     return { otherUse: mk.length ? 'Tidak ada di BOM mesin ini &middot; ada di '+mk.slice(0,2).map(function(id){ return esc(machineById(id).name); }).join(", ")+(mk.length>2 ? ' +'+(mk.length-2) : '') : 'Belum ada di BOM mesin mana pun' };
   }
   // Skor foto relatif: kemiripan mentah model (cosine) untuk dua foto yang tidak berhubungan pun sering 0,6-0,8,
-  // jadi diukur terhadap foto katalog yang PALING mirip: 100% = paling mirip, turun cepat untuk yang jauh.
+  // jadi skor relatif ini HANYA untuk mengurutkan & menyaring. Angka yang ditampilkan = kemiripan sebenarnya (r.photo), dengan label tinggi/sedang/rendah.
   var PH_MIN = 0.12;
   function photoTop(r){ var best = null; Object.keys(r.photo||{}).forEach(function(k){ if(!best || r.photo[k]>best.v) best = { mat:k, v:r.photo[k] }; }); return best; }
   function photoScorer(r){
@@ -232,9 +232,10 @@
         var sc = photoScorer(r), top = photoTop(r);
         var L = bom.map(function(b){ return item(b.mat); }).filter(function(it){ return sc(it) >= PH_MIN; }).sort(function(a, b){ return sc(b)-sc(a); });
         found = L.length;
-        if(top && !inScope[top.mat]) h += '<div class="msg show warn" style="margin-bottom:10px">Foto ini paling mirip dengan <b>'+esc(item(top.mat).name)+'</b>, yang <b>tidak ada di BOM '+where+'</b>. Mungkin fun loc-nya kurang tepat atau BOM belum lengkap. Lihat bagian "Ditemukan di luar" di bawah.</div>';
-        h += head(L.length+' komponen di '+where+' yang mirip foto', 'dari '+bom.length+' komponen BOM, paling mirip di atas');
-        h += L.length ? cards(L, function(it){ var o = useNote(inScope[it.mat], sec); o.sim = r.photo && r.photo[it.mat] ? sc(it) : null; return o; }) : '<p class="note">Tidak ada komponen di '+where+' yang mirip foto ini.</p>';
+        if(top && top.v < MODEL.mid) h += '<div class="msg show warn" style="margin-bottom:10px"><b>Belum yakin.</b> Tidak ada foto katalog yang benar-benar mirip (paling mirip hanya '+Math.round(top.v*100)+'%). Barangnya mungkin belum ada fotonya di katalog. Coba foto ulang lebih dekat, atau cari dengan nama / kode / ukuran.</div>';
+        else if(top && !inScope[top.mat]) h += '<div class="msg show warn" style="margin-bottom:10px">Foto ini paling mirip dengan <b>'+esc(item(top.mat).name)+'</b>, yang <b>tidak ada di BOM '+where+'</b>. Mungkin fun loc-nya kurang tepat atau BOM belum lengkap. Lihat bagian "Ditemukan di luar" di bawah.</div>';
+        h += head(L.length+' komponen di '+where+(top && top.v < MODEL.mid ? ' (kemungkinan, kemiripan rendah)' : ' yang mirip foto'), 'dari '+bom.length+' komponen BOM, paling mirip di atas');
+        h += L.length ? cards(L, function(it){ var o = useNote(inScope[it.mat], sec); o.sim = r.photo && r.photo[it.mat] ? r.photo[it.mat] : null; return o; }) : '<p class="note">Tidak ada komponen di '+where+' yang mirip foto ini.</p>';
         outside = ITEMS.filter(function(it){ return !inScope[it.mat] && sc(it) >= PH_MIN; }).sort(function(a, b){ return sc(b)-sc(a); }).slice(0, 8);
         if(top && !inScope[top.mat]) found = 0;
       } else if(UI.famSel && UI.famSel.length){
@@ -282,7 +283,11 @@
     var r = UI.res, h = '<div class="panel"><div class="shot"><img src="'+esc(UI.photo)+'" alt="Foto barang"><div class="famres">';
     if(UI.busy) h += '<p>Menganalisis foto&hellip; dibandingkan dengan komponen di bagian ini.</p><p class="clipst">'+esc(CLIP.msg||"")+'</p>';
     else if(!r || r.err) h += '<p>Foto belum bisa dianalisis di sini (pencarian foto hanya jalan di link Netlify). Pilih keluarga barangnya:</p><div class="chips">'+FAMS.map(function(f){ return '<button type="button" class="chip'+(UI.famSel && UI.famSel.indexOf(f.id)>=0 ? ' on' : '')+'" data-pfam="'+f.id+'">'+esc(f.name)+'</button>'; }).join("")+'</div>';
-    else { var tp = photoTop(r); h += '<p><b>Hasil foto</b> <span class="note">'+(r.real ? '(foto ke foto, '+(r.ms/1000).toFixed(1).replace(".",",")+' detik)' : '(simulasi)')+'</span></p>'+(tp ? '<p class="note">Paling mirip di seluruh katalog: <b>'+esc(item(tp.mat).name)+'</b></p>' : '')+'<p class="note">Keluarga terdekat: '+r.fams.slice(0,3).map(function(f){ return esc(famById(f.id).name)+' '+Math.round(f.p*100)+'%'; }).join(" &middot; ")+'</p>'; }
+    else { var tp = photoTop(r), lv = tp ? simLevel(tp.v) : null, fs = r.famSim || null;
+      h += '<p><b>Hasil foto</b> <span class="note">'+(r.real ? '(foto ke foto, '+(r.ms/1000).toFixed(1).replace(".",",")+' detik)' : '(simulasi)')+'</span></p>'+
+        (tp ? '<p class="note">Paling mirip di seluruh katalog: <b>'+esc(item(tp.mat).name)+'</b> <span class="tag '+lv.c+'">'+Math.round(tp.v*100)+'% · '+lv.k+'</span></p>' : '')+
+        (tp && tp.v < MODEL.mid ? '<p class="note" style="color:var(--crit)">Kemiripan rendah: kemungkinan barang ini belum ada di katalog foto.</p>' : '')+
+        '<p class="note">Keluarga terdekat: '+r.fams.slice(0,3).map(function(f){ return esc(famById(f.id).name)+(fs && fs[f.id]!=null ? ' '+Math.round(fs[f.id]*100)+'%' : ''); }).join(" &middot; ")+'</p>'; }
     h += '<div><button type="button" class="ghost" data-clearphoto="1">Hapus foto</button></div></div></div></div>';
     el.innerHTML = h;
   }
