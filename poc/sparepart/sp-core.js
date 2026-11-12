@@ -42,7 +42,7 @@ var FAMS = [
   { id:"gb", name:"Gearbox",             en:["a photo of a worm gearbox","an industrial gear reducer housing"] },
   { id:"rb", name:"Root blower", en:["a photo of a gold colored regenerative ring blower with an electric motor","an industrial side channel air blower"] },
   { id:"lb", name:"Linear guide block", en:["a photo of a linear guide carriage block","a metal linear motion bearing block with grease nipple"] },
-  { id:"dw", name:"Part drawing (custom)",en:["a photo of a custom machined metal part","a machined steel component made by a workshop"] }
+  { id:"dw", name:"Drawing",en:["a photo of a custom machined metal part","a machined steel component made by a workshop"] }
 ];
 function famById(id){ for(var i=0;i<FAMS.length;i++) if(FAMS[i].id===id) return FAMS[i]; return null; }
 
@@ -163,8 +163,8 @@ var BASE_PHOTOS = {
   "20996873": ["sp-img/20996873-1.jpg", "sp-img/20996873-2.jpg"],
   "20002957": ["sp-img/20002957-1.jpg", "sp-img/20002957-2.jpg", "sp-img/20002957-3.jpg", "sp-img/20002957-4.jpg"],
   "21135587": ["sp-img/21135587-1.jpg", "sp-img/21135587-2.jpg"],
-  "21102323": ["sp-img/21102323-1.jpg", "sp-img/21102323-2.jpg", "sp-img/21102323-3.jpg", "sp-img/21102323-4.jpg", "sp-img/21102323-5.jpg", "sp-img/21102323-6.jpg"],
-  "21064548": ["sp-img/21064548-1.jpg", "sp-img/21064548-2.jpg", "sp-img/21064548-3.jpg", "sp-img/21064548-4.jpg", "sp-img/21064548-5.jpg", "sp-img/21064548-6.jpg", "sp-img/21064548-7.jpg"]
+  "21102323": ["sp-img/21064548-1.jpg", "sp-img/21064548-2.jpg", "sp-img/21064548-3.jpg", "sp-img/21064548-4.jpg", "sp-img/21064548-5.jpg", "sp-img/21064548-6.jpg", "sp-img/21064548-7.jpg"] /*ditukar*/ ,
+  "21064548": ["sp-img/21102323-1.jpg", "sp-img/21102323-2.jpg", "sp-img/21102323-3.jpg", "sp-img/21102323-4.jpg", "sp-img/21102323-5.jpg", "sp-img/21102323-6.jpg"]
 };
 // Facial 42 = salinan Facial 40 (bagian & BOM sama), Unwind hanya sampai 03, "Auto pack kiloan" diganti "Auto wrap":
 // isi Auto wrap = barang auto pack Facial 40 yang punya foto + 6 no material baru
@@ -305,12 +305,12 @@ var ITEMS_SRC = [
   ["2005048","pb","Bearing UC210","SKF","Insert bearing dengan set screw, poros 50 mm","UC210"],
   ["2005049","cy","Pneumatic cylinder DSNU-16-25-P-A","FESTO","Ø16 mm, stroke 25 mm","DSNU16"],
   // 6 no material auto wrap (data asli dari lapangan; lokasi gudang dari list user, stok contoh)
-  ["21065904","bb","Bearing 6604 ZZ","–","Bearing bola tutup besi 2 sisi, seri 6604","6604"],
-  ["20996873","rb","Root blower 600RUI","–","Spesifikasi 6HBH-002-34-IRS","6HBH"],
-  ["20002957","tu","Tube 12 00 PU - 8 00","–","Selang polyurethane, spesifikasi 12 00 PU - 8 00, satuan meter","1200PU"],
-  ["21135587","tb","TM. Belt 12-HTD-SM-3440","–","Timing belt, spesifikasi 12-HTD-SM-3440","3440"],
-  ["21102323","lb","Linear block M6W 15C","–","Spesifikasi M6W 15C","M6W15C"],
-  ["21064548","lb","Linear block HSR 25 YR","–","Spesifikasi HSR 25 YR","HSR25YR"]
+  ["21065904","bb","Bearing 6004-ZZ","TIMKEN","20 × 42 × 12 mm, tutup besi 2 sisi","6004"],
+  ["20996873","rb","Root blower GHBH-002-34-1R5","GOORUI","Ring blower, tipe GHBH-002-34-1R5","GHBH"],
+  ["20002957","tu","Tube PU 8ID 12OD","–","Selang polyurethane, ID 8 mm, OD 12 mm, satuan meter","8ID12OD"],
+  ["21135587","tb","TM Belt 12-HTD5M-3440","–","Timing belt HTD 5M, lebar 12 mm, panjang 3440 mm, PU","3440"],
+  ["21102323","lb","Linear block MGW15C","HIWIN","Linear guide block MGW15C (blok kecil, tutup ujung hijau-merah)","MGW15C"],
+  ["21064548","lb","Linear block HSR25YR","THK","Linear guide block HSR25YR (blok besar, rangka hitam)","HSR25YR"]
 ];
 var AW_NEW = { "21065904":{ bin:"D12", unit:"pcs", stok:10, st:"VM" }, "20996873":{ bin:"H22", unit:"pcs", stok:1, st:"VB" }, "20002957":{ bin:"F62", unit:"m", stok:30, st:"VM" }, "21135587":{ bin:"F42", unit:"pcs", stok:2, st:"VB" }, "21102323":{ bin:"B12", unit:"pcs", stok:3, st:"VB" }, "21064548":{ bin:"D23", unit:"pcs", stok:2, st:"VB" } };
 var UNIT26 = {"2005001": "pcs", "2005002": "pcs", "2005003": "pcs", "2005004": "pcs", "2005005": "pcs", "2005006": "pcs", "2005007": "kg", "2005008": "pcs", "2005009": "pcs", "2005010": "pcs", "2005011": "pcs", "2005012": "pcs", "2005013": "pcs", "2005014": "pcs", "2005015": "pcs", "2005016": "pcs", "2005017": "pcs", "2005018": "m", "2005019": "m", "2005020": "pcs", "2005021": "pcs", "2005022": "set", "2005023": "pcs", "2005024": "pcs", "2005025": "pcs", "2005026": "pcs", "2005027": "pcs", "2005028": "pcs", "2005029": "pcs", "2005030": "pcs", "2005031": "pcs", "2005032": "pcs", "2005033": "pcs", "2005034": "pcs", "2005035": "unit", "2005036": "pcs", "2005037": "pcs", "2005038": "pcs", "2005039": "pcs", "2005040": "pcs", "2005041": "pcs", "2005042": "pcs", "2005043": "pcs", "2005044": "pcs", "2005045": "pcs", "2005046": "pcs", "2005047": "pcs", "2005048": "pcs", "2005049": "pcs"};
@@ -339,11 +339,222 @@ var ITEMS = [], ITEM_BY = {};
 })();
 function item(mat){ return ITEM_BY[mat] || null; }
 
+/* ================= katalog dari Excel BOM (diimpor di halaman Master) ================= */
+// CAT.machines[id] = { id, name, fl, secs:[{ code, name, bom:[[mat, qty]] }], items:[{ mat, fam, fn, name, brand, spec, key, unit }], t }
+// Disimpan bersama data lain (localStorage / Firestore sp_meta "cat-<id>") dan diterapkan ke MACHINES, SECTIONS, ITEMS.
+var CAT = { machines:{}, items:{} }, CAT_ORIG = {}, CAT_ADDED = {}, CAT_OVR = {}, EMBS = {};   // EMBS: no material -> { m: label model, e: { kunci foto: embedding base64 } }
+function slugOf(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 24) || "lain"; }
+function titleCase(s){
+  return String(s||"").toLowerCase().replace(/\s+/g, " ").trim().split(" ").map(function(w){ return /\d/.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase()+w.slice(1); }).join(" ");
+}
+var CAT_FAM_RULES = [
+  [/^(BEARING ADAPTER|ADAPTER SLEEVE)/, "ad"], [/^LINEAR (BLOCK|BEARING)/, "lb"], [/^BEARING/, "bb"], [/^ROD END/, "re"],
+  [/POTENTIOMETER|VAR\.?\s?RESISTOR/, "pot"], [/^TM\.?\s?BELT|^TIMING BELT/, "tb"], [/^SEALING BELT/, "sb"], [/^CONV\.?\s?BELT|^CONVEYOR BELT/, "cb"],
+  [/^V[\.\- ]?\s?BELT/, "vb"], [/^(HYD\.?\s?)?SEAL|^OIL SEAL/, "os"], [/^O.?RING/, "or"], [/^CHAIN/, "ch"], [/^SPROCKET/, "sk"], [/^COUPLING/, "cp"],
+  [/KNIFE|SAW BLADE|^BLADE|SLITTER/, "kn"], [/SOL(ENOID)?\.?\s?VALVE/, "sv"], [/^PNEU\.?\s?CYLINDER|^CYLINDER/, "cy"],
+  [/^PUSH-IN|CONNECTOR|STUD ELBOW|^FITTING|^SILENCER/, "pf"], [/PROXIMITY|PHOTO|^SENSOR/, "px"], [/CONTACTOR/, "kt"],
+  [/^AC MOTOR|^MOTOR|^DC MOTOR|^SERVO MOTOR/, "mt"], [/HOSE CLAMP/, "hc"], [/^(HX)?BOLT|SCREW|WASHER|^(HX)?NUT/, "sc"],
+  [/^GR\.?\s?BOX|^GEAR ?BOX/, "gb"], [/^GR\.?\s?MOTOR/, "mt"], [/^(SP\.?\s?)?GEAR/, "gr"], [/^PNEU\.?\s?VALVE/, "sv"], [/^GREASE|^LUBRICANT/, "gs"], [/^TUBE|^HOSE/, "tu"],
+  [/SNAP RING|CIRCLIP|RETAINING RING/, "sr"], [/REGULATOR|FLOW CONTROL/, "rg"], [/BLOWER/, "rb"], [/^DWG\.|^PN\.|DRAWING/, "dw"]
+];
+var CAT_UNITS = { PC:"pcs", PCS:"pcs", EA:"pcs", M:"m", UNI:"unit", SET:"set", ROL:"rol", ROLL:"rol", KG:"kg", L:"l", LTR:"l" };
+// "BEARING;6004-ZZ,TIMKEN" -> keluarga, nama, brand, spesifikasi
+function catItem(mat, desc, uom){
+  var d = String(desc||"").trim(), old = d.charAt(0)==="~"; if(old) d = d.replace(/^~/, "");
+  var k = d.indexOf(";"), head, rest;
+  if(k>0){ head = d.slice(0, k).trim(); rest = d.slice(k+1).trim(); }
+  else { head = d.split(/[ ,]/)[0]; rest = d.slice(head.length).replace(/^[ ,]+/, ""); }
+  var parts = rest ? rest.split(",").map(function(x){ return x.trim(); }).filter(Boolean) : [], brand = "–";
+  if(parts.length>=2){ var l = parts[parts.length-1]; if(/^[A-Za-z][A-Za-z .&\-]{2,}$/.test(l)){ brand = l.toUpperCase(); parts.pop(); } }
+  var up = head.toUpperCase(), fam = null, fn = "";
+  CAT_FAM_RULES.some(function(r){ if(r[0].test(up)){ fam = r[1]; return true; } return false; });
+  if(!fam){ fam = "x-"+slugOf(head); fn = head.replace(/\.+$/, "").toUpperCase(); }
+  var first = parts[0] ? (/\d/.test(parts[0]) ? parts[0].toUpperCase() : titleCase(parts[0])) : "";
+  var name = (titleCase(head)+(first ? " "+first : "")).slice(0, 70);
+  var spec = parts.join(", ") || d;
+  if(old) spec = "Material lama: "+spec;
+  var u = String(uom||"").trim().toUpperCase();
+  return { mat:String(mat), fam:fam, fn:fn, name:name, brand:brand, spec:spec, key:(parts[0]||head).replace(/\s+/g, ""), unit:CAT_UNITS[u] || (u ? u.toLowerCase() : "pcs"), old:old };
+}
+// teks keluarga bebas ("BEARING", "ROOT BLOWER", "HXBOLT") -> id keluarga; yang belum dikenal jadi keluarga baru bernama persis seperti teksnya
+function catFamFromText(t){
+  t = String(t||"").trim(); if(!t || /^#/.test(t)) return null;
+  var up = t.toUpperCase(), fam = null;
+  CAT_FAM_RULES.some(function(r){ if(r[0].test(up)){ fam = r[1]; return true; } return false; });
+  return fam ? { fam:fam, fn:"" } : { fam:"x-"+slugOf(t), fn:up.replace(/\.+$/, "") };
+}
+function ensureFam(id, name){ if(!famById(id)) FAMS.push({ id:id, name:name || id.replace(/^x-/, "").replace(/-/g, " ").toUpperCase(), en:[] }); }
+// grid = baris sheet (array of array). Mengenali kolom dari judulnya: Functional Location, NO Material, Description Material, QTY, UoM.
+function catHeader(row){
+  var ci = {};
+  row.forEach(function(c, i){
+    var t = String(c||"").toLowerCase().trim(); if(!t) return;
+    if(t.indexOf("function")>=0){ if(t.indexOf("desc")>=0) ci.fd = i; else ci.fl = i; }
+    else if(t.indexOf("material")>=0){ if(t.indexOf("desc")>=0) ci.md = i; else ci.mat = i; }
+    else if(t==="qty" || t.indexOf("qty")===0 || t.indexOf("jumlah")===0) ci.q = i;
+    else if(t.indexOf("uom")>=0 || t.indexOf("satuan")>=0) ci.u = i;
+    else if(t==="nama" || t==="nama barang" || t==="name") ci.nm = i;
+    else if(t==="brand" || t==="merek" || t==="merk") ci.br = i;
+    else if(t.indexOf("spesifikasi")===0 || t==="spec" || t==="specification") ci.sp = i;
+    else if(t==="stok" || t==="stock" || t==="stok awal") ci.st = i;
+    else if(t==="bin" || t==="rak" || t==="lokasi rak") ci.bn = i;
+    else if(t==="family" || t==="keluarga") ci.fm = i;
+  });
+  return (ci.fl!=null && ci.mat!=null) ? ci : null;
+}
+function catHasHeader(grid){ for(var i=0;i<Math.min(grid.length, 15);i++) if(catHeader(grid[i])) return true; return false; }
+function catParse(grid){
+  var hi = -1, ci = null, i;
+  for(i=0;i<Math.min(grid.length, 15);i++){ ci = catHeader(grid[i]); if(ci){ hi = i; break; } }
+  if(hi<0) return { err:"Kolom 'Functional Location' dan 'NO Material' tidak ditemukan di sheet ini.", machines:[] };
+  var machines = {}, order = [], cur = null, n = 0, descOf = {};
+  for(i=hi+1;i<grid.length;i++){
+    var r = grid[i], fl = String(r[ci.fl]||"").trim();
+    if(fl){ cur = fl; if(ci.fd!=null && r[ci.fd]) descOf[fl] = String(r[ci.fd]).trim(); }
+    var mat = String(r[ci.mat]==null ? "" : r[ci.mat]).replace(/\s+/g, "");
+    if(!cur) continue;
+    var parts = cur.split("-"); if(parts.length<2) continue;
+    var mfl = parts.slice(0, 2).join("-"), code = parts.length>2 ? parts.slice(2).join("-") : "MAIN";
+    var m = machines[mfl]; if(!m){ m = machines[mfl] = { fl:mfl, id:parts[1], desc:"", secs:{}, order:[] }; order.push(mfl); }
+    if(parts.length===2 && descOf[cur]) m.desc = descOf[cur];
+    if(!/^\d{5,12}$/.test(mat)){ if(parts.length>2 && !m.secs[code]){ m.secs[code] = { code:code, fl:cur, desc:descOf[cur]||"", rows:[], map:{} }; m.order.push(code); } continue; }
+    var sc = m.secs[code]; if(!sc){ sc = m.secs[code] = { code:code, fl:cur, desc:descOf[cur]||"", rows:[], map:{} }; m.order.push(code); }
+    if(!sc.desc && descOf[cur]) sc.desc = descOf[cur];
+    var q = parseFloat(String(r[ci.q]==null ? "" : r[ci.q]).replace(",", ".")); if(!isFinite(q) || q<=0) q = 1;
+    var dm = ci.md!=null ? String(r[ci.md]||"").trim() : "", uom = ci.u!=null ? String(r[ci.u]||"").trim() : "";
+    function cell(k){ var v = ci[k]!=null && r[ci[k]]!=null ? String(r[ci[k]]).trim() : ""; return /^#/.test(v) ? "" : v; }
+    if(sc.map[mat]){ sc.map[mat].q += q; } else { var row = { mat:mat, desc:dm, q:q, uom:uom, nm:cell("nm"), br:cell("br"), sp:cell("sp"), st:cell("st"), bn:cell("bn"), fm:cell("fm") }; sc.map[mat] = row; sc.rows.push(row); n++; }
+    if(sc.map[mat]){ var rw = sc.map[mat]; ["nm","br","sp","st","bn","fm"].forEach(function(k){ if(!rw[k]) rw[k] = cell(k); }); }
+  }
+  return { err:"", rows:n, machines:order.map(function(k){ var m = machines[k]; return { fl:m.fl, id:m.id, desc:m.desc, secs:m.order.map(function(c){ var s = m.secs[c]; return { code:s.code, fl:s.fl, desc:s.desc, rows:s.rows }; }) }; }) };
+}
+// nama bagian dari deskripsi SAP: buang nama mesin di belakangnya ("UNWIND 01 FACIAL INTERFOLD 42" -> "Unwind 01")
+function catSecName(desc, mdesc){
+  var d = String(desc||"").trim().replace(/\s+/g, " ");
+  if(mdesc && d.toUpperCase().slice(-mdesc.length)===mdesc.toUpperCase() && d.length>mdesc.length) d = d.slice(0, d.length-mdesc.length).trim();
+  d = d.replace(/\s+(FACIAL|FC|INTE?R?FOLD(ER)?)\s*(INTE?R?FOLD(ER)?)?\s*\d+([A-Z]?)$/i, function(m, a, b, c, d2, x){ return x ? " "+x : ""; }).replace(/\s+OK$/i, "");
+  return titleCase(d) || "Bagian";
+}
+// m = hasil catParse untuk satu mesin, pick = { kode: { on, name } }
+function catBuild(m, name, pick){
+  var items = {}, secs = [];
+  m.secs.forEach(function(s){
+    var p = pick[s.code]; if(!p || !p.on || !s.rows.length) return;
+    secs.push({ code:s.code, name:p.name || s.code, bom:s.rows.map(function(r){
+      var it = items[r.mat] || (items[r.mat] = catItem(r.mat, r.desc, r.uom));
+      if(r.nm && !it.exName){ it.name = r.nm; it.exName = 1; }
+      if(r.br && !it.exBrand){ it.brand = r.br.toUpperCase(); it.exBrand = 1; }
+      if(r.sp && !it.exSpec){ it.spec = r.sp; it.exSpec = 1; }
+      if(r.bn && !it.bin) it.bin = r.bn;
+      if(r.fm && !it.exFam){ var f = catFamFromText(r.fm); if(f){ it.fam = f.fam; it.fn = f.fn; it.exFam = 1; } }
+      if(r.st!=="" && r.st!=null && it.stok==null){ var sv = parseInt(String(r.st).replace(/[^\d]/g, ""), 10); if(isFinite(sv)) it.stok = sv; }
+      return [r.mat, r.q]; }) });
+  });
+  return { id:m.id, name:name, fl:m.fl, secs:secs, items:Object.keys(items).map(function(k){ return items[k]; }), t:Date.now() };
+}
+function catPurgeSeed(id){ if(S && S.hist) S.hist = S.hist.filter(function(h){ return !(h.m===id && h.by==="seed"); }); }
+function catIdx(list, id){ for(var i=0;i<list.length;i++) if(list[i].id===id) return i; return -1; }
+// pasang CAT ke MACHINES / SECTIONS / ITEMS (bisa dipanggil berulang)
+function applyCat(){
+  Object.keys(CAT_ORIG).forEach(function(id){
+    var o = CAT_ORIG[id], i = catIdx(MACHINES, id);
+    SECTIONS = SECTIONS.filter(function(x){ return x.m!==id; }).concat(o.secs);
+    if(o.mach){ if(i>=0) MACHINES[i] = o.mach; else MACHINES.push(o.mach); } else if(i>=0) MACHINES.splice(i, 1);
+  });
+  CAT_ORIG = {};
+  Object.keys(CAT_OVR).forEach(function(mat){ var it = ITEM_BY[mat]; if(it) Object.keys(CAT_OVR[mat]).forEach(function(k){ it[k] = CAT_OVR[mat][k]; }); });
+  CAT_OVR = {};
+  Object.keys(CAT_ADDED).forEach(function(mat){ delete ITEM_BY[mat]; });
+  ITEMS = ITEMS.filter(function(it){ return !CAT_ADDED[it.mat]; }); CAT_ADDED = {};
+  Object.keys(CAT.machines).forEach(function(id){
+    var c = CAT.machines[id], i = catIdx(MACHINES, id), old = i>=0 ? MACHINES[i] : null;
+    CAT_ORIG[id] = { mach:old, secs:SECTIONS.filter(function(x){ return x.m===id; }) };
+    var mo = { id:id, name:c.name || (old && old.name) || id, fl:c.fl, secs:[], imp:true };
+    if(old) MACHINES[i] = mo; else MACHINES.push(mo);
+    SECTIONS = SECTIONS.filter(function(x){ return x.m!==id; });
+    c.secs.forEach(function(s){ SECTIONS.push({ m:id, code:s.code, name:s.name, fl:c.fl+"-"+s.code, bom:s.bom.map(function(b){ return { mat:String(b[0]), q:b[1] }; }), imp:true }); });
+    (c.items||[]).forEach(function(r){
+      if(ITEM_BY[r.mat]) return;
+      ensureFam(r.fam, r.fn);
+      var it = { mat:r.mat, fam:r.fam, name:r.name, brand:r.brand, spec:r.spec, key:r.key, status:"VM", bin:r.bin || "–", stock0:0, unit:r.unit, imp:true };
+      ITEMS.push(it); ITEM_BY[it.mat] = it; CAT_ADDED[it.mat] = 1;
+    });
+  });
+  // hasil edit di Master data: berlaku untuk no material itu di semua mesin & fun loc
+  Object.keys(CAT.items||{}).forEach(function(mat){
+    var r = CAT.items[mat], it = ITEM_BY[mat];
+    if(r.fam) ensureFam(r.fam, r.fn);
+    if(!it){
+      it = { mat:mat, fam:r.fam||"x-lain", name:r.name||mat, brand:r.brand||"–", spec:r.spec||"", key:r.key||mat, status:"VM", bin:"–", stock0:0, unit:r.unit||"pcs", imp:true };
+      ITEMS.push(it); ITEM_BY[mat] = it; CAT_ADDED[mat] = 1; return;
+    }
+    if(!CAT_ADDED[mat]){ CAT_OVR[mat] = {}; ["fam","name","brand","spec","key","unit"].forEach(function(k){ CAT_OVR[mat][k] = it[k]; }); }
+    ["fam","name","brand","spec","key","unit"].forEach(function(k){ if(r[k]!=null && r[k]!=="") it[k] = r[k]; });
+  });
+}
+
+/* ---- edit dinamis dari Master data: mesin -> fun loc -> material ---- */
+function catSave(){ applyCat(); ITEMS.forEach(function(it){ if(S.stock[it.mat]==null) S.stock[it.mat] = it.stock0; }); saveState(); }
+// mesin bawaan (contoh) disalin ke CAT saat pertama diedit; setelah itu isinya milik pengguna
+function catAdopt(id){
+  if(CAT.machines[id]) return CAT.machines[id];
+  var m = machineById(id); if(!m) return null;
+  var c = { id:id, name:m.name, fl:m.fl, secs:sectionsOf(id).map(function(x){ return { code:x.code, name:x.name, bom:x.bom.map(function(b){ return [b.mat, b.q]; }) }; }), items:[], t:Date.now(), adopted:true };
+  CAT.machines[id] = c; return c;
+}
+function catSec(c, code){ for(var i=0;i<c.secs.length;i++) if(c.secs[i].code===code) return c.secs[i]; return null; }
+function catNewMachine(code, name){
+  code = String(code||"").trim().toUpperCase().replace(/\s+/g, ""); name = String(name||"").trim();
+  if(!code) return { err:"Isi kode mesin (mis. UVD5-FCI50)." };
+  var parts = code.split("-"), id = parts.length>1 ? parts.slice(1).join("-") : code, fl = parts.length>1 ? code : "UVD5-"+code;
+  if(machineById(id)) return { err:"Mesin dengan kode "+id+" sudah ada." };
+  CAT.machines[id] = { id:id, name:name || id, fl:fl, secs:[], items:[], t:Date.now() };
+  catSave(); return { id:id };
+}
+function catMachineSet(id, patch){ var c = catAdopt(id); if(!c) return; if(patch.name!=null) c.name = String(patch.name).trim() || c.name; c.t = Date.now(); catSave(); }
+function catRemoveMachine(id){ delete CAT.machines[id]; catSave(); }
+function catAddSec(id, code, name){
+  var c = catAdopt(id); if(!c) return { err:"Mesin tidak ditemukan." };
+  code = String(code||"").trim().toUpperCase().replace(/\s+/g, ""); if(!code) return { err:"Isi kode fun loc (mis. UNW01)." };
+  if(catSec(c, code)) return { err:"Fun loc "+code+" sudah ada di mesin ini." };
+  c.secs.push({ code:code, name:String(name||"").trim() || code, bom:[] }); c.t = Date.now(); catSave(); return { code:code };
+}
+function catRenameSec(id, code, name){ var c = catAdopt(id), s = c && catSec(c, code); if(!s) return; s.name = String(name||"").trim() || code; c.t = Date.now(); catSave(); }
+function catDelSec(id, code){ var c = catAdopt(id); if(!c) return; c.secs = c.secs.filter(function(s){ return s.code!==code; }); c.t = Date.now(); catSave(); }
+function catSetQty(id, code, mat, q){ var c = catAdopt(id), s = c && catSec(c, code); if(!s) return; q = parseFloat(String(q).replace(",", ".")); if(!isFinite(q) || q<=0) return; s.bom.forEach(function(b){ if(String(b[0])===mat) b[1] = q; }); c.t = Date.now(); catSave(); }
+function catDelMat(id, code, mat){ var c = catAdopt(id), s = c && catSec(c, code); if(!s) return; s.bom = s.bom.filter(function(b){ return String(b[0])!==mat; }); c.t = Date.now(); catSave(); }
+// info = { name, brand, spec, fam, fn, unit } (dipakai hanya kalau no material belum ada di katalog)
+function catAddMat(id, code, mat, q, info){
+  var c = catAdopt(id), s = c && catSec(c, code); if(!s) return { err:"Pilih fun loc dulu." };
+  mat = String(mat||"").replace(/\s+/g, ""); if(!/^\d{4,12}$/.test(mat)) return { err:"No material harus angka (4–12 digit)." };
+  if(s.bom.some(function(b){ return String(b[0])===mat; })) return { err:mat+" sudah ada di fun loc ini." };
+  q = parseFloat(String(q==null ? 1 : q).replace(",", ".")); if(!isFinite(q) || q<=0) q = 1;
+  var isNew = !ITEM_BY[mat];
+  if(isNew){
+    info = info || {}; if(!String(info.name||"").trim()) return { err:"No material baru: isi nama barangnya." };
+    var fam = info.fam || "x-lain";
+    CAT.items[mat] = { fam:fam, fn:info.fn || "", name:String(info.name).trim(), brand:String(info.brand||"").trim() || "–", spec:String(info.spec||"").trim(), key:String(info.key||"").trim() || mat, unit:String(info.unit||"").trim() || "pcs" };
+  }
+  s.bom.push([mat, q]); c.t = Date.now(); catSave(); return { mat:mat, isNew:isNew };
+}
+// ubah data barang: berlaku di semua mesin
+function catSetItem(mat, patch){
+  var cur = CAT.items[mat] || {}, it = ITEM_BY[mat]; if(!it) return;
+  Object.keys(patch).forEach(function(k){ cur[k] = patch[k]; });
+  if(patch.name!=null && !CAT.items[mat] && patch.key==null) cur.key = it.key;
+  CAT.items[mat] = cur; catSave();
+}
+function catNewFam(name){
+  name = String(name||"").trim(); if(!name) return null;
+  var id = "x-"+slugOf(name); ensureFam(id, name); return { id:id, fn:name };
+}
+
 /* ================= history pemakaian per mesin & bagian (contoh, seperti ZM148 / MB51) ================= */
 function seedHistory(){
   var seed = 11; function rnd(){ seed = (seed*1103515245+12345)%2147483648; return seed/2147483648; }
   var h = [], t = todayStr(), must = { "2001041":1, "2001007":1, "2001012":1, "2001061":1 };
   SECTIONS.forEach(function(sc){
+    if(CAT.machines[sc.m] && !CAT.machines[sc.m].adopted) return;   // mesin hasil impor BOM asli: tidak diberi history karangan
     sc.bom.forEach(function(b, k){
       if(!(must[b.mat] || rnd()<0.6)) return;
       var n = 1+Math.floor(rnd()*3), d = -(8+Math.floor(rnd()*70)+k*7);
@@ -354,9 +565,11 @@ function seedHistory(){
 }
 
 /* ================= state ================= */
-var S = { stock:{}, hist:[], seq:0, v:4 }, ORDERS = [], PHOTOS = {};   // PHOTOS: mat -> [dataURL] (foto tambahan dari master data)
-function resetState(){ S = { stock:{}, hist:seedHistory(), seq:0, v:4 }; ITEMS.forEach(function(it){ S.stock[it.mat] = it.stock0; }); ORDERS = []; PHOTOS = {}; }
+var S = { stock:{}, hist:[], seq:0, v:4, known:{} }, ORDERS = [], PHOTOS = {};   // PHOTOS: mat -> [dataURL] (foto tambahan dari master data)
+function resetState(){ S = { stock:{}, hist:seedHistory(), seq:0, v:4, known:{} }; ITEMS.forEach(function(it){ S.stock[it.mat] = it.stock0; }); ORDERS = []; PHOTOS = {}; EMBS = {}; }
 function stockOf(mat){ var s = S.stock[mat]; return s==null ? 0 : s; }
+// stok barang hasil impor BOM belum diketahui sampai tim sparepart mengisinya (di Master data); barang bawaan POC selalu dianggap diketahui
+function stockKnown(mat){ var it = ITEM_BY[mat]; return !(it && it.imp) || !!(S.known && S.known[mat]); }
 // stok yang sudah dipesan tapi belum diserahkan
 function reservedOf(mat){ var n = 0; ORDERS.forEach(function(o){ if(o.status==="selesai" || o.status==="batal") return; o.items.forEach(function(x){ if(x.mat===mat && !x.res) n += x.q; }); }); return n; }
 function photosOf(mat){ return (BASE_PHOTOS[mat]||[]).concat(PHOTOS[mat]||[]); }
@@ -475,16 +688,27 @@ function thumbHtml(it, cls){
 var IN_FRAME = true; try{ IN_FRAME = window.self !== window.top; }catch(e){ IN_FRAME = true; }
 var LS_KEY = "sp-sim-v4";
 var FB_CONFIG = { apiKey:"AIzaSyBBRo7tTq25VAaES42pEbTlH1_9jvhAm4Y", authDomain:"packaging-wms.firebaseapp.com", projectId:"packaging-wms", storageBucket:"packaging-wms.firebasestorage.app", messagingSenderId:"808365853689", appId:"1:808365853689:web:4171dfd98ce30776a40b28" };
-var STORE = { mode:"local", state:"off", msg:"", db:null, synced:{ meta:"", orders:{}, photos:{} }, raw:{ meta:null, orders:{}, photos:{} }, ready:{}, onChange:null, booted:false };
+var STORE = { mode:"local", state:"off", msg:"", db:null, synced:{ meta:"", orders:{}, photos:{}, cat:{}, emb:{} }, raw:{ meta:null, orders:{}, photos:{}, cat:{}, emb:{} }, ready:{}, onChange:null, booted:false };
 function snapshotAll(){
-  var o = { meta:JSON.stringify(S), orders:{}, photos:{} };
+  var o = { meta:JSON.stringify(S), orders:{}, photos:{}, cat:{}, emb:{} };
   ORDERS.forEach(function(x){ o.orders[x.id] = JSON.stringify(x); });
   Object.keys(PHOTOS).forEach(function(k){ if(PHOTOS[k] && PHOTOS[k].length) o.photos[k] = JSON.stringify(PHOTOS[k]); });
+  Object.keys(CAT.machines).forEach(function(k){ o.cat[k] = JSON.stringify(CAT.machines[k]); });
+  if(CAT.items && Object.keys(CAT.items).length) o.cat["__items"] = JSON.stringify(CAT.items);
+  // embedding foto unggahan (hanya foto yang masih ada), dihitung sekali lalu dipakai semua perangkat
+  Object.keys(EMBS).forEach(function(mat){
+    var e = EMBS[mat], live = {}, n = 0; if(!e || !e.e) return;
+    (PHOTOS[mat]||[]).forEach(function(src){ var kk = photoKey(src); if(kk && e.e[kk]){ live[kk] = e.e[kk]; n++; } });
+    if(n) o.emb[mat] = JSON.stringify({ m:e.m, e:live });
+  });
   return o;
 }
 function importAll(o){
   var m = JSON.parse(o.meta); if(!m || m.v!==4) throw new Error("versi");
-  S = m;
+  S = m; if(!S.known) S.known = {};
+  CAT = { machines:{}, items:{} }; Object.keys(o.cat||{}).forEach(function(k){ try{ if(k==="__items") CAT.items = JSON.parse(o.cat[k]); else CAT.machines[k] = JSON.parse(o.cat[k]); }catch(e){} });
+  EMBS = {}; Object.keys(o.emb||{}).forEach(function(k){ try{ EMBS[k] = JSON.parse(o.emb[k]); }catch(e){} });
+  applyCat();
   // data lama belum punya riwayat Facial 40 (mesin uji foto): tambahkan riwayat contohnya saja, data lain tidak diubah
   if(!S.hist.some(function(h){ return h.m==="FCI40"; })) S.hist = S.hist.concat(seedHistory().filter(function(h){ return h.m==="FCI40"; }));
   // data lama: tambah riwayat Facial 42 dan stok 6 no material auto wrap, data lain tidak diubah
@@ -505,6 +729,11 @@ function saveState(){
   Object.keys(STORE.synced.orders).forEach(function(k){ if(!snap.orders[k]){ b.delete(db.collection("sp_order").doc(k)); n++; } });
   Object.keys(snap.photos).forEach(function(k){ if(snap.photos[k]!==STORE.synced.photos[k]){ b.set(db.collection("sp_photo").doc(k), { j:snap.photos[k], t:Date.now() }); n++; } });
   Object.keys(STORE.synced.photos).forEach(function(k){ if(!snap.photos[k]){ b.delete(db.collection("sp_photo").doc(k)); n++; } });
+  var sc = STORE.synced.cat || {}, se = STORE.synced.emb || {};
+  Object.keys(snap.cat).forEach(function(k){ if(snap.cat[k]!==sc[k]){ b.set(db.collection("sp_meta").doc("cat-"+k), { j:snap.cat[k], t:Date.now() }); n++; } });
+  Object.keys(sc).forEach(function(k){ if(!snap.cat[k]){ b.delete(db.collection("sp_meta").doc("cat-"+k)); n++; } });
+  Object.keys(snap.emb).forEach(function(k){ if(snap.emb[k]!==se[k]){ b.set(db.collection("sp_meta").doc("emb-"+k), { j:snap.emb[k], t:Date.now() }); n++; } });
+  Object.keys(se).forEach(function(k){ if(!snap.emb[k]){ b.delete(db.collection("sp_meta").doc("emb-"+k)); n++; } });
   STORE.synced = snap;
   if(n) b.commit().catch(function(e){ setStoreState("err", (e && (e.code||e.message)) || String(e)); });
 }
@@ -539,14 +768,14 @@ function bootLocal(){
   window.addEventListener("storage", function(e){ if(e.key!==LS_KEY || !e.newValue) return; try{ var o2 = JSON.parse(e.newValue); importAll(o2); STORE.synced = o2; }catch(x){ return; } if(STORE.onChange) STORE.onChange("remote"); });
 }
 function fbRemote(){
-  if(!(STORE.ready.m && STORE.ready.o && STORE.ready.p)) return;
+  if(!(STORE.ready.m && STORE.ready.o && STORE.ready.p && STORE.ready.c)) return;
   var raw = STORE.raw, bad = !raw.meta;
   try{ if(raw.meta && JSON.parse(raw.meta).v!==4) bad = true; }catch(e){ bad = true; }
   if(bad){ if(!STORE.booted){ STORE.booted = true; resetState(); saveState(); setStoreState("on"); if(STORE.onChange) STORE.onChange("remote"); } return; }
-  var o = { meta:raw.meta, orders:raw.orders, photos:raw.photos };
-  var same = o.meta===STORE.synced.meta && JSON.stringify(o.orders)===JSON.stringify(STORE.synced.orders) && JSON.stringify(o.photos)===JSON.stringify(STORE.synced.photos);
+  var o = { meta:raw.meta, orders:raw.orders, photos:raw.photos, cat:raw.cat, emb:raw.emb };
+  var same = o.meta===STORE.synced.meta && JSON.stringify(o.orders)===JSON.stringify(STORE.synced.orders) && JSON.stringify(o.photos)===JSON.stringify(STORE.synced.photos) && JSON.stringify(o.cat)===JSON.stringify(STORE.synced.cat||{}) && JSON.stringify(o.emb)===JSON.stringify(STORE.synced.emb||{});
   STORE.booted = true;
-  if(!same){ try{ importAll(o); STORE.synced = { meta:o.meta, orders:Object.assign({}, o.orders), photos:Object.assign({}, o.photos) }; }catch(e){} if(STORE.onChange) STORE.onChange("remote"); }
+  if(!same){ try{ importAll(o); STORE.synced = { meta:o.meta, orders:Object.assign({}, o.orders), photos:Object.assign({}, o.photos), cat:Object.assign({}, o.cat), emb:Object.assign({}, o.emb) }; }catch(e){} if(STORE.onChange) STORE.onChange("remote"); }
   if(STORE.state!=="on") setStoreState("on");
 }
 function initStore(onChange){
@@ -557,10 +786,11 @@ function initStore(onChange){
   try{
     if(!(window.firebase.apps && window.firebase.apps.length)) window.firebase.initializeApp(FB_CONFIG);
     window.firebase.auth().signInAnonymously().then(function(){
-      STORE.db = window.firebase.firestore(); STORE.mode = "fb"; STORE.synced = { meta:"", orders:{}, photos:{} };
+      STORE.db = window.firebase.firestore(); STORE.mode = "fb"; STORE.synced = { meta:"", orders:{}, photos:{}, cat:{}, emb:{} };
       function fail(e){ STORE.mode = "local"; setStoreState("err", (e && (e.code || e.message)) || String(e)); }
       STORE.db.collection("sp_meta").doc("state").onSnapshot(function(d){ STORE.raw.meta = d.exists ? d.data().j : null; STORE.ready.m = true; fbRemote(); }, fail);
       STORE.db.collection("sp_order").onSnapshot(function(snap){ var r = {}; snap.forEach(function(d){ r[d.id] = d.data().j; }); STORE.raw.orders = r; STORE.ready.o = true; fbRemote(); }, fail);
+      STORE.db.collection("sp_meta").onSnapshot(function(snap){ var c = {}, e = {}; snap.forEach(function(d){ var id = d.id; if(id.indexOf("cat-")===0) c[id.slice(4)] = d.data().j; else if(id.indexOf("emb-")===0) e[id.slice(4)] = d.data().j; }); STORE.raw.cat = c; STORE.raw.emb = e; STORE.ready.c = true; fbRemote(); }, fail);
       STORE.db.collection("sp_photo").onSnapshot(function(snap){ var r = {}; snap.forEach(function(d){ r[d.id] = d.data().j; }); STORE.raw.photos = r; STORE.ready.p = true; fbRemote(); }, fail);
     }).catch(function(e){ var c = (e && e.code) || String(e); setStoreState("err", c==="auth/network-request-failed" ? "Tidak ada koneksi internet." : "Login anonim gagal ("+c+")."); });
   }catch(e){ setStoreState("err", String(e && e.message || e)); }
@@ -580,7 +810,7 @@ function pickModel(){
   try{ q = new URLSearchParams(location.search).get("model") || ""; fromUrl = !!q; }catch(e){}
   if(!q){ try{ q = localStorage.getItem("sp-model") || ""; }catch(e){} }
   var m = /^(clip|dino-small|dino-base)(?:-(mean|clsmean))?$/.exec(q);
-  if(!m || (m[1]==="clip" && m[2])){ m = ["clip", "clip"]; fromUrl = false; }
+  if(!m || (m[1]==="clip" && m[2])){ m = ["dino-base", "dino-base", undefined]; fromUrl = false; }   // bawaan: DINOv2 base (CLIP / DINOv2 small tetap bisa dipilih di Master data)
   var base = MODEL_BASE[m[1]], pool = base.kind==="dino" ? (m[2] || "cls") : null, label = m[1]+(pool && pool!=="cls" ? "-"+pool : "");
   if(fromUrl){ try{ localStorage.setItem("sp-model", label); }catch(e){} }
   return { key:m[1], label:label, id:base.id, kind:base.kind, name:base.name, pool:pool, dtype:"q8", temp:base.temp, hi:base.hi, mid:base.mid, file:(m[1]==="clip" ? "sp-img/embeddings.json" : "sp-img/embeddings-"+label+".json") };
@@ -650,15 +880,42 @@ function dinoPool(h, pool){
 function clipEmbed(src){
   return CLIP.T.RawImage.read(src).then(function(img){ return CLIP.proc(img); }).then(function(inp){ return CLIP.vis(inp); }).then(function(out){ return MODEL.kind==="clip" ? l2(out.image_embeds.data) : dinoPool(out.last_hidden_state, MODEL.pool); });
 }
+// kunci foto unggahan = hash isi gambarnya; embedding-nya disimpan di EMBS (localStorage / Firestore "emb-<no material>") supaya dihitung sekali saja
+var PK_MEMO = {};
+function photoKey(src){
+  if(String(src).indexOf("data:")!==0) return null;
+  var m = PK_MEMO[src]; if(m) return m;
+  var h = 2166136261, i; for(i=0;i<src.length;i++){ h ^= src.charCodeAt(i); h = Math.imul(h, 16777619); }
+  m = (h>>>0).toString(36)+"."+src.length.toString(36); PK_MEMO[src] = m; return m;
+}
+function embStored(mat, src){ var k = photoKey(src), e = EMBS[mat]; return (k && e && e.m===MODEL.label && e.e && e.e[k]) ? l2(b64f32(e.e[k])) : null; }
+function embRemember(mat, src, v){ var k = photoKey(src); if(!k) return false; var e = EMBS[mat]; if(!e || e.m!==MODEL.label) e = EMBS[mat] = { m:MODEL.label, e:{} }; e.e[k] = f32b64(v); return true; }
+function clipJobs(mats){
+  var jobs = [], seen = {};
+  ITEMS.forEach(function(it){
+    if(mats && mats.indexOf(it.mat)<0) return;
+    photosOf(it.mat).forEach(function(src){
+      if(CLIP.imgEmb[src] || seen[src]) return;
+      var v = embStored(it.mat, src); if(v){ CLIP.imgEmb[src] = v; return; }
+      seen[src] = 1; jobs.push({ src:src, mat:it.mat });
+    });
+  });
+  return jobs;
+}
+function clipRunJobs(jobs, hint){
+  var p = Promise.resolve(), dirty = false;
+  jobs.forEach(function(j, i){ p = p.then(function(){ CLIP.msg = (hint||"")+"Membaca foto katalog "+(i+1)+"/"+jobs.length+"…"; clipNotify(); return clipEmbed(j.src).then(function(v){ CLIP.imgEmb[j.src] = v; if(embRemember(j.mat, j.src, v)) dirty = true; }).catch(function(){}); }); });
+  return p.then(function(){ if(dirty) saveState(); return jobs.length; });
+}
 // embedding semua foto katalog (foto asli + foto unggahan); disimpan di memori per sumber foto
 function clipIndexCatalog(){
-  var jobs = [];
-  var seen = {};
-  ITEMS.forEach(function(it){ photosOf(it.mat).forEach(function(src){ if(!CLIP.imgEmb[src] && !seen[src]){ seen[src] = 1; jobs.push(src); } }); });
-  var p = Promise.resolve();
   var c = CLIP.cache, hint = c && c.bad ? "File embedding tidak cocok dengan model "+MODEL.name+" (isinya model "+(c.model||"lain")+"), jadi foto katalog dihitung ulang di perangkat ini. " : (c && c.none ? "File "+EMB_FILE.split("/").pop()+" tidak ditemukan, jadi foto katalog dihitung di perangkat ini. " : "");
-  jobs.forEach(function(src, i){ p = p.then(function(){ CLIP.msg = hint+"Membaca foto katalog "+(i+1)+"/"+jobs.length+"…"; clipNotify(); return clipEmbed(src).then(function(v){ CLIP.imgEmb[src] = v; }).catch(function(){}); }); });
-  return p;
+  return clipRunJobs(clipJobs(), hint);
+}
+// foto yang baru diunggah: hitung embedding-nya sekarang dan simpan bersama fotonya (dipanggil dari halaman Master)
+function clipEmbedMats(mats){
+  if(IN_FRAME) return Promise.resolve(0);
+  return clipLoadModel().then(function(){ return clipRunJobs(clipJobs(mats), "Menghitung embedding foto baru… "); });
 }
 // hasil: { fams:[{id, p}], photo:{mat: kemiripan 0..1}, ms }
 function clipSearch(src){
