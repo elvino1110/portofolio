@@ -15,7 +15,21 @@
   .ph label{font-size:.74rem; padding:5px 9px; border:1px dashed var(--line); border-radius:6px; cursor:pointer; color:var(--accent)}
   td .thumb{width:44px; height:44px}
   td .thumb.ill svg{width:30px; height:30px}
-  td input.stk{width:64px; padding:4px 6px; font-family:var(--mono); font-size:.82rem}
+  table.ed td{vertical-align:top}
+  table.ed input, table.ed select{padding:5px 7px; font-size:.82rem}
+  table.ed input.q{width:64px; font-family:var(--mono)} table.ed input.stk{width:64px; font-family:var(--mono)}
+  table.ed input.u{width:56px} table.ed input.nm{min-width:150px} table.ed input.sp{min-width:170px} table.ed input.br{min-width:90px}
+  table.ed select{min-width:130px}
+  .chips{display:flex; gap:6px; flex-wrap:wrap}
+  .chips button{font-family:var(--mono); font-size:.76rem; padding:5px 10px; border-radius:16px}
+  .chips button.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  .chips button .c{opacity:.7; margin-left:4px}
+  .chips button.empty{border-style:dashed}
+  .addbox{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px; align-items:end}
+  .addbox label{display:flex; flex-direction:column; gap:3px; font-size:.72rem; color:var(--ink-dim); font-family:var(--mono); text-transform:uppercase; letter-spacing:.05em}
+  details.box{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 14px}
+  details.box > summary{cursor:pointer; font-weight:600; font-size:.9rem}
+  .used{font-size:.72rem; color:var(--ink-dim); max-width:170px}
 </style>
 </head>
 <body>
@@ -23,25 +37,73 @@
   <nav class="topnav"><a href="sp-mekanik.html">Mekanik</a><a href="sp-gudang.html">Tim sparepart</a><a href="sp-master.html" class="on">Master data</a><span id="store-st"></span></nav>
   <header class="top">
     <span class="eyebrow">Sparepart &middot; master data</span>
-    <h1>Katalog, foto, dan keluarga barang</h1>
-    <p class="lede">Foto per no material dipakai untuk mencocokkan foto dari mekanik (foto ke foto). Makin banyak foto (dari beberapa sisi, termasuk barang bekas), makin tepat hasilnya. Foto unggahan diperkecil otomatis sebelum disimpan.</p>
+    <h1>Mesin, fun loc, dan material</h1>
+    <p class="lede">Pilih mesin, pilih fun loc, lalu edit materialnya langsung di tabel. Foto, nama, brand, spesifikasi, dan stok melekat ke <b>no material</b>, jadi kalau material yang sama dipakai di beberapa mesin atau fun loc, cukup diubah sekali. Hanya <b>qty</b> yang berbeda per fun loc. Semua perubahan langsung tersimpan.</p>
   </header>
   <section>
-    <div class="section-head"><h2>Katalog</h2><span class="note" id="cat-n"></span></div>
-    <div class="row" style="margin-bottom:10px"><input id="f-q" class="grow" placeholder="Cari no material / nama / brand"><select id="f-fam" style="width:auto"></select><label class="row note" style="gap:4px"><input type="checkbox" id="f-ph" style="width:auto"> hanya yang belum ada foto</label></div>
-    <div class="panel tbl-wrap" style="padding:0"><table class="list" id="cat"></table></div>
+    <div class="section-head"><h2>Mesin</h2><span class="note" id="cat-n"></span></div>
+    <div class="panel">
+      <div class="row" style="margin-bottom:8px">
+        <select id="m-sel" class="grow" aria-label="Pilih mesin"></select>
+        <button type="button" id="m-new">+ Mesin baru</button>
+        <button type="button" id="m-imp">Impor dari Excel</button>
+      </div>
+      <div id="m-newbox" hidden class="addbox" style="margin-bottom:8px">
+        <label>Kode mesin (fun loc)<input id="nm-code" placeholder="UVD5-FCI50"></label>
+        <label>Nama mesin<input id="nm-name" placeholder="Facial 50"></label>
+        <button type="button" class="primary" id="nm-go">Buat mesin</button>
+      </div>
+      <div id="m-head" class="row"></div>
+      <div class="msg" id="m-msg"></div>
+    </div>
+  </section>
+  <details class="box" id="imp-box" style="margin-block:12px">
+    <summary>Impor BOM dari Excel</summary>
+    <p class="note" style="margin:8px 0">Unggah daftar BOM (kolom <b>Functional Location</b>, <b>NO Material</b>, <b>Description Material</b>, <b>QTY</b>, <b>UoM</b>, mis. hasil export SAP). Kolom opsional <b>Nama, Brand, Spesifikasi, Stok, Bin, Family</b> boleh diisi kalau mau hasil yang lebih rapi, kalau kosong aplikasi menebak dari deskripsi. Mesin, fun loc, dan materialnya langsung dibuat, lalu bisa kamu edit di bawah. Mengunggah ulang mesin yang sama menggantikan BOM lamanya. Stok yang belum ada di Excel tampil <b>&ldquo;Stok belum diisi&rdquo;</b> sampai kamu mengisinya.</p>
+    <p class="note" style="margin:0 0 8px"><a href="template-impor-bom.xlsx" download>Unduh template Excel</a> (berisi petunjuk pengisian dan sheet contoh).</p>
+    <div class="row"><input type="file" id="imp-file" accept=".xlsx,.xls,.csv" hidden><button type="button" class="primary" id="imp-pick">Pilih file Excel BOM</button><span class="note" id="imp-fn"></span></div>
+    <div class="msg" id="imp-msg"></div>
+    <div id="imp-prev" style="margin-top:10px"></div>
+  </details>
+  <section>
+    <div class="section-head"><h2>Fun loc</h2><span class="note" id="sec-n"></span></div>
+    <div class="panel">
+      <div class="chips" id="sec-chips"></div>
+      <div id="sec-newbox" hidden class="addbox" style="margin-top:10px">
+        <label>Kode fun loc<input id="ns-code" placeholder="UNW01"></label>
+        <label>Nama bagian<input id="ns-name" placeholder="Unwind 02"></label>
+        <button type="button" class="primary" id="ns-go">Tambah fun loc</button>
+      </div>
+      <div id="sec-head" class="row" style="margin-top:12px"></div>
+    </div>
+  </section>
+  <section>
+    <div class="section-head"><h2>Material</h2><span class="note" id="mat-n"></span></div>
+    <div class="row" style="margin-bottom:10px"><input id="f-q" class="grow" placeholder="Cari di fun loc ini: no material / nama / brand"><select id="f-fam" style="width:auto"></select><label class="row note" style="gap:4px"><input type="checkbox" id="f-ph" style="width:auto"> hanya yang belum ada foto</label></div>
+    <div class="panel tbl-wrap" style="padding:0"><table class="list ed" id="mat"></table></div>
     <div class="msg" id="cat-msg"></div>
+    <div class="panel" style="margin-top:10px">
+      <b style="font-size:.9rem">Tambah material ke fun loc ini</b>
+      <p class="note" style="margin:4px 0 8px">Kalau no material sudah ada di katalog (dipakai mesin lain), cukup isi no material dan qty. Data barangnya terisi otomatis. Kalau baru, isi juga nama dan lainnya.</p>
+      <div class="addbox">
+        <label>No material<input id="am-mat" inputmode="numeric" placeholder="21065904"></label>
+        <label>Qty<input id="am-q" inputmode="decimal" value="1"></label>
+        <label>Nama (kalau baru)<input id="am-name" placeholder="Bearing 6004-ZZ"></label>
+        <label>Brand<input id="am-brand" placeholder="TIMKEN"></label>
+        <label>Spesifikasi<input id="am-spec" placeholder="20 × 42 × 12 mm"></label>
+        <label>Satuan<input id="am-unit" placeholder="pcs"></label>
+        <label>Keluarga<select id="am-fam"></select></label>
+        <label id="am-fn-l" hidden>Nama keluarga baru<input id="am-fn"></label>
+        <button type="button" class="primary" id="am-go">+ Tambah</button>
+      </div>
+      <div class="note" id="am-hint" style="margin-top:6px"></div>
+    </div>
   </section>
-  <section>
-    <div class="section-head"><h2>Struktur mesin &amp; BOM</h2><span class="note">mesin (fun loc) &rarr; bagian (fun loc) &rarr; komponen</span></div>
-    <p class="note" style="margin-bottom:8px">Nama mesin, kode functional location, dan bagian Facial 26 mengikuti export BOM SAP 27 Okt 2026. BOM <b>Folding Facial 26</b> memakai 49 dari 90 baris export (no material disamarkan); bagian dan mesin lain masih contoh. Di versi sungguhan semuanya diambil dari SAP.</p>
-    <div class="panel tbl-wrap" style="padding:0"><table class="list" id="fl"></table></div>
-  </section>
-  <section>
-    <div class="section-head"><h2>Keluarga barang &amp; foto</h2></div>
-    <p class="note" style="margin-bottom:8px">Pencarian foto hanya membandingkan foto mekanik dengan foto katalog (foto ke foto). Keluarga yang fotonya paling mirip jadi tebakan pertama, jadi keluarga yang belum punya foto belum bisa ditebak dan harus dipilih manual. Tambahkan foto lewat tombol &ldquo;+ foto&rdquo; di tabel Katalog.</p>
-    <div class="panel tbl-wrap" style="padding:0"><table class="list" id="fams"></table></div>
-  </section>
+  <details class="box" style="margin-block:12px">
+    <summary>Keluarga barang &amp; foto</summary>
+    <p class="note" style="margin:8px 0">Pencarian foto membandingkan foto mekanik dengan foto katalog. Keluarga yang fotonya paling mirip jadi tebakan pertama, jadi keluarga yang belum punya foto belum bisa ditebak.</p>
+    <div class="tbl-wrap"><table class="list" id="fams"></table></div>
+  </details>
   <section>
     <div class="section-head"><h2>Embedding foto katalog</h2><span class="note" id="emb-n"></span></div>
     <div class="panel">
@@ -50,39 +112,99 @@
       <div class="msg show" id="emb-st"></div>
       <div class="row" style="margin-top:8px"><button type="button" class="primary" id="emb-go">Hitung embedding &amp; unduh file</button><span class="note" id="emb-prog"></span></div>
       <div class="msg" id="emb-msg"></div>
-      <p class="note" style="margin-top:8px">Cara pakai: unduh file, taruh di folder <span class="mono">poc/sp-img/</span> di repositori, lalu commit dan push. Netlify memperbarui sendiri. Ulangi kalau foto bawaan bertambah atau diganti. Foto yang ditambahkan lewat &ldquo;+ foto&rdquo; tidak masuk file ini dan tetap dihitung di perangkat saat dipakai.</p>
+      <p class="note" style="margin-top:8px">Cara pakai: unduh file, taruh di folder <span class="mono">poc/sp-img/</span> di repositori, lalu commit dan push. Netlify memperbarui sendiri. Ulangi kalau foto bawaan bertambah atau diganti. Foto yang ditambahkan lewat &ldquo;+ foto&rdquo; tidak perlu file ini: embedding-nya dihitung otomatis saat diunggah dan disimpan bersama fotonya.</p>
     </div>
   </section>
   <section>
     <div class="section-head"><h2>Reset data simulasi</h2></div>
-    <div class="panel"><p class="note" style="margin-bottom:8px">Mengembalikan stok, history mesin, dan menghapus semua pesanan serta foto unggahan.</p><div class="row"><button type="button" id="rs">Reset</button><span id="rs-c" hidden><b>Yakin?</b> <button type="button" class="primary" id="rs-y">Ya, reset</button> <button type="button" id="rs-n">Batal</button></span></div><div class="msg" id="rs-msg"></div></div>
+    <div class="panel"><p class="note" style="margin-bottom:8px">Mengembalikan stok, history mesin, dan menghapus semua pesanan serta foto unggahan. Mesin, fun loc, dan material yang sudah kamu buat atau edit tidak ikut terhapus.</p><div class="row"><button type="button" id="rs">Reset</button><span id="rs-c" hidden><b>Yakin?</b> <button type="button" class="primary" id="rs-y">Ya, reset</button> <button type="button" id="rs-n">Batal</button></span></div><div class="msg" id="rs-msg"></div></div>
   </section>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="sp-core.js"></script>
 <script>
 (function(){
   "use strict";
-  $("#f-fam").innerHTML = '<option value="">Semua keluarga</option>'+FAMS.map(function(f){ return '<option value="'+f.id+'">'+esc(f.name)+'</option>'; }).join("");
+  var CUR = { m:null, sec:null }, CONF = "";
+  function famOptsHtml(sel, extra){ return FAMS.map(function(f){ return '<option value="'+esc(f.id)+'"'+(f.id===sel ? " selected" : "")+'>'+esc(f.name)+'</option>'; }).join("")+(extra ? '<option value="__new">+ keluarga baru…</option>' : ""); }
+  function msg(id, t, k){ var m = $(id); m.className = "msg show"+(k ? " "+k : ""); m.textContent = t; }
+  function curMachine(){ return CUR.m ? machineById(CUR.m) : null; }
+  function curSec(){ return CUR.m && CUR.sec ? sectionOf(CUR.m, CUR.sec) : null; }
+  function ensureCur(){
+    if(!curMachine()){ var ids = Object.keys(CAT.machines).filter(function(k){ return machineById(k); }); CUR.m = ids.length ? ids[ids.length-1] : (MACHINES[0] && MACHINES[0].id); CUR.sec = null; }
+    var secs = sectionsOf(CUR.m);
+    if(!curSec()) CUR.sec = secs.length ? secs[0].code : null;
+  }
+  function usedHtml(mat){
+    var w = whereUsed(mat).filter(function(x){ return !(x.m===CUR.m && x.code===CUR.sec); });
+    if(!w.length) return '<span class="used">hanya di sini</span>';
+    var t = w.slice(0, 3).map(function(x){ return esc(machineById(x.m).name+" / "+x.code); }).join(", ");
+    return '<span class="used">juga di: '+t+(w.length>3 ? " +"+(w.length-3) : "")+'</span>';
+  }
+  function mHead(){
+    var m = curMachine(), mh = "";
+    if(m){
+      var mine = !!CAT.machines[m.id], restore = mine && CAT_ORIG[m.id] && CAT_ORIG[m.id].mach;
+      mh = '<b>Nama</b><input type="text" data-mname="'+esc(m.id)+'" value="'+esc(m.name)+'" style="width:auto; min-width:200px"><span class="note mono">'+esc(m.fl)+'</span>'+
+        (mine ? '<span class="tag info">sudah diedit / diimpor</span>' : '<span class="tag dim">data contoh</span>');
+      if(mine){
+        mh += CONF==="m:"+m.id ? '<span><b>Yakin?</b> <button type="button" class="primary" data-mdel2="'+esc(m.id)+'">Ya</button> <button type="button" data-conf="">Batal</button></span>' :
+          '<button type="button" data-mdel="'+esc(m.id)+'" style="margin-left:auto">'+(restore ? "Kembalikan ke data contoh" : "Hapus mesin")+'</button>';
+      } else mh += '<span class="note">Mengedit apa pun di bawah akan menyalin mesin ini jadi milikmu.</span>';
+    }
+    return mh;
+  }
   function render(){
+    ensureCur();
     $("#store-st").innerHTML = storeBadge();
-    var q = $("#f-q").value.trim(), fam = $("#f-fam").value, noPh = $("#f-ph").checked;
-    var list = q ? searchText(q) : ITEMS.slice();
-    if(fam) list = list.filter(function(it){ return it.fam===fam; });
-    if(noPh) list = list.filter(function(it){ return !photosOf(it.mat).length; });
-    var nPh = ITEMS.filter(function(it){ return photosOf(it.mat).length; }).length;
-    $("#cat-n").textContent = ITEMS.length+" no material · "+nPh+" sudah ada foto";
-    $("#cat").innerHTML = '<tr><th></th><th>No material</th><th>Nama &amp; spesifikasi</th><th>Keluarga</th><th>Bin</th><th>Status</th><th>Stok</th><th>Foto katalog</th></tr>'+list.map(function(it){
-      var base = BASE_PHOTOS[it.mat]||[], up = PHOTOS[it.mat]||[];
-      return '<tr><td>'+thumbHtml(it)+'</td><td class="mono">'+it.mat+'</td><td><b>'+esc(it.name)+'</b><div class="note">'+esc(it.brand)+' &middot; '+esc(it.spec)+'</div></td><td>'+esc(famById(it.fam).name)+'</td><td class="mono">'+esc(it.bin)+'</td><td><span class="tag">'+it.status+'</span></td>'+
-        '<td><input class="stk" type="text" inputmode="numeric" data-stk="'+it.mat+'" value="'+stockOf(it.mat)+'" aria-label="Stok '+it.mat+'"></td>'+
-        '<td><div class="ph">'+base.map(function(s){ return '<span class="pi"><img src="'+esc(s)+'" alt="" title="foto asli POC"></span>'; }).join("")+
-        up.map(function(s, i){ return '<span class="pi"><img src="'+esc(s)+'" alt=""><button type="button" data-del="'+it.mat+'|'+i+'" aria-label="Hapus foto">&times;</button></span>'; }).join("")+
-        '<label>+ foto<input type="file" accept="image/*" data-up="'+it.mat+'" hidden multiple></label></div></td></tr>';
-    }).join("");
-    $("#fl").innerHTML = '<tr><th>Mesin</th><th>Bagian</th><th>Functional location</th><th>Komponen BOM (qty terpasang)</th></tr>'+SECTIONS.map(function(x, i){ var first = i===0 || SECTIONS[i-1].m!==x.m; return '<tr><td>'+(first ? '<b>'+esc(machineById(x.m).name)+'</b><div class="note mono">'+esc(machineById(x.m).fl)+'</div>' : '')+'</td><td>'+esc(x.name)+(x.real ? ' <span class="tag info">dari export BOM</span>' : '')+'</td><td class="mono">'+esc(x.fl)+'</td><td class="note">'+x.bom.map(function(b){ return esc(item(b.mat).name)+' &times;'+b.q; }).join(", ")+'</td></tr>'; }).join("");
+    var ms = $("#m-sel");
+    ms.innerHTML = MACHINES.map(function(m){ return '<option value="'+esc(m.id)+'"'+(m.id===CUR.m ? " selected" : "")+'>'+esc(m.name)+' · '+esc(m.fl)+(CAT.machines[m.id] ? " ✎" : "")+'</option>'; }).join("");
+    var nMat = ITEMS.length, nPh = ITEMS.filter(function(it){ return photosOf(it.mat).length; }).length;
+    $("#cat-n").textContent = MACHINES.length+" mesin · "+nMat+" no material · "+nPh+" sudah ada foto";
+    $("#m-head").innerHTML = mHead();
+    var secs = sectionsOf(CUR.m);
+    $("#sec-n").textContent = secs.length+" fun loc";
+    $("#sec-chips").innerHTML = secs.map(function(s){ return '<button type="button" data-sec="'+esc(s.code)+'" class="'+(s.code===CUR.sec ? "on" : "")+(s.bom.length ? "" : " empty")+'">'+esc(s.code)+' · '+esc(s.name)+'<span class="c">'+s.bom.length+'</span></button>'; }).join("")+
+      '<button type="button" id="ns-open" class="ghost">+ Fun loc</button>';
+    var sc = curSec(), sh = "";
+    if(sc){
+      sh = '<b>Nama bagian</b><input type="text" data-secname="'+esc(sc.code)+'" value="'+esc(sc.name)+'" style="width:auto; min-width:200px"><span class="note mono">'+esc(sc.fl)+'</span>';
+      sh += CONF==="s:"+sc.code ? '<span style="margin-left:auto"><b>Hapus fun loc ini?</b> <button type="button" class="primary" data-sdel2="'+esc(sc.code)+'">Ya</button> <button type="button" data-conf="">Batal</button></span>' : '<button type="button" data-sdel="'+esc(sc.code)+'" style="margin-left:auto">Hapus fun loc</button>';
+    } else sh = '<span class="note">Mesin ini belum punya fun loc. Tambahkan lewat tombol &ldquo;+ Fun loc&rdquo; atau impor dari Excel.</span>';
+    $("#sec-head").innerHTML = sh;
+    // filter keluarga: hanya keluarga yang ada di fun loc ini
+    var fsel = $("#f-fam"), fv = fsel.value, inSec = {}; (sc ? sc.bom : []).forEach(function(b){ var it = item(b.mat); if(it) inSec[it.fam] = 1; });
+    fsel.innerHTML = '<option value="">Semua keluarga</option>'+FAMS.filter(function(f){ return inSec[f.id]; }).map(function(f){ return '<option value="'+esc(f.id)+'">'+esc(f.name)+'</option>'; }).join(""); fsel.value = inSec[fv] ? fv : "";
+    var q = norm($("#f-q").value), fam = fsel.value, noPh = $("#f-ph").checked;
+    var rows = (sc ? sc.bom : []).filter(function(b){
+      var it = item(b.mat); if(!it) return false;
+      if(fam && it.fam!==fam) return false;
+      if(noPh && photosOf(it.mat).length) return false;
+      if(q){ var hay = norm([it.mat, it.name, it.brand, it.spec].join(" ")); if(!q.split(" ").every(function(w){ return hay.indexOf(w)>=0; })) return false; }
+      return true;
+    });
+    $("#mat-n").textContent = sc ? rows.length+" dari "+sc.bom.length+" material di "+sc.code : "";
+    $("#mat").innerHTML = '<tr><th></th><th>No material</th><th>Nama</th><th>Brand</th><th>Spesifikasi</th><th>Keluarga</th><th>Qty</th><th>Satuan</th><th>Stok</th><th>Foto katalog</th><th>Dipakai di</th><th></th></tr>'+
+      (rows.length ? rows.map(function(b){
+        var it = item(b.mat), base = BASE_PHOTOS[it.mat]||[], up = PHOTOS[it.mat]||[];
+        return '<tr><td>'+thumbHtml(it)+'</td><td class="mono">'+esc(it.mat)+'</td>'+
+          '<td><input class="nm" data-f="name" data-mat="'+esc(it.mat)+'" value="'+esc(it.name)+'" aria-label="Nama"></td>'+
+          '<td><input class="br" data-f="brand" data-mat="'+esc(it.mat)+'" value="'+esc(it.brand)+'" aria-label="Brand"></td>'+
+          '<td><input class="sp" data-f="spec" data-mat="'+esc(it.mat)+'" value="'+esc(it.spec)+'" aria-label="Spesifikasi"></td>'+
+          '<td data-famcell="'+esc(it.mat)+'"><select data-fam="'+esc(it.mat)+'" aria-label="Keluarga">'+famOptsHtml(it.fam, true)+'</select></td>'+
+          '<td><input class="q" data-qty="'+esc(it.mat)+'" inputmode="decimal" value="'+b.q+'" aria-label="Qty di fun loc ini"></td>'+
+          '<td><input class="u" data-f="unit" data-mat="'+esc(it.mat)+'" value="'+esc(it.unit)+'" aria-label="Satuan"></td>'+
+          '<td><input class="stk" type="text" inputmode="numeric" data-stk="'+esc(it.mat)+'" value="'+(stockKnown(it.mat) ? stockOf(it.mat) : "")+'" placeholder="?" aria-label="Stok '+esc(it.mat)+'"></td>'+
+          '<td><div class="ph">'+base.map(function(s){ return '<span class="pi"><img src="'+esc(s)+'" alt="" title="foto bawaan"></span>'; }).join("")+
+          up.map(function(s, i){ return '<span class="pi"><img src="'+esc(s)+'" alt=""><button type="button" data-del="'+esc(it.mat)+'|'+i+'" aria-label="Hapus foto">&times;</button></span>'; }).join("")+
+          '<label>+ foto<input type="file" accept="image/*" data-up="'+esc(it.mat)+'" hidden multiple></label></div></td>'+
+          '<td>'+usedHtml(it.mat)+'</td>'+
+          '<td><button type="button" data-matdel="'+esc(it.mat)+'" title="Hapus dari fun loc ini" aria-label="Hapus dari fun loc ini">&times;</button></td></tr>';
+      }).join("") : '<tr><td colspan="12" class="note" style="padding:14px">'+(sc ? (sc.bom.length ? "Tidak ada material yang cocok dengan filter." : "Fun loc ini masih kosong. Tambahkan material di bawah.") : "Pilih atau tambahkan fun loc dulu.")+'</td></tr>');
+    $("#am-fam").innerHTML = famOptsHtml($("#am-fam").value || "x-lain", true);
     $("#fams").innerHTML = '<tr><th>Keluarga</th><th>Barang</th><th>Barang yang sudah ada foto</th></tr>'+FAMS.map(function(f){
       var its = ITEMS.filter(function(it){ return it.fam===f.id; });
       return '<tr><td><span style="color:var(--accent); display:inline-block; vertical-align:middle">'+famSvg(f.id, 26)+'</span> '+esc(f.name)+'</td><td class="mono">'+its.length+'</td><td class="mono">'+its.filter(function(it){ return photosOf(it.mat).length; }).length+'</td></tr>';
@@ -107,41 +229,162 @@
     $("#emb-hint").textContent = "Model dipakai: "+MODEL.id+". File yang dibaca: "+EMB_FILE+".";
   })();
   function downloadText(name, text){ var b = new Blob([text], { type:"application/json" }), u = URL.createObjectURL(b), a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(u); }, 500); }
+
+  /* ---------- impor BOM Excel ---------- */
+  var PREV = null;
+  function impMsg(t, k){ var m = $("#imp-msg"); m.className = "msg show"+(k ? " "+k : ""); m.textContent = t; }
+  function renderImp(){
+    var h = "";
+    if(PREV) PREV.machines.forEach(function(m, mi){
+      var tot = 0, on = 0; m.secs.forEach(function(s){ var p = m.pick[s.code]; if(s.rows.length){ tot += s.rows.length; if(p.on) on += s.rows.length; } });
+      var newN = 0, seen = {}; m.secs.forEach(function(s){ if(!m.pick[s.code].on) return; s.rows.forEach(function(r){ if(!seen[r.mat]){ seen[r.mat] = 1; if(!ITEM_BY[r.mat] || ITEM_BY[r.mat].imp) newN++; } }); });
+      h += '<div style="margin-top:8px"><div class="row" style="margin-bottom:6px"><b>Mesin</b><input type="text" data-imname="'+mi+'" value="'+esc(m.name)+'" style="width:auto; min-width:200px"><span class="note mono">'+esc(m.fl)+(machineById(m.id) && !machineById(m.id).imp ? ' &middot; menggantikan data contoh '+esc(machineById(m.id).name) : (machineById(m.id) ? ' &middot; menggantikan BOM sebelumnya' : ''))+'</span></div>'+
+        '<div class="tbl-wrap" style="padding:0"><table class="list"><tr><th>Pakai</th><th>Kode fun loc</th><th>Nama bagian</th><th>Material</th></tr>'+m.secs.map(function(s){
+          var p = m.pick[s.code]; return '<tr><td><input type="checkbox" data-imon="'+mi+'|'+esc(s.code)+'"'+(p.on ? ' checked' : '')+(s.rows.length ? '' : ' disabled')+' style="width:auto"></td><td class="mono">'+esc(s.fl)+'</td><td><input type="text" data-imsec="'+mi+'|'+esc(s.code)+'" value="'+esc(p.name)+'"></td><td class="mono">'+s.rows.length+(s.rows.length ? '' : ' (kosong)')+'</td></tr>';
+        }).join("")+'</table></div>'+
+        '<div class="row" style="margin-top:8px"><button type="button" class="primary" data-imgo="'+mi+'"'+(on ? '' : ' disabled')+'>Impor '+m.secs.filter(function(s){ return m.pick[s.code].on && s.rows.length; }).length+' fun loc ('+on+' baris BOM)</button><span class="note">'+newN+' no material baru masuk katalog, sisanya sudah ada.</span></div></div>';
+    });
+    $("#imp-prev").innerHTML = h;
+  }
+  function impLoad(file){
+    $("#imp-fn").textContent = file.name; PREV = null; renderImp();
+    if(!window.XLSX){ impMsg("Pustaka pembaca Excel belum termuat. Cek koneksi internet lalu muat ulang halaman.", "crit"); return; }
+    impMsg("Membaca file…", "");
+    file.arrayBuffer().then(function(buf){
+      var wb = XLSX.read(buf, { type:"array" }), r = null, sawHeader = false;
+      wb.SheetNames.some(function(sn){
+        if(/^(petunjuk|contoh|example|readme)/i.test(sn.trim())) return false;
+        var g = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, raw:false, defval:"" });
+        if(!catHasHeader(g)) return false;
+        sawHeader = true; var x = catParse(g);
+        if(!x.err && x.machines.some(function(m){ return m.secs.some(function(sc){ return sc.rows.length; }); })){ r = x; return true; }
+        return false;
+      });
+      if(!r){ impMsg(sawHeader ? "Sheet BOM masih kosong: tidak ada baris dengan no material. Isi dulu, lalu unggah lagi." : "Tidak ada sheet dengan kolom Functional Location dan NO Material.", "crit"); return; }
+      if(!r.machines.length){ impMsg("Tidak ada baris BOM yang terbaca.", "crit"); return; }
+      r.machines = r.machines.filter(function(m){ return m.secs.some(function(s){ return s.rows.length; }); });
+      r.machines.forEach(function(m){
+        var ex = machineById(m.id);
+        m.name = ex ? ex.name : titleCase(m.desc) || m.id;
+        m.pick = {}; m.secs.forEach(function(s){ m.pick[s.code] = { on:s.rows.length>0, name:catSecName(s.desc, m.desc) || s.code }; });
+      });
+      PREV = r; renderImp();
+      impMsg(r.rows+" baris BOM terbaca dari "+r.machines.length+" mesin. Centang fun loc yang dipakai, edit nama kalau perlu, lalu impor.", "ok");
+    }).catch(function(e){ impMsg("File tidak bisa dibaca: "+String(e && e.message || e), "crit"); });
+  }
+
+  $("#imp-pick").addEventListener("click", function(){ $("#imp-file").click(); });
+  $("#imp-file").addEventListener("change", function(e){ var f = e.target.files && e.target.files[0]; if(f) impLoad(f); e.target.value = ""; });
+  $("#m-imp").addEventListener("click", function(){ var b = $("#imp-box"); b.open = !b.open; if(b.open) b.scrollIntoView({ block:"nearest" }); });
+  $("#m-new").addEventListener("click", function(){ var b = $("#m-newbox"); b.hidden = !b.hidden; });
+  $("#m-sel").addEventListener("change", function(e){ CUR.m = e.target.value; CUR.sec = null; CONF = ""; $("#f-q").value = ""; $("#f-ph").checked = false; render(); });
+  $("#nm-go").addEventListener("click", function(){
+    var r = catNewMachine($("#nm-code").value, $("#nm-name").value);
+    if(r.err){ msg("#m-msg", r.err, "crit"); return; }
+    CUR.m = r.id; CUR.sec = null; $("#nm-code").value = ""; $("#nm-name").value = ""; $("#m-newbox").hidden = true;
+    msg("#m-msg", "Mesin dibuat. Sekarang tambahkan fun loc-nya.", "ok"); render(); $("#sec-newbox").hidden = false;
+  });
+  $("#ns-go").addEventListener("click", function(){
+    var r = catAddSec(CUR.m, $("#ns-code").value, $("#ns-name").value);
+    if(r.err){ msg("#m-msg", r.err, "crit"); return; }
+    CUR.sec = r.code; $("#ns-code").value = ""; $("#ns-name").value = ""; $("#sec-newbox").hidden = true; msg("#m-msg", "Fun loc "+r.code+" ditambahkan.", "ok"); render();
+  });
+  $("#am-mat").addEventListener("input", function(){
+    var v = this.value.replace(/\s+/g, ""), it = ITEM_BY[v];
+    $("#am-hint").textContent = it ? "Sudah ada di katalog: "+it.name+" ("+it.brand+"). Data barang dipakai apa adanya." : (v.length>=4 ? "No material baru. Isi nama barangnya." : "");
+  });
+  $("#am-fam").addEventListener("change", function(){ $("#am-fn-l").hidden = this.value!=="__new"; });
+  $("#am-go").addEventListener("click", function(){
+    var fam = $("#am-fam").value, fn = "";
+    if(fam==="__new"){ var nf = catNewFam($("#am-fn").value); if(!nf){ msg("#cat-msg", "Isi nama keluarga baru.", "crit"); return; } fam = nf.id; fn = nf.fn; }
+    var r = catAddMat(CUR.m, CUR.sec, $("#am-mat").value, $("#am-q").value, { name:$("#am-name").value, brand:$("#am-brand").value, spec:$("#am-spec").value, unit:$("#am-unit").value, fam:fam, fn:fn });
+    if(r.err){ msg("#cat-msg", r.err, "crit"); return; }
+    ["#am-mat","#am-name","#am-brand","#am-spec","#am-unit","#am-fn"].forEach(function(s){ $(s).value = ""; }); $("#am-q").value = "1"; $("#am-fn-l").hidden = true; $("#am-hint").textContent = "";
+    msg("#cat-msg", r.mat+(r.isNew ? " ditambahkan sebagai material baru." : " ditambahkan ke fun loc ini.")+" Tersimpan."+(r.isNew ? " Stoknya belum diisi, isi di kolom Stok." : ""), "ok"); render();
+  });
+  document.addEventListener("input", function(e){
+    var t = e.target, a = t.getAttribute && t.getAttribute("data-imname"), b = t.getAttribute && t.getAttribute("data-imsec");
+    if(a!=null && PREV){ PREV.machines[+a].name = t.value; }
+    if(b && PREV){ var p = b.split("|"); PREV.machines[+p[0]].pick[p[1]].name = t.value; }
+  });
   CLIP.listeners.push(function(){ if(window.__embBusy) $("#emb-prog").textContent = CLIP.msg; });
   clipLoadCache().then(renderEmb);
-  ["#f-q","#f-fam","#f-ph"].forEach(function(s){ $(s).addEventListener("input", render); $(s).addEventListener("change", render); });
+  ["#f-q","#f-fam","#f-ph"].forEach(function(s){ $(s).addEventListener("input", render); });   // tanpa "change": saat blur, render ulang tabel membuat klik pertama pada tombol hilang
+  // edit isian: tersimpan saat selesai mengetik (change). Tidak merender ulang tabel supaya klik berikutnya tidak hilang.
   document.addEventListener("change", function(e){
-    var mat = e.target.getAttribute && e.target.getAttribute("data-up");
+    var t = e.target, g = function(k){ return t.getAttribute && t.getAttribute(k); };
+    var wasMine = !!CAT.machines[CUR.m];
+    var c = g("data-imon");
+    if(c && PREV){ var p = c.split("|"); PREV.machines[+p[0]].pick[p[1]].on = t.checked; renderImp(); return; }
+    var mat = g("data-up");
     if(mat){
-      var files = Array.prototype.slice.call(e.target.files||[]); if(!files.length) return;
+      var files = Array.prototype.slice.call(t.files||[]); if(!files.length) return;
       Promise.all(files.map(function(f){ return shrinkImage(f, 420, 0.78); })).then(function(urls){
-        PHOTOS[mat] = (PHOTOS[mat]||[]).concat(urls).slice(-6); saveState(); render();
-        var m = $("#cat-msg"); m.className = "msg show ok"; m.textContent = urls.length+" foto ditambahkan ke "+mat+". Pencarian foto di halaman mekanik ikut memakainya.";
+        PHOTOS[mat] = (PHOTOS[mat]||[]).concat(urls).slice(-10); saveState(); render();
+        var m = $("#cat-msg"); m.className = "msg show ok"; m.textContent = urls.length+" foto ditambahkan ke "+mat+" dan tersimpan. "+(IN_FRAME ? "" : "Menghitung embedding…");
+        clipEmbedMats([mat]).then(function(n){ if(!IN_FRAME){ m.className = "msg show ok"; m.textContent = urls.length+" foto ditambahkan ke "+mat+", embedding "+(n ? "dihitung dan " : "")+"tersimpan. Semua perangkat langsung bisa mencarinya."; } render(); })
+        .catch(function(){ m.className = "msg show crit"; m.textContent = "Foto tersimpan, tapi embedding gagal dihitung (model belum bisa dimuat). Akan dihitung otomatis saat foto dipakai mencari."; });
       });
       return;
     }
-    var sm = e.target.getAttribute && e.target.getAttribute("data-stk");
-    if(sm){ var v = parseInt(e.target.value, 10); if(isFinite(v) && v>=0){ S.stock[sm] = v; saveState(); } render(); }
+    var sm = g("data-stk");
+    if(sm){ var v = parseInt(t.value, 10); if(isFinite(v) && v>=0){ S.stock[sm] = v; if(!S.known) S.known = {}; S.known[sm] = 1; saveState(); } else t.value = stockKnown(sm) ? stockOf(sm) : ""; return; }
+    var f = g("data-f");
+    if(f){ var mt = g("data-mat"), val = t.value.trim(); if(!val && f!=="spec"){ t.value = (item(mt)||{})[f] || ""; return; } var pt = {}; pt[f] = val; catSetItem(mt, pt); return; }
+    var qm = g("data-qty");
+    if(qm){ catSetQty(CUR.m, CUR.sec, qm, t.value); var s = curSec(), cur = null; if(s) s.bom.forEach(function(b){ if(b.mat===qm) cur = b.q; }); if(cur!=null) t.value = cur; if(!wasMine) $("#m-head").innerHTML = mHead(); return; }
+    var mn = g("data-mname");
+    if(mn){ catMachineSet(mn, { name:t.value }); render(); return; }
+    var sn = g("data-secname");
+    if(sn){ catRenameSec(CUR.m, sn, t.value); render(); return; }
+    var fm = g("data-fam");
+    if(fm){
+      if(t.value==="__new"){ var td = t.parentNode; td.innerHTML = '<input type="text" data-newfam="'+esc(fm)+'" placeholder="Nama keluarga baru" style="min-width:140px"> <button type="button" data-newfamgo="'+esc(fm)+'">OK</button>'; var inp = td.querySelector("input"); if(inp) inp.focus(); return; }
+      catSetItem(fm, { fam:t.value, fn:(famById(t.value)||{}).name || "" }); render(); return;
+    }
   });
+  document.addEventListener("keydown", function(e){ var t = e.target; if(e.key==="Enter" && t.getAttribute && t.getAttribute("data-newfam")){ e.preventDefault(); var b = document.querySelector('[data-newfamgo="'+t.getAttribute("data-newfam")+'"]'); if(b) b.click(); } });
   document.addEventListener("click", function(e){
     var t = e.target.closest ? e.target.closest("button") : null; if(!t) return;
-    var a = t.getAttribute("data-del");
+    var g = function(k){ return t.getAttribute(k); };
+    var a = g("data-del");
     if(a){ var p = a.split("|"); (PHOTOS[p[0]]||[]).splice(+p[1], 1); if(PHOTOS[p[0]] && !PHOTOS[p[0]].length) delete PHOTOS[p[0]]; saveState(); render(); return; }
+    var sec = g("data-sec"); if(sec){ CUR.sec = sec; CONF = ""; render(); return; }
+    if(t.id==="ns-open"){ var nb = $("#sec-newbox"); nb.hidden = !nb.hidden; if(!nb.hidden) $("#ns-code").focus(); return; }
+    if(g("data-conf")!=null){ CONF = ""; render(); return; }
+    var md = g("data-mdel"); if(md){ CONF = "m:"+md; render(); return; }
+    var md2 = g("data-mdel2"); if(md2){ var had = CAT_ORIG[md2] && CAT_ORIG[md2].mach; catRemoveMachine(md2); CONF = ""; CUR.m = null; msg("#m-msg", had ? "Mesin dikembalikan ke data contoh." : "Mesin dihapus.", "ok"); render(); return; }
+    var sd = g("data-sdel"); if(sd){ CONF = "s:"+sd; render(); return; }
+    var sd2 = g("data-sdel2"); if(sd2){ catDelSec(CUR.m, sd2); CONF = ""; CUR.sec = null; msg("#m-msg", "Fun loc "+sd2+" dihapus.", "ok"); render(); return; }
+    var mdl = g("data-matdel"); if(mdl){ catDelMat(CUR.m, CUR.sec, mdl); msg("#cat-msg", mdl+" dihapus dari fun loc ini. Fotonya tetap tersimpan di katalog.", "ok"); render(); return; }
+    var nfg = g("data-newfamgo");
+    if(nfg){ var inp = document.querySelector('[data-newfam="'+nfg+'"]'), nf = inp && catNewFam(inp.value); if(!nf){ if(inp) inp.focus(); return; } catSetItem(nfg, { fam:nf.id, fn:nf.fn }); render(); return; }
+    var ig = g("data-imgo");
+    if(ig!=null && PREV){
+      var m = PREV.machines[+ig], rec = catBuild(m, (m.name||"").trim() || m.id, m.pick);
+      if(!rec.secs.length){ impMsg("Pilih minimal satu fun loc.", "crit"); return; }
+      var nSt = 0; rec.items.forEach(function(it){ if(it.stok!=null){ S.stock[it.mat] = it.stok; if(!S.known) S.known = {}; S.known[it.mat] = 1; nSt++; } delete it.stok; delete it.exName; delete it.exBrand; delete it.exSpec; delete it.exFam; });
+      CAT.machines[m.id] = rec; catPurgeSeed(m.id); catSave();
+      PREV.machines.splice(+ig, 1); if(!PREV.machines.length) PREV = null;
+      CUR.m = m.id; CUR.sec = null;
+      impMsg(rec.name+": "+rec.secs.length+" fun loc, "+rec.items.length+" no material diimpor dan tersimpan"+(nSt ? " ("+nSt+" dengan stok awal dari Excel)" : "")+". Sekarang bisa kamu edit di bawah.", "ok");
+      renderImp(); render(); return;
+    }
     if(t.id==="emb-go"){
-      window.__embBusy = true; renderEmb(); var m = $("#emb-msg"); m.className = "msg"; m.textContent = "";
+      window.__embBusy = true; renderEmb(); var m2 = $("#emb-msg"); m2.className = "msg"; m2.textContent = "";
       clipBuildFile().then(function(d){
         var txt = JSON.stringify(d); downloadText(EMB_FILE.split("/").pop(), txt);
-        m.className = "msg show ok"; m.textContent = "Selesai: "+d.n+" foto, "+Math.round(txt.length/1024)+" KB. Taruh "+EMB_FILE.split("/").pop()+" di folder poc/sp-img/ lalu commit ke GitHub.";
-      }).catch(function(err){ m.className = "msg show crit"; m.textContent = "Gagal: "+String(err && err.message || err); })
+        m2.className = "msg show ok"; m2.textContent = "Selesai: "+d.n+" foto, "+Math.round(txt.length/1024)+" KB. Taruh "+EMB_FILE.split("/").pop()+" di folder poc/sp-img/ lalu commit ke GitHub.";
+      }).catch(function(err){ m2.className = "msg show crit"; m2.textContent = "Gagal: "+String(err && err.message || err); })
       .then(function(){ window.__embBusy = false; $("#emb-prog").textContent = ""; renderEmb(); });
       return;
     }
     if(t.id==="rs"){ $("#rs-c").hidden = false; return; }
     if(t.id==="rs-n"){ $("#rs-c").hidden = true; return; }
-    if(t.id==="rs-y"){ resetAll(); $("#rs-c").hidden = true; var m = $("#rs-msg"); m.className = "msg show ok"; m.textContent = "Data simulasi dikembalikan ke awal."; render(); }
+    if(t.id==="rs-y"){ resetAll(); $("#rs-c").hidden = true; var m3 = $("#rs-msg"); m3.className = "msg show ok"; m3.textContent = "Data simulasi dikembalikan ke awal."; render(); }
   });
-  initStore(function(){ render(); });
-  render();
+  initStore(function(){ render(); renderImp(); });
+  render(); renderImp();
 })();
 </script>
 </body>
