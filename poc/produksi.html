@@ -369,6 +369,35 @@
   .pv-tile .fl{display:flex; gap:4px; flex-wrap:wrap; margin-top:2px}
   .pv-tile:hover, .pv-card:hover{border-color:var(--accent)}
   .pv-tile[aria-pressed=true], .pv-card[aria-pressed=true]{outline:2px solid var(--accent); outline-offset:1px}
+  .rsv-cta{display:flex; gap:12px; justify-content:space-between; align-items:center; flex-wrap:wrap; border:1px dashed var(--accent); border-radius:10px; padding:10px 12px; margin-bottom:12px; background:var(--surface)}
+  #rsv-box .rsv-head{display:flex; justify-content:space-between; gap:10px; align-items:flex-start}
+  #rsv-box{margin-bottom:6px} #rsv-box:has(.rsv-head){border:1px solid var(--accent); border-radius:10px; padding:10px 12px; margin-bottom:14px; background:var(--surface)}
+  .rsv-set{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px} .rsv-set input, .rsv-set select{width:auto; max-width:170px}
+  .rsv-t td, .rsv-t th{vertical-align:top} .rsv-t td.mono{white-space:nowrap} .rsv-mat{max-width:230px; font-size:.76rem} .rsv-t tr.off td{opacity:.5}
+  .rsv-tot{font-size:.8rem; margin-top:8px; line-height:1.7}
+  .fgk{font-size:.8rem; display:flex; flex-direction:column; gap:2px; margin-top:4px} .fgk .k{display:inline-block; min-width:46px; font-size:.66rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-dim); font-weight:600}
+  .fgl{display:flex; gap:6px; align-items:center; font-size:.76rem; margin-top:3px} .fgl .k, .fgk .k{display:inline-block; min-width:46px; font-size:.66rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-dim); font-weight:600} .pv-tile .mc small{font-size:.6rem; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-dim); margin-right:2px}
+  .jdw-card{border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--surface); margin-top:12px} .jdw-card h3{font-size:.95rem; margin:0}
+  .fgl.nxt{color:var(--warn)} .fgl.nxt span{color:var(--ink)}
+  .dsh-sub{font-size:.8rem; color:var(--ink-dim); margin-bottom:8px}
+  .dsh-kpis{grid-template-columns:repeat(auto-fit, minmax(150px, 1fr))}
+  .dsh-ctl{margin:12px 0 8px; align-items:flex-end}
+  .dsh-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:8px}
+  .dsh-card{background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--line); border-radius:10px; padding:8px 10px; min-width:0}
+  .dsh-card.ok{border-left-color:var(--ok)} .dsh-card.low{border-left-color:var(--crit)} .dsh-card.off{opacity:.65}
+  .dsh-h{display:flex; justify-content:space-between; gap:6px; align-items:center} .dsh-h b{font-size:.9rem}
+  .dsh-fg{font-size:.7rem; color:var(--ink-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px}
+  .dsh-pct{font-family:var(--display); font-size:1.6rem; font-weight:700; line-height:1.1; margin-top:4px}
+  .dsh-card.low .dsh-pct{color:var(--crit)} .dsh-card.ok .dsh-pct{color:var(--ok)}
+  .dsh-bar{position:relative; height:8px; border-radius:5px; background:var(--surface-2); border:1px solid var(--line); margin:4px 0; overflow:hidden}
+  .dsh-bar i{display:block; height:100%; background:var(--accent)} .dsh-card.ok .dsh-bar i{background:var(--ok)} .dsh-card.low .dsh-bar i{background:var(--crit)}
+  .dsh-bar s{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--ink); text-decoration:none}
+  .dsh-n{font-size:.76rem} .dsh-sh{display:flex; gap:8px; font-size:.7rem; color:var(--ink-dim); margin-top:3px} .dsh-sh .cur{color:var(--ink); font-weight:600}
+  .dsh-rm{font-size:.7rem; color:var(--warn); margin-top:3px}
+  #pv-body .pv-grid{grid-template-columns:repeat(auto-fill,minmax(176px,1fr))}
+  .pv-tile .pc{font-family:var(--display); font-size:1.35rem; font-weight:700; line-height:1.1; margin-top:3px}
+  .pv-tile.st-ok .pc{color:var(--ok)} .pv-tile.st-low .pc{color:var(--crit)} .pv-tile.st-off{opacity:.65}
+  .pv-tile .dsh-bar{display:block; width:100%} .pv-tile.st-ok .dsh-bar i{background:var(--ok)} .pv-tile.st-low .dsh-bar i{background:var(--crit)} .pv-tile .dn{font-size:.74rem} .pv-tile .dsh-sh{font-size:.66rem}
   .ctn3{margin-top:8px} .ctn3-or{font-size:.74rem; color:var(--ink-dim); margin:8px 0 5px}
   .ctn3-btn{display:inline-flex; align-items:center; gap:6px; cursor:pointer; padding:9px 14px; border:1px solid var(--line); border-radius:10px; font-weight:600; background:var(--surface); color:var(--ink)}
   .so-top{display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap}
@@ -427,6 +456,7 @@
     <a href="#produksi" data-v="produksi">Produksi</a>
     <a href="#operator" data-v="operator">Produksi · HP</a>
     <a href="#so" data-v="so">Stock opname</a>
+    <a href="#jadwal" data-v="jadwal">Jadwal produksi</a>
     <a href="#label" data-v="label">Label produksi</a>
     <span class="fbst" id="fb-state">Offline</span>
   </div>
@@ -611,6 +641,7 @@
   <section>
     <div class="panel">
       <div class="section-head"><h2>1 · Permintaan produksi (reservasi)</h2><p class="lede">Admin produksi mengisi no material, tujuan (mesin atau sentral), dan qty per baris, lalu memilih shift. Gudang menyiapkan total per no material lewat antrean FIFO; tidak ada stok yang dikunci.</p></div>
+      <div id="rsv-box" data-only="produksi"></div>
       <div id="order-form"></div>
     </div>
   </section>
@@ -643,6 +674,16 @@
     <p class="lede">Dua langkah: (1) terima semua barang di area transfer gudang dengan centang per no material dan tujuan, (2) bawa ke area masing-masing, scan QR area, scan karton, isi jumlah. Bebas urutannya.</p>
   </header>
   <div class="phone"><div class="scr" id="opr-scr"></div></div>
+</div>
+
+<div class="wrap view" id="v-dash" hidden>
+  <div class="section-head" style="margin-top:6px"><span class="eyebrow">Produksi · Dashboard</span><h2>Capaian produksi hari ini</h2><p class="lede">Output tiap mesin dibanding target harian dari jadwal PPIC. Untuk semua level produksi: terlihat mesin mana yang sesuai jalur dan mana yang tertinggal.</p></div>
+  <div id="dash-page"></div>
+</div>
+
+<div class="wrap view" id="v-jadwal" hidden>
+  <div class="section-head" style="margin-top:6px"><span class="eyebrow">Produksi · Jadwal</span><h2>Jadwal produksi (PPIC)</h2><p class="lede">Jadwal harian dari PPIC menjadi patokan: mesin mana jalan, SKU apa, target per hari, dan rencana ganti produk. Disimpan di database supaya semua orang memakai jadwal yang sama.</p></div>
+  <div id="jdw-page"></div>
 </div>
 
 <div class="wrap view" id="v-so" hidden>
@@ -726,7 +767,8 @@
   ];
   MATS.forEach(function(m){ m.pcs = 10; m.maxIkat = Math.floor(MAX_PCS_TUM/m.pcs); m.maxPcs = MAX_PCS_TUM; var t = (m.tol==null ? TOL_DEFAULT : m.tol); if(m.aktual){ m.a = m.aktual[0]/1000; m.b = m.aktual[1]/1000; } else { m.a = m.flat[0]/100*(1+t); m.b = m.flat[1]/100*(1+t); } }); // m.pcs = langkah 10 pcs untuk perataan & gambar saja
   MATS.forEach(function(m){ m.sku = "699"+m.code.slice(3); m.pal = [24,30,40,45,48,60][parseInt(m.code.slice(-2),10)%6]; }); // SKU FG / no material produk (fiktif, 8 digit seperti di slip asli): 1 SKU = 1 karton, beda dari no material karton
-  function mat(id){ for(var i=0;i<MATS.length;i++) if(MATS[i].id===id) return MATS[i]; }
+  var MAT_STUB = {};
+  function mat(id){ for(var i=0;i<MATS.length;i++) if(MATS[i].id===id) return MATS[i]; if(id && /^c\d{8}$/.test(id)){ var c = id.slice(1); return MAT_STUB[id] || (MAT_STUB[id] = { id:id, code:c, name:"Karton "+c+" (belum ada di master)", cat:"?", token:"--ink-dim", flat:null, dim:null, tol:null, aktual:null, sku:"", pal:40, stub:true }); } }
   function matBySku(k){ for(var i=0;i<MATS.length;i++) if(MATS[i].sku===k) return MATS[i]; return null; }
   function cat(id){ for(var i=0;i<CATS.length;i++) if(CATS[i].id===id) return CATS[i]; }
   var DNS = {};
@@ -823,6 +865,7 @@
   }
   function seedAll(){
     S = newBins(); seq = 1; cadSeq = 10; LOG = []; selPos = "A1"; selCard = null; plan = null; lastAlloc = {};
+    if(typeof JDW!=="undefined"){ JDW = null; SKUK = {}; applyJadwal(); RSV.mat = {}; RSV.qty = {}; RSV.off = {}; RSV.open = false; RSV.msg = ""; }
     SOS = []; if(typeof SOUI!=="undefined") SOUI = { pid:null, msg:"", err:"", vals:{} }; OPR.so = null; OPR.soErr = ""; OPR.soMsg = ""; ORD_FLASH = null; ORDER = null; ORDERS = []; orderSeq = 1; RCUT = {}; KT = []; KS = { list:null, sel:{} }; paMsg = {}; paDone = []; prodReset(); b1Reset(); if(typeof simCtx!=="undefined"){ simCtx.sc = newSc(); simCtx.msg = ""; }
     DRAFT = [ { matId:"c20986756", qty:800, dest:"F42" }, { matId:"c20986756", qty:700, dest:"F43" }, { matId:"c21015197", qty:300, dest:"S1" }, { matId:"c20983409", qty:50, dest:"F44" } ];
     function s(pid, matId, qty, date){
@@ -2532,6 +2575,116 @@
   }
   function clrFlash(){ if(!ORD_FLASH) return; ORD_FLASH = null; var m = $("#order-msg"); if(m) m.innerHTML = ""; }
   function ordFlash(cls, html){ ORD_FLASH = { cls:cls, html:html }; var m = $("#order-msg"); if(m) m.innerHTML = '<div class="msg '+cls+'" role="status">'+html+'</div>'; }
+  /* =========================================================
+     B2 · Saran reservasi (awal shift, untuk shift berikutnya)
+     saran = perkiraan pakai shift berikutnya + buffer − proyeksi sisa di awal shift berikutnya
+     proyeksi sisa = stok di mesin sekarang + menuju + outstanding − perkiraan pakai sampai shift ini selesai
+     ========================================================= */
+  var RSV = { open:false, n:3, buf:2, step:50, std:800, mat:{}, qty:{}, off:{}, all:false, msg:"" };
+  var SH_END = { 1:15, 2:23, 3:7 };
+  function rsvHoursLeft(){
+    if(!SHIFT.auto) return 8;
+    var now = new Date(), c = curShift(), end = new Date(now.getTime()); end.setHours(SH_END[c.n], 0, 0, 0);
+    if(end<=now) end.setDate(end.getDate()+1);
+    return Math.max(0, Math.min(8, (end-now)/3600000));
+  }
+  function rsvNext(){ var c = curShift(); return c.n===3 ? 1 : c.n+1; }
+  function rsvAvg(pid){
+    var c = curShift(), ck = c.d+"|"+c.n, sh = {};
+    PRODO.forEach(function(r){ if(r.pid!==pid || r.k!=="out") return; var k = r.d+"|"+r.sh; if(k===ck) return; sh[k] = (sh[k]||0) + r.q; });
+    var ks = Object.keys(sh).sort().reverse().slice(0, RSV.n);
+    if(!ks.length){ var jj = jMc(pid); if(jj && jj.cur.target) return { v:Math.round(jj.cur.target/3), src:"target/3", n:0 }; return { v:RSV.std, src:"standar", n:0 }; }
+    return { v:Math.round(ks.reduce(function(s,k){ return s+sh[k]; }, 0)/ks.length), src:ks.length+" shift", n:ks.length };
+  }
+  function rsvMat(pid){
+    if(RSV.mat[pid]) return RSV.mat[pid];
+    var jj = jMc(pid); if(jj) return skuKarton(jj.cur.sku);
+    var last = null; PRODO.forEach(function(r){ if(r.pid===pid && r.k==="out" && (!last || (r.ts||0)>=(last.ts||0))) last = r; });
+    if(last) return last.matId;
+    var st = MSTK[pid] || {}, ks = Object.keys(st).sort(function(a,b){ return st[b]-st[a]; }); // termasuk yang stoknya 0 (mesin jalan, karton habis)
+    return ks[0] || null;
+  }
+  function rsvComing(pid, k){
+    var q = 0;
+    ORDERS.forEach(function(o){ if(!o.dl || o.cancel) return; o.dl.forEach(function(row){
+      if(row.dest!==pid || row.matId!==k) return;
+      if(row.r==null){ if(!o.posted) q += (row.a!=null ? row.a : row.qty); }
+      else q += Math.max(0, row.r - rowPlaced(row));
+    }); });
+    return q;
+  }
+  function rsvRows(){
+    var hl = rsvHoursLeft();
+    var nx = rsvNext(), c = curShift();
+    return MC0.map(function(m){
+      var j = jMc(m.id), k = rsvMat(m.id); if(!k) return { p:plOf(m.id), k:null, j:j };
+      var a = rsvAvg(m.id), est = a.v, cap = null;
+      if(j && j.cur.target){ var outToday = PRODO.filter(function(r){ return r.pid===m.id && r.k==="out" && r.d===c.d; }).reduce(function(s2,r){ return s2+r.q; }, 0); cap = nx===1 ? j.cur.target : Math.max(0, j.cur.target - outToday); est = Math.min(est, cap); }
+      var off = j && j.cur._st.s==="off";
+      var rate = a.v/8, stok = (MSTK[m.id]||{})[k] || 0, otw = rsvComing(m.id, k);
+      var outs = outOpen(m.id).filter(function(x){ return x.matId===k; }).reduce(function(s,x){ return s+x.qty; }, 0);
+      var used = Math.round(rate*hl), proj = Math.max(0, stok + otw + outs - used), buf = Math.round(rate*RSV.buf);
+      var raw = off ? 0 : Math.max(0, est + buf - proj), sug = raw>0 ? Math.ceil(raw/RSV.step)*RSV.step : 0;
+      var q = RSV.qty[m.id]!=null ? RSV.qty[m.id] : sug;
+      return { p:plOf(m.id), k:k, j:j, a:a, est:est, cap:cap, off:off, stok:stok, otw:otw, outs:outs, used:used, proj:proj, buf:buf, sug:sug, q:q, so:!!soNow(m.id), on:!RSV.off[m.id] && q>0 };
+    });
+  }
+  function renderRsv(force){
+    var A = $("#rsv-box"); if(!A) return;
+    var ae = document.activeElement; if(!force && ae && A.contains(ae) && /^(INPUT|SELECT)$/.test(ae.tagName)) return;
+    var nx = rsvNext();
+    if(!RSV.open){
+      A.innerHTML = '<div class="rsv-cta"><div><b>Saran reservasi untuk shift '+nx+'</b><div class="muted" style="font-size:.76rem">Dihitung dari output shift sebelumnya dan sisa stok di mesin menurut catatan. Admin cek, ubah kalau perlu, lalu masukkan ke permintaan.</div></div><button class="primary" id="rsv-open">Hitung saran</button></div>'+(RSV.msg?'<div class="msg ok">'+RSV.msg+'</div>':'');
+      on2(A, "#rsv-open", "click", function(){ RSV.open = true; RSV.msg = ""; renderRsv(true); });
+      return;
+    }
+    var rows = rsvRows(), hl = rsvHoursLeft(), sel = rows.filter(function(r){ return r.k && r.on; });
+    var shown = rows.filter(function(r){ return RSV.all ? true : (r.k && (r.sug>0 || RSV.qty[r.p.id]!=null)); });
+    var noSO = rows.filter(function(r){ return r.k && !r.so; }).length;
+    var tot = {}; sel.forEach(function(r){ tot[r.k] = (tot[r.k]||0) + r.q; });
+    var h = '<div class="rsv-head"><div><b>Saran reservasi · untuk shift '+nx+'</b><div class="muted" style="font-size:.74rem">Saran = perkiraan pakai shift '+nx+' + buffer − proyeksi sisa di awal shift '+nx+'. Proyeksi sisa = stok sekarang + menuju + outstanding − pemakaian sampai shift ini selesai (sisa '+String(Math.round(hl*10)/10).replace(".",",")+' jam).</div></div><button id="rsv-close">Tutup</button></div>';
+    h += '<div class="rsv-set"><div class="field"><label for="rsv-n">Rata-rata output dari</label><select id="rsv-n">'+[1,2,3,6].map(function(n){ return '<option value="'+n+'"'+(n===RSV.n?' selected':'')+'>'+n+' shift terakhir</option>'; }).join("")+'</select></div>'+
+      '<div class="field"><label for="rsv-buf">Buffer (jam)</label><input type="number" id="rsv-buf" min="0" max="8" step="0.5" value="'+RSV.buf+'"></div>'+
+      '<div class="field"><label for="rsv-step">Kelipatan pesan</label><input type="number" id="rsv-step" min="1" step="1" value="'+RSV.step+'"></div>'+
+      (JDW?'':'<div class="field"><label for="rsv-std">Output standar bila belum ada riwayat</label><input type="number" id="rsv-std" min="0" step="50" value="'+RSV.std+'"></div>')+'</div>';
+    h += '<div class="muted" style="font-size:.74rem;margin-top:6px">Stok sekarang = sisa menurut catatan (masuk − output − rusak). Stock opname tidak wajib; label <span class="tag ok">dicek ✓</span> muncul kalau area itu sudah dicek fisik shift ini.</div>';
+    h += '<div class="row" style="margin:8px 0 4px;align-items:center"><label style="font-size:.8rem;display:flex;gap:6px;align-items:center"><input type="checkbox" id="rsv-all"'+(RSV.all?' checked':'')+'> Tampilkan semua mesin (juga yang tidak perlu pesan)</label></div>';
+    h += '<div class="tablewrap"><table class="rsv-t"><tr><th></th><th>Mesin · FG · karton</th><th>Perkiraan pakai / shift</th><th>Stok sekarang</th><th>Sisa di awal shift '+nx+'</th><th>Buffer</th><th>Saran</th></tr>'+
+      (shown.length ? shown.map(function(r){
+        var p = r.p;
+        if(!r.k) return '<tr><td></td><td colspan="6"><b>'+esc(p.name)+'</b> '+(r.j?'<span class="muted" style="font-size:.74rem">FG '+esc(r.j.cur.sku)+': pasangan karton belum ada (unggah di menu Jadwal produksi) · </span>':'')+'<select data-rm="'+p.id+'"><option value="">(mesin tidak jalan · pilih karton)</option>'+MATS.map(function(m){ return '<option value="'+m.id+'">'+m.code+' · '+esc(m.name.slice(0,36))+'</option>'; }).join("")+'</select></td></tr>';
+        return '<tr'+(r.on?'':' class="off"')+'><td><input type="checkbox" data-ron="'+p.id+'"'+(r.on?' checked':'')+' aria-label="Pesan untuk '+esc(p.name)+'"></td><td><b>'+esc(p.name)+'</b> '+jStatTag(p.id)+'<div class="fgl"><span class="k">FG</span><b class="mono">'+esc(mcFG(p.id))+'</b>'+(r.j&&r.j.cur.desc?' <span class="muted" style="font-size:.7rem">'+esc(String(r.j.cur.desc).slice(0,34))+'</span>':'')+'</div>'+
+          '<div class="fgl"><span class="k">Karton</span><select data-rm="'+p.id+'" class="rsv-mat" aria-label="Karton '+esc(p.name)+'">'+(mat(r.k).stub?'<option value="'+r.k+'" selected>'+mat(r.k).code+' · belum ada di master</option>':'')+MATS.map(function(m){ return '<option value="'+m.id+'"'+(m.id===r.k?' selected':'')+'>'+m.code+' · '+esc(m.name.slice(0,30))+'</option>'; }).join("")+'</select></div>'+
+          (r.j && r.j.nxt ? (function(){ var nk = skuKarton(r.j.nxt.sku); return '<div class="fgl nxt"><span class="k">Berikut</span><span>FG <b class="mono">'+esc(r.j.nxt.sku)+'</b> · '+esc(String(r.j.nxt.remark||""))+(nk && nk!==r.k?' <button class="small" data-rnx="'+p.id+'" data-k="'+nk+'">Pakai karton '+mat(nk).code+'</button>':'')+'</span></div>'; })() : '')+'</td>'+
+          '<td class="mono">'+fmt(r.est)+'<br><span class="muted" style="font-size:.68rem">'+(r.a.n?'rata-rata '+r.a.src:(r.a.src==="target/3"?'target ÷ 3 (belum ada riwayat)':'standar (belum ada riwayat)'))+(r.cap!=null?'<br>sisa target hari ini '+fmt(r.cap):'')+'</span>'+(r.off?'<br><span class="tag crit">OFF di jadwal</span>':'')+'</td>'+
+          '<td class="mono">'+fmt(r.stok)+(r.so?'<br><span class="tag ok">dicek ✓</span>':'')+'</td>'+
+          '<td class="mono">'+fmt(r.proj)+'<br><span class="muted" style="font-size:.68rem">'+fmt(r.stok)+(r.otw+r.outs?' + '+fmt(r.otw+r.outs)+' menuju':'')+' − '+fmt(r.used)+' terpakai</span></td><td class="mono">+'+fmt(r.buf)+'</td>'+
+          '<td><input type="number" min="0" step="'+RSV.step+'" data-rq="'+p.id+'" value="'+r.q+'" style="width:86px">'+(RSV.qty[p.id]!=null && RSV.qty[p.id]!==r.sug?'<br><span class="muted" style="font-size:.68rem">saran '+fmt(r.sug)+'</span>':'')+'</td></tr>';
+      }).join("") : '<tr><td colspan="7" class="muted">Tidak ada mesin yang perlu pesan untuk shift '+nx+'. Centang "Tampilkan semua mesin" untuk melihat semuanya.</td></tr>')+'</table></div>';
+    var tk = Object.keys(tot);
+    h += '<div class="rsv-tot"><b>Total disiapkan gudang:</b> '+(tk.length ? tk.map(function(k){ var sn = SN0.reduce(function(s,x){ return s+((MSTK[x.id]||{})[k]||0); }, 0); return '<span class="mono">'+mat(k).code+'</span> <b class="mono">'+fmt(tot[k])+'</b>'+(sn?' <span class="muted" style="font-size:.72rem">(di sentral ada '+fmt(sn)+')</span>':''); }).join(' &nbsp;·&nbsp; ') : '–')+'</div>';
+    h += '<div class="row" style="margin-top:10px"><button class="primary" id="rsv-go"'+(sel.length?'':' disabled')+'>Masukkan '+sel.length+' baris ke permintaan shift '+nx+'</button><button id="rsv-reset">Kembalikan ke saran</button></div>';
+    A.innerHTML = h;
+    var num = function(sel, key, mn, mx){ on2(A, sel, "change", function(){ var v = Number(this.value); if(isFinite(v)) RSV[key] = Math.max(mn, Math.min(mx, v)); renderRsv(true); }); };
+    on2(A, "#rsv-close", "click", function(){ RSV.open = false; renderRsv(true); });
+    on2(A, "#rsv-n", "change", function(){ RSV.n = +this.value; renderRsv(true); });
+    num("#rsv-buf", "buf", 0, 8); num("#rsv-step", "step", 1, 10000); num("#rsv-std", "std", 0, 100000);
+    on2(A, "#rsv-all", "change", function(){ RSV.all = this.checked; renderRsv(true); });
+    on2(A, "#rsv-reset", "click", function(){ RSV.qty = {}; RSV.off = {}; RSV.mat = {}; renderRsv(true); });
+    Array.prototype.forEach.call(A.querySelectorAll("[data-rm]"), function(s){ s.addEventListener("change", function(){ if(s.value) RSV.mat[s.dataset.rm] = s.value; else delete RSV.mat[s.dataset.rm]; delete RSV.qty[s.dataset.rm]; renderRsv(true); }); });
+    Array.prototype.forEach.call(A.querySelectorAll("[data-rnx]"), function(b){ b.addEventListener("click", function(){ RSV.mat[b.dataset.rnx] = b.dataset.k; delete RSV.qty[b.dataset.rnx]; renderRsv(true); }); });
+    Array.prototype.forEach.call(A.querySelectorAll("[data-ron]"), function(c){ c.addEventListener("change", function(){ if(c.checked) delete RSV.off[c.dataset.ron]; else RSV.off[c.dataset.ron] = 1; renderRsv(true); }); });
+    Array.prototype.forEach.call(A.querySelectorAll("[data-rq]"), function(i){ i.addEventListener("change", function(){ var v = Math.max(0, Math.round(Number(i.value)||0)); RSV.qty[i.dataset.rq] = v; if(v>0) delete RSV.off[i.dataset.rq]; renderRsv(true); }); });
+    on2(A, "#rsv-go", "click", function(){
+      var rs = rsvRows().filter(function(r){ return r.k && r.on; }); if(!rs.length) return;
+      DRAFT = rs.map(function(r){ return { matId:r.k, qty:r.q, raw:"", dest:r.p.id }; });
+      DRAFT_SHIFT = nx; ORD_FLASH = { cls:"warn", html:'Saran reservasi dimasukkan: '+rs.length+' baris untuk shift '+nx+'. Cek lalu klik tombol kirim di bawah.' };
+      RSV.open = false; RSV.msg = 'Saran sudah dimasukkan ke form permintaan di bawah ('+rs.length+' baris, shift '+nx+'). Belum terkirim sampai tombol kirim diklik.';
+      renderOrderForm(); renderRsv(true);
+      var f = $("#order-form"); if(f && f.scrollIntoView) f.scrollIntoView({ block:"start", behavior:"smooth" });
+    });
+  }
+  function on2(root, sel, ev, fn){ var e = root.querySelector(sel); if(e) e.addEventListener(ev, fn); }
   function renderOrderForm(){
     var box = $("#order-form");
     var h = '';
@@ -2638,8 +2791,255 @@
   var OPR = { name:"Petugas produksi 1", tab:"terima", area:null, mt:null, msg:"", so:null, soErr:"", soMsg:"" };
   var PV = { q:"", f:"all", fam:"", sel:null, op:0 };     // tampilan stok admin produksi
   function plList(){ return MC0.map(function(m){ return { id:m.id, name:m.name, kind:"mesin", fam:m.fam, code:"MC-"+m.id }; }).concat(SN0.map(function(s){ return { id:s.id, name:s.name, kind:"sentral", fam:"Sentral", code:"SN-"+s.id.slice(1) }; })); }
-  function plOf(id){ var l = plList(); for(var i=0;i<l.length;i++) if(l[i].id===id) return l[i]; return null; }
+  var PL_STUB = {};
+  function plOf(id){ var l = plList(); for(var i=0;i<l.length;i++) if(l[i].id===id) return l[i]; if(id && /^[A-Za-z]+\d+$/.test(id)) return PL_STUB[id] || (PL_STUB[id] = { id:id, name:id+" (tidak di jadwal)", kind:"mesin", fam:"Lainnya", code:"MC-"+id, stub:true }); return null; }
   function plByCode(c){ var l = plList(); for(var i=0;i<l.length;i++) if(l[i].code===c) return l[i]; return null; }
+  /* =========================================================
+     Jadwal produksi (dari PPIC) · disimpan di database bersama (meta: jadwal, skuKarton)
+     Daftar mesin mengikuti jadwal; karton per mesin dari pasangan SKU -> karton (planning, sheet TUB).
+     ========================================================= */
+  var JDW = null, SKUK = {}, MC0_DEF = MC0.slice(), FAM_DEF = FAM.slice();
+  var JUI = { wb:null, file:"", sheets:[], sheet:"", prev:null, err:"", msg:"", tub:null, tubErr:"", clr:0, busy:false };
+  function applyJadwal(){
+    if(JDW && JDW.rows && JDW.rows.length){
+      var seen = {}, mcs = [], fams = [], fseen = {};
+      JDW.rows.forEach(function(r){
+        if(seen[r.mc]) return; seen[r.mc] = 1;
+        var f = (String(r.jr||"").trim().split(/\s+/)[0] || "Mesin"); f = f.charAt(0).toUpperCase()+f.slice(1).toLowerCase();
+        mcs.push({ id:r.mc, name:r.mc, fam:f }); if(!fseen[f]){ fseen[f] = 1; fams.push({ k:f }); }
+      });
+      MC0 = mcs; FAM = fams;
+      tsFromJadwal();
+    } else { MC0 = MC0_DEF.slice(); FAM = FAM_DEF.slice(); if(TSJ) tsDefault(); }
+  }
+  var TSJ = false;
+  // slip TS contoh dari jadwal: kode = 6 digit akhir PO + SKU (8) + urutan palet (4)
+  function tsFromJadwal(){
+    TSDB = []; TSJ = true;
+    JDW.rows.forEach(function(r, i){
+      var k = skuKarton(r.sku); if(!k || !/^\d{8}$/.test(String(r.sku))) return;
+      if(jStat(r.remark).s==="off") return;
+      var m = mat(k), po = String(r.po||("6209"+String(990000+i))).replace(/\D/g,"").slice(-6).padStart(6,"0"), n = 12;
+      for(var q=1;q<=n;q++){ var seq = String(q).padStart(4,"0"); TSDB.push({ code:po+String(r.sku)+seq, po:po, sku:String(r.sku), no:seq, pid:r.mc, matId:k, qty:q===n ? Math.max(1, Math.round(m.pal/2)) : m.pal, pal:m.pal }); }
+    });
+  }
+  function prevShift(d, n){ return n>1 ? { d:d, n:n-1 } : { d:addDays(d, -1), n:3 }; }
+  // data contoh untuk simulasi: stok karton di mesin & sentral, output 3 shift terakhir + shift berjalan
+  function genDemo(){
+    if(!JDW) return 0;
+    var sd = 23; function rnd(){ sd = (sd*9301+49297)%233280; return sd/233280; }
+    var c = curShift(), el = dshElapsed(), used = [], nOut = 0;
+    PRODO = PRODO.filter(function(r){ return !r.demo; });
+    MC0.forEach(function(m){
+      var j = jMc(m.id); if(!j) return; var k = skuKarton(j.cur.sku); if(!k) return;
+      var off = j.cur._st.s==="off", per = (j.cur.target || 900)/3, f = rnd();
+      MSTK[m.id] = {};
+      MSTK[m.id][k] = off ? Math.round(per*0.3*rnd()) : Math.round(per*(f<0.25 ? 0.05+rnd()*0.3 : 0.5+rnd()*0.9));
+      if(used.indexOf(k)<0) used.push(k);
+      if(off) return;
+      var fac = 0.72 + rnd()*0.33, sh = { d:c.d, n:c.n }, ts = Date.now();
+      for(var i=0;i<3;i++){ sh = prevShift(sh.d, sh.n); PRODO.push({ d:sh.d, sh:sh.n, pid:m.id, matId:k, q:Math.round(per*fac*(0.9+rnd()*0.2)), k:"out", src:"TS", ref:"", lebih:0, ts:ts-(i+1)*8*3600000, by:"contoh", demo:1 }); nOut++; }
+      var part = Math.max(0, Math.min(1, (el-(c.n-1)*8)/8)), q = Math.round(per*fac*part);
+      if(q>0){ PRODO.push({ d:c.d, sh:c.n, pid:m.id, matId:k, q:q, k:"out", src:"TS", ref:"", lebih:0, ts:ts, by:"contoh", demo:1 }); nOut++; }
+    });
+    SN0.forEach(function(sn, i){
+      MSTK[sn.id] = {};
+      for(var x=0;x<4;x++){ var k = used[(i*4+x*3) % Math.max(1, used.length)]; if(k) MSTK[sn.id][k] = (MSTK[sn.id][k]||0) + 200 + Math.round(rnd()*18)*100; }
+    });
+    if(PRODO.length>800) PRODO = PRODO.slice(-800);
+    return nOut;
+  }
+  function clearDemo(){
+    PRODO = PRODO.filter(function(r){ return !r.demo; });
+    MC0.forEach(function(m){ MSTK[m.id] = {}; }); SN0.forEach(function(sn){ MSTK[sn.id] = {}; });
+  }
+  function jStat(rm){
+    var t = String(rm||"").trim();
+    if(/^off\b/i.test(t)) return { s:"off" };
+    if(/setelah/i.test(t)) return { s:"next" };
+    var m = /shift\s*(\d)/i.exec(t);
+    if(m && /mulai|produksi/i.test(t)) return { s:"start", n:+m[1] };
+    if(/habiskan/i.test(t)) return { s:"habis" };
+    return { s:"jalan" };
+  }
+  function jMc(pid){
+    if(!JDW || !JDW.rows) return null;
+    var rows = JDW.rows.filter(function(r){ return r.mc===pid; }); if(!rows.length) return null;
+    rows.forEach(function(r){ r._st = jStat(r.remark); });
+    var cur = rows.filter(function(r){ return r._st.s==="jalan" || r._st.s==="habis"; })[0] || rows.filter(function(r){ return r._st.s==="start"; })[0] || rows.filter(function(r){ return r._st.s==="off"; })[0] || rows[0];
+    var nxt = rows.filter(function(r){ return r!==cur && (r._st.s==="next" || r._st.s==="start"); })[0] || null;
+    return { cur:cur, nxt:nxt, rows:rows };
+  }
+  function skuKarton(sku){ var x = SKUK[String(sku)]; return x && x.k ? "c"+x.k : null; }
+  function mcFG(pid){ var j = jMc(pid); if(j) return String(j.cur.sku); var k = rsvMat(pid); return k ? mat(k).sku : ""; }
+  function jStatTag(pid){
+    var j = jMc(pid); if(!j) return "";
+    var s = j.cur._st.s, txt = String(j.cur.remark||"").trim();
+    var cls = s==="off" ? "crit" : (s==="jalan" ? "ok" : "warn");
+    return '<span class="tag '+cls+'" title="'+esc(txt)+'">'+esc(s==="off" ? "OFF" : (txt && txt!=="-" ? txt.slice(0,22) : "jalan"))+'</span>';
+  }
+  /* --- baca Excel (SheetJS dari CDN, dimuat saat dipakai) --- */
+  var XLSXJ = { loading:null };
+  function xlsxLoad(cb){
+    if(window.XLSX){ cb(true); return; }
+    if(XLSXJ.loading){ XLSXJ.loading.push(cb); return; }
+    XLSXJ.loading = [cb];
+    var s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload = function(){ var q = XLSXJ.loading; XLSXJ.loading = null; q.forEach(function(f){ f(true); }); };
+    s.onerror = function(){ var q = XLSXJ.loading; XLSXJ.loading = null; q.forEach(function(f){ f(false); }); };
+    document.head.appendChild(s);
+  }
+  function xv(v){ if(v==null) return null; if(typeof v==="string"){ var t = v.trim(); if(!t || /^#/.test(t)) return null; return t; } return v; }
+  function xnum(v){ v = xv(v); if(v==null) return null; var n = typeof v==="number" ? v : Number(String(v).replace(",", ".")); return isFinite(n) ? n : null; }
+  function xdate(v){ if(v instanceof Date && !isNaN(v)) return v.getFullYear()+"-"+p2(v.getMonth()+1)+"-"+p2(v.getDate()); if(typeof v==="number" && v>30000 && v<80000){ var d = new Date(Math.round((v-25569)*86400000)); return d.toISOString().slice(0,10); } return ""; }
+  function jParse(wb, name){
+    var ws = wb.Sheets[name]; if(!ws) return { err:"Sheet tidak ditemukan." };
+    var A = window.XLSX.utils.sheet_to_json(ws, { header:1, raw:true, defval:null, blankrows:false });
+    var hi = -1, tgl = "";
+    for(var i=0;i<Math.min(A.length, 15);i++){
+      var low = (A[i]||[]).map(function(c){ return String(c==null?"":c).trim().toLowerCase(); });
+      if(!tgl){ var di = low.findIndex(function(c){ return /^date/.test(c); }); if(di>=0){ for(var j=di+1;j<low.length;j++){ var d = xdate((A[i]||[])[j]); if(d){ tgl = d; break; } } } }
+      if(low.indexOf("machine")>=0 && low.some(function(c){ return /sap number/.test(c); })){ hi = i; break; }
+    }
+    if(hi<0) return { err:"Baris judul kolom (Machine, SAP Number, …) tidak ditemukan di sheet ini." };
+    var H = (A[hi]||[]).map(function(c){ return String(c==null?"":c).trim().toLowerCase(); });
+    var col = function(re){ for(var k=0;k<H.length;k++) if(re.test(H[k])) return k; return -1; };
+    var C = { mc:col(/^machine/), sku:col(/sap number/), desc:col(/^description/), jr:col(/jumbo/), po:col(/production order/), tg:col(/target/), rm:col(/^remark$/), st:col(/stok ct/), wt:col(/weight/) };
+    if(C.mc<0 || C.sku<0 || C.tg<0) return { err:"Kolom Machine, SAP Number, atau Target / day tidak lengkap." };
+    var rows = [];
+    for(var r=hi+1;r<A.length;r++){
+      var R = A[r]||[], mc = xv(R[C.mc]), sku = xv(R[C.sku]);
+      if(!mc || !/^[A-Za-z]{2,}[A-Za-z]*\d+/.test(String(mc).trim())) continue;
+      if(sku==null) continue;
+      var tg = xnum(R[C.tg]);
+      rows.push({ mc:String(mc).trim().toUpperCase(), sku:String(typeof sku==="number" ? Math.round(sku) : sku).trim(), desc:C.desc>=0 ? (xv(R[C.desc])||"") : "", jr:C.jr>=0 ? (xv(R[C.jr])||"") : "",
+        po:C.po>=0 && xv(R[C.po])!=null ? String(typeof R[C.po]==="number" ? Math.round(R[C.po]) : R[C.po]).trim() : "", target:tg!=null ? Math.round(tg) : null,
+        remark:C.rm>=0 ? String(xv(R[C.rm])||"").trim() : "", stokCt:C.st>=0 ? xnum(R[C.st]) : null });
+    }
+    if(!rows.length) return { err:"Tidak ada baris mesin yang terbaca di sheet ini." };
+    return { tgl:tgl, sheet:name, rows:rows };
+  }
+  function tubParse(wb){
+    var best = null;
+    wb.SheetNames.forEach(function(nm){
+      if(best) return;
+      var A = window.XLSX.utils.sheet_to_json(wb.Sheets[nm], { header:1, raw:true, defval:null, blankrows:false });
+      for(var i=0;i<Math.min(A.length, 12);i++){
+        var H = (A[i]||[]).map(function(c){ return String(c==null?"":c).trim().toLowerCase(); });
+        var cm = H.indexOf("material"), ck = H.findIndex(function(c){ return /nomat karton/.test(c); });
+        if(cm>=0 && ck>=0){
+          var cd = H.findIndex(function(c){ return /^description/.test(c); }), map = {}, n = 0;
+          for(var r=i+1;r<A.length;r++){
+            var R = A[r]||[], s = xnum(R[cm]), k = xnum(R[ck]);
+            if(s==null || k==null || s<1e7 || k<1e7) continue;
+            map[String(Math.round(s))] = { k:String(Math.round(k)), d:cd>=0 ? (xv(R[cd])||"") : "" }; n++;
+          }
+          if(n){ best = { sheet:nm, map:map, n:n }; }
+          break;
+        }
+      }
+    });
+    return best || { err:"Kolom Material dan Nomat karton tidak ditemukan (biasanya di sheet TUB)." };
+  }
+  function readFileWb(f, cb){
+    xlsxLoad(function(ok){
+      if(!ok){ cb(null, "Pustaka pembaca Excel tidak termuat (perlu internet)."); return; }
+      var fr = new FileReader();
+      fr.onload = function(){ try{ cb(window.XLSX.read(new Uint8Array(fr.result), { type:"array", cellDates:true })); }catch(e){ cb(null, "File tidak bisa dibaca sebagai Excel."); } };
+      fr.onerror = function(){ cb(null, "File tidak bisa dibuka."); };
+      fr.readAsArrayBuffer(f);
+    });
+  }
+  function renderJadwal(force){
+    var A = $("#jdw-page"); if(!A) return;
+    var ae = document.activeElement; if(!force && ae && A.contains(ae) && /^(INPUT|SELECT)$/.test(ae.tagName)) return;
+    var h = '';
+    if(JDW && JDW.rows && JDW.rows.length){
+      var nm = MC0.length, nk = JDW.rows.filter(function(r){ return skuKarton(r.sku); }).length;
+      h += '<div class="msg ok" style="margin-top:0"><b>Jadwal aktif: '+(JDW.tgl||'(tanggal tidak terbaca)')+'</b> · sheet '+esc(JDW.sheet)+' · '+nm+' mesin, '+JDW.rows.length+' baris · diunggah '+esc(JDW.by||"-")+' '+(JDW.ts?new Date(JDW.ts).toLocaleString("id-ID"):"")+(JDW.file?'<br><span class="muted" style="font-size:.74rem">'+esc(JDW.file)+'</span>':'')+'</div>';
+      if(nk<JDW.rows.length) h += '<div class="msg warn">'+(JDW.rows.length-nk)+' baris belum punya pasangan karton. Unggah file planning (sheet TUB) di bagian 2.</div>';
+    } else h += '<div class="msg warn" style="margin-top:0"><b>Belum ada jadwal.</b> Simulator memakai mesin contoh (Facial 21–50, UTT, SRT, Napkin). Setelah jadwal diunggah, daftar mesin mengikuti jadwal.</div>';
+    if(JUI.msg) h += '<div class="msg ok">'+JUI.msg+'</div>';
+    // 1 upload harian
+    h += '<div class="jdw-card"><h3>1 · Jadwal harian (Daily Production Schedule)</h3><p class="muted" style="font-size:.78rem;margin:2px 0 8px">Unggah file Excel dari PPIC apa adanya, pilih sheet tanggalnya, lalu simpan. Jadwal tersimpan di database dan dipakai semua orang (dashboard mesin dan saran reservasi).</p>'+
+      '<label class="ctn3-btn" for="jdw-file">📄 Pilih file jadwal (.xlsx)</label><input type="file" id="jdw-file" accept=".xlsx,.xls" hidden> <span class="muted" style="font-size:.76rem">'+esc(JUI.file||"")+'</span>';
+    if(JUI.busy) h += '<div class="msg">Membaca file…</div>';
+    if(JUI.err) h += '<div class="msg crit">✕ '+JUI.err+'</div>';
+    if(JUI.sheets.length){
+      h += '<div class="row" style="margin-top:8px;align-items:flex-end"><div class="field"><label for="jdw-sheet">Sheet (tanggal)</label><select id="jdw-sheet">'+JUI.sheets.map(function(s){ return '<option'+(s===JUI.sheet?' selected':'')+'>'+esc(s)+'</option>'; }).join("")+'</select></div>'+(JUI.prev && !JUI.prev.err?'<button class="primary" id="jdw-save">Simpan jadwal ini untuk semua</button>':'')+'</div>';
+      if(JUI.prev && JUI.prev.err) h += '<div class="msg crit">✕ '+JUI.prev.err+'</div>';
+      else if(JUI.prev) h += '<div class="muted" style="font-size:.78rem;margin-top:6px">Terbaca: tanggal <b>'+(JUI.prev.tgl||'-')+'</b>, '+JUI.prev.rows.length+' baris, '+Object.keys(JUI.prev.rows.reduce(function(o,r){ o[r.mc]=1; return o; },{})).length+' mesin.</div>';
+    }
+    h += '</div>';
+    // 2 pasangan SKU-karton
+    var nmap = Object.keys(SKUK).length;
+    h += '<div class="jdw-card"><h3>2 · Pasangan SKU FG → karton</h3><p class="muted" style="font-size:.78rem;margin:2px 0 8px">Dari file planning bulanan (sheet TUB, kolom Material dan Nomat karton). Cukup sekali; unggah lagi kalau ada SKU baru. Tersimpan: <b>'+nmap+'</b> SKU.</p>'+
+      '<label class="ctn3-btn" for="tub-file">📄 Pilih file planning (.xlsx)</label><input type="file" id="tub-file" accept=".xlsx,.xls" hidden>';
+    if(JUI.tubErr) h += '<div class="msg crit">✕ '+JUI.tubErr+'</div>';
+    if(JUI.tub) h += '<div class="row" style="margin-top:8px;align-items:center"><span style="font-size:.8rem">Terbaca dari sheet <b>'+esc(JUI.tub.sheet)+'</b>: '+JUI.tub.n+' SKU.</span><button class="primary" id="tub-save">Simpan pasangan</button></div>';
+    h += '</div>';
+    // data contoh
+    if(JDW && JDW.rows && JDW.rows.length){
+      var nDemo = PRODO.filter(function(r){ return r.demo; }).length;
+      h += '<div class="jdw-card"><h3>Data contoh untuk simulasi</h3><p class="muted" style="font-size:.78rem;margin:2px 0 8px">Isi stok karton di mesin dan sentral, serta output 3 shift terakhir dan shift berjalan, mengikuti jadwal ini, supaya dashboard dan saran reservasi bisa dicoba. Slip TS contoh ('+TSDB.length+' slip) sudah dibuat dari PO dan SKU di jadwal; scan di Produksi · HP tab Output.</p>'+
+        '<div class="row"><button class="primary" id="demo-gen">'+(nDemo?'Buat ulang data contoh':'Isi data contoh')+'</button>'+(nDemo?'<button id="demo-clr">Hapus data contoh</button>':'')+'</div></div>';
+    }
+    // 3 tabel jadwal
+    if(JDW && JDW.rows && JDW.rows.length){
+      h += '<div class="jdw-card"><h3>3 · Isi jadwal aktif</h3><div class="tablewrap"><table><tr><th>Mesin</th><th>FG (SKU)</th><th>Deskripsi</th><th>PO</th><th>Target / hari (CT)</th><th>Remark</th><th>Karton</th><th>Stok Ct</th></tr>'+JDW.rows.map(function(r){
+        var k = skuKarton(r.sku), m = k ? mat(k) : null;
+        return '<tr><td class="mono"><b>'+esc(r.mc)+'</b></td><td class="mono">'+esc(r.sku)+'</td><td style="font-size:.76rem;min-width:180px">'+esc(r.desc||"")+'</td><td class="mono" style="font-size:.74rem">'+esc(r.po||"–")+'</td><td class="mono">'+(r.target!=null?fmt(r.target):'–')+'</td><td style="font-size:.76rem">'+esc(r.remark||"")+'</td>'+
+          '<td>'+(m ? '<span class="mono">'+m.code+'</span>'+(m.stub?' <span class="tag warn">belum di master</span>':'') : '<span class="tag warn">belum ada pasangan</span>')+'</td><td class="mono">'+(r.stokCt!=null?fmt(r.stokCt):'–')+'</td></tr>';
+      }).join("")+'</table></div>'+
+      '<div style="margin-top:10px"><button id="jdw-clear">'+(JUI.clr && Date.now()-JUI.clr<4000 ? 'Yakin? Klik lagi untuk menghapus jadwal' : 'Hapus jadwal (kembali ke mesin contoh)')+'</button></div></div>';
+    }
+    var armed = JUI.rst && Date.now()-JUI.rst<4000;
+    h += '<div class="jdw-card"><h3>Reset semua data simulasi</h3><p class="muted" style="font-size:.78rem;margin:2px 0 8px">Menghapus semua data di database bersama: jadwal, pasangan SKU-karton, order, outstanding, retur, output, stock opname, log, dan stok gudang/mesin, lalu mengisi lagi data awal gudang. Dipakai kalau data lama dan baru tercampur. Berlaku untuk semua perangkat.</p>'+
+      '<button id="all-reset" class="'+(armed?'primary':'')+'">'+(armed?'Yakin? Klik lagi untuk menghapus semua':'Reset semua data')+'</button></div>';
+    A.innerHTML = h;
+    var on = function(sel, ev, fn){ var e = A.querySelector(sel); if(e) e.addEventListener(ev, fn); };
+    on("#all-reset", "click", function(){
+      if(!(JUI.rst && Date.now()-JUI.rst<4000)){ JUI.rst = Date.now(); renderJadwal(true); setTimeout(function(){ renderJadwal(true); }, 4100); return; }
+      JUI.rst = 0; JUI.wb = null; JUI.sheets = []; JUI.prev = null; JUI.tub = null; JUI.file = ""; JUI.err = ""; JUI.tubErr = "";
+      if(FB.on) resetOnline(); else { seedAll(); renderAll(); }
+      JUI.msg = 'Semua data direset. Mulai lagi: unggah jadwal harian, lalu file planning, lalu (kalau perlu) Isi data contoh.';
+      renderJadwal(true);
+    });
+    on("#jdw-file", "change", function(){
+      var f = this.files && this.files[0]; if(!f) return;
+      JUI.file = f.name; JUI.err = ""; JUI.msg = ""; JUI.busy = true; JUI.sheets = []; JUI.prev = null; renderJadwal(true);
+      readFileWb(f, function(wb, err){
+        JUI.busy = false;
+        if(err){ JUI.err = err; return renderJadwal(true); }
+        JUI.wb = wb; JUI.sheets = wb.SheetNames.slice();
+        var good = JUI.sheets.filter(function(s){ return !jParse(wb, s).err; });
+        var td = curShift().d, todayS = good.filter(function(s){ return jParse(wb, s).tgl===td; })[0];
+        JUI.sheet = todayS || (good.length ? good[good.length-1] : JUI.sheets[0]);
+        JUI.prev = jParse(wb, JUI.sheet); renderJadwal(true);
+      });
+    });
+    on("#jdw-sheet", "change", function(){ JUI.sheet = this.value; JUI.prev = jParse(JUI.wb, JUI.sheet); renderJadwal(true); });
+    on("#jdw-save", "click", function(){
+      var p = JUI.prev; if(!p || p.err) return;
+      JDW = { tgl:p.tgl, sheet:p.sheet, rows:p.rows, file:JUI.file, by:OPR.name, ts:Date.now() };
+      applyJadwal(); RSV.mat = {}; RSV.qty = {}; RSV.off = {};
+      JUI.msg = 'Jadwal '+(p.tgl||('sheet '+p.sheet))+' tersimpan: '+p.rows.length+' baris, '+MC0.length+' mesin. Daftar mesin dan saran reservasi sekarang mengikuti jadwal ini.';
+      JUI.wb = null; JUI.sheets = []; JUI.prev = null; JUI.file = "";
+      renderAll(); renderJadwal(true);
+    });
+    on("#tub-file", "change", function(){
+      var f = this.files && this.files[0]; if(!f) return;
+      JUI.tub = null; JUI.tubErr = ""; JUI.msg = ""; renderJadwal(true);
+      readFileWb(f, function(wb, err){ if(err){ JUI.tubErr = err; return renderJadwal(true); } var t = tubParse(wb); if(t.err) JUI.tubErr = t.err; else JUI.tub = t; renderJadwal(true); });
+    });
+    on("#tub-save", "click", function(){ if(!JUI.tub) return; var n = JUI.tub.n; Object.keys(JUI.tub.map).forEach(function(k){ SKUK[k] = JUI.tub.map[k]; }); JUI.tub = null; JUI.msg = n+' pasangan SKU → karton tersimpan.'; RSV.mat = {}; renderAll(); renderJadwal(true); });
+    on("#demo-gen", "click", function(){ var n = genDemo(); JUI.msg = 'Data contoh dibuat: stok karton di '+MC0.length+' mesin dan 3 sentral, '+n+' catatan output. Lihat capaian dan saran reservasi di menu <a href="#produksi">Produksi</a>.'; RSV.qty = {}; renderAll(); renderJadwal(true); });
+    on("#demo-clr", "click", function(){ clearDemo(); JUI.msg = 'Data contoh dihapus (output contoh dan stok mesin/sentral dikosongkan).'; renderAll(); renderJadwal(true); });
+    on("#jdw-clear", "click", function(){
+      if(!(JUI.clr && Date.now()-JUI.clr<4000)){ JUI.clr = Date.now(); renderJadwal(true); setTimeout(function(){ renderJadwal(true); }, 4100); return; }
+      JUI.clr = 0; JDW = null; applyJadwal(); RSV.mat = {}; RSV.qty = {}; RSV.off = {}; JUI.msg = 'Jadwal dihapus. Kembali ke mesin contoh.'; renderAll(); renderJadwal(true);
+    });
+  }
   function plKind(p){ return p.kind==="mesin" ? "langsung di mesin" : "area sentral"; }
   function plOpts(sel){
     return '<option value="">(pilih tujuan)</option>'+FAM.map(function(f){ return '<optgroup label="Mesin '+f.k+'">'+MC0.filter(function(m){ return m.fam===f.k; }).map(function(m){ return '<option value="'+m.id+'"'+(m.id===sel?' selected':'')+'>'+esc(m.name)+'</option>'; }).join("")+'</optgroup>'; }).join("")+
@@ -2652,7 +3052,7 @@
     var byCat = { A:[], B:[], C:[] }; MATS.forEach(function(m){ byCat[m.cat].push(m.id); });
     var famCat = { Facial:"A", UTT:"B", SRT:"B", Napkin:"C" };
     MSTK = {};
-    MC0.forEach(function(m){
+    MC0_DEF.forEach(function(m){
       var L = byCat[famCat[m.fam]], id = L[Math.floor(rnd()*L.length)], r = rnd();
       var q = r<0.1 ? 0 : (r<0.25 ? 50+Math.round(rnd()*24)*10 : 300+Math.round(rnd()*170)*10);
       MSTK[m.id] = {}; MSTK[m.id][id] = q;
@@ -2663,6 +3063,9 @@
       var n = 6 + Math.floor(rnd()*6);
       for(var k=0;k<n;k++){ var id = MATS[Math.floor(rnd()*MATS.length)].id; MSTK[s.id][id] = (MSTK[s.id][id]||0) + 100 + Math.round(rnd()*28)*100; }
     });
+    tsDefault();
+  }
+  function tsDefault(){
     TSDB = [];
     [["F42",5],["F43",4],["F44",3],["F21",3],["F30",3],["UTT1",4],["SRT1",3],["NAP1",3]].forEach(function(x, j){
       var mk = Object.keys(MSTK[x[0]]||{})[0]; if(!mk) return; var m = mat(mk);
@@ -2672,6 +3075,7 @@
         TSDB.push({ code:po+m.sku+seq, po:po, sku:m.sku, no:seq, pid:x[0], matId:mk, qty:q, pal:m.pal });
       }
     });
+    TSJ = false;
   }
   function mstkTotal(id){ var t = 0, o = MSTK[id] || {}; Object.keys(o).forEach(function(k){ t += o[k]; }); return t; }
   /* baris rincian tujuan: { matId, dest, qty (diminta), a (tersedia dari gudang), r (diterima, null=belum), why, by, rts, pl:[{qty,kode,ts}] } */
@@ -2786,6 +3190,7 @@
     return s.ks.some(function(k){ var m = mat(k); return s.st[k]>0 && (m.code.indexOf(q)>=0 || m.name.toLowerCase().indexOf(q)>=0); });
   }
   function pvPass(s){
+    if(PV.f==="low") return !!(s.d && s.d.st==="low");
     if(PV.f==="kosong") return s.lvl==="kosong";
     if(PV.f==="rendah") return s.lvl==="rendah";
     if(PV.f==="out") return s.oo.length>0;
@@ -2794,14 +3199,24 @@
     return true;
   }
   function pvTile(p, s){
-    var mk = s.ks[0], m = mk ? mat(mk) : null, more = s.ks.filter(function(k){ return s.st[k]>0; }).length - 1, rep = s.out || s.rj;
-    return '<button class="pv-tile '+s.lvl+'" data-pv="'+p.id+'" aria-pressed="'+(PV.sel===p.id)+'" title="'+esc(p.name)+(m?' · '+m.code+' '+esc(m.name):'')+'">'+
-      '<span class="n">'+esc(p.name)+'</span>'+
-      '<span class="ob"'+(s.out?'':' style="color:var(--ink-dim)"')+'>'+fmt(s.out)+'<small> output</small></span>'+
-      (s.rj?'<span class="rj">rusak '+fmt(s.rj)+'</span>':'')+
-      '<span class="mc">'+(m?m.code:'—')+(more>0?' <small>+'+more+'</small>':'')+'</span>'+
-      '<span class="sk">stok <b>'+(s.tot>0?fmt(s.tot):'kosong')+'</b></span>'+
+    var mk = p.kind==="mesin" ? (rsvMat(p.id) || s.ks[0]) : s.ks[0], m = mk ? mat(mk) : null, d = s.d, c = curShift();
+    var off = d && d.st==="off", hasT = d && d.tg.t;
+    var lbl = { ok:["ok","sesuai jalur"], low:["crit","tertinggal"], off:["crit","OFF"], mulai:["","baru mulai"], nt:["",""] };
+    var h = '<button class="pv-tile '+s.lvl+(d?' st-'+d.st:'')+'" data-pv="'+p.id+'" aria-pressed="'+(PV.sel===p.id)+'" title="'+esc(p.name)+(m?' · '+m.code+' '+esc(m.name):'')+'">'+
+      '<span class="n">'+esc(p.name)+(d && lbl[d.st] && lbl[d.st][1] ? ' <span class="tag '+lbl[d.st][0]+'">'+lbl[d.st][1]+'</span>' : '')+'</span>'+
+      '<span class="mc"><small>FG</small> '+(mcFG(p.id)||'—')+'</span><span class="mc"><small>Karton</small> '+(m?m.code:'—')+'</span>';
+    if(hasT){
+      var pc = Math.round(d.out/d.tg.t*100), ex = d.exp ? Math.min(100, Math.round(d.exp/d.tg.t*100)) : 0;
+      h += '<span class="pc">'+pc+'%</span><span class="dsh-bar" title="garis = seharusnya sampai jam ini"><i style="width:'+Math.min(100,pc)+'%"></i><s style="left:'+ex+'%"></s></span>'+
+        '<span class="dn"><b class="mono">'+fmt(d.out)+'</b> / '+fmt(d.tg.t)+' CT</span>'+
+        '<span class="dsh-sh">'+[1,2,3].map(function(n){ return '<span'+(n===c.n?' class="cur"':'')+'>S'+n+' <b class="mono">'+(d.sh[n]?fmt(d.sh[n]):(n>c.n?'·':'0'))+'</b></span>'; }).join("")+'</span>';
+    } else if(!off){
+      h += '<span class="ob"'+(s.out?'':' style="color:var(--ink-dim)"')+'>'+fmt(s.out)+'<small> output shift ini</small></span>';
+    }
+    h += (s.rj?'<span class="rj">rusak '+fmt(s.rj)+'</span>':'')+
+      '<span class="sk">stok karton <b>'+(s.tot>0?fmt(s.tot):'kosong')+'</b></span>'+
       ((s.hand||s.oo.length)?'<span class="fl">'+(s.hand?'<span class="tag info">↓ '+fmt(s.hand)+'</span>':'')+(s.oo.length?'<span class="tag warn">! '+fmt(s.oq)+'</span>':'')+'</span>':'')+'</button>';
+    return h;
   }
   function pvCard(p, s){
     var rows = s.ks.filter(function(k){ return s.st[k]>0; }), mx = rows.length ? s.st[rows[0]] : 1;
@@ -2818,7 +3233,7 @@
     PRODO.forEach(function(r){ if(r.pid!==p.id) return; var k = r.d+"|"+r.sh; if(!sh[k]){ sh[k] = { d:r.d, n:r.sh, out:0, rj:0, ts:0, lhp:0, lebih:0 }; keys.push(k); } var b = sh[k]; if(r.k==="out"){ b.out += r.q; if(r.src==="TS") b.ts++; else b.lhp += r.q; } else b.rj += r.q; b.lebih += r.lebih; });
     keys.sort().reverse();
     var cs = curShift(), ck = cs.d+"|"+cs.n;
-    var h = '<div class="pv-detail"><div style="display:flex;justify-content:space-between;gap:10px;align-items:start;flex-wrap:wrap"><div><span class="eyebrow">'+plKind(p)+' · '+p.code+'</span><h3 style="font-size:1.15rem">'+esc(p.name)+'</h3>'+(isM && main ? '<div style="font-size:.8rem">Produk jalan: SKU <b class="mono">'+main.sku+'</b> · '+esc(main.name)+'<br>Karton: '+swatch(main)+' <b class="mono">'+main.code+'</b></div>' : '')+'</div><button class="small" id="pv-x">Tutup</button></div>';
+    var h = '<div class="pv-detail"><div style="display:flex;justify-content:space-between;gap:10px;align-items:start;flex-wrap:wrap"><div><span class="eyebrow">'+plKind(p)+' · '+p.code+'</span><h3 style="font-size:1.15rem">'+esc(p.name)+'</h3>'+(isM && (rsvMat(p.id) || main) ? (function(){ var rm = mat(rsvMat(p.id) || main.id); var jj = jMc(p.id); return '<div class="fgk"><div><span class="k">FG</span> <b class="mono">'+esc(mcFG(p.id))+'</b> <span class="muted">'+esc(jj ? (jj.cur.desc||"") : rm.name)+'</span></div>'+(jj?'<div><span class="k">Jadwal</span> '+jStatTag(p.id)+(jj.cur.target!=null?' target <b class="mono">'+fmt(jj.cur.target)+'</b> CT/hari':'')+(jj.cur.po?' · PO <span class="mono">'+esc(jj.cur.po)+'</span>':'')+(jj.nxt?'<br><span class="k">Berikut</span> FG <b class="mono">'+esc(jj.nxt.sku)+'</b> · '+esc(jj.nxt.remark||""):'')+'</div>':'')+'<div><span class="k">Karton</span> '+swatch(rm)+' <b class="mono">'+rm.code+'</b></div></div>'; })() : '')+'</div><button class="small" id="pv-x">Tutup</button></div>';
     h += '<div class="pv-kpis" style="margin-top:10px">'+(isM ? '<div class="pv-kpi info big"><b>'+fmt(s.out)+'</b><span>output '+shiftLabel()+'</span></div><div class="pv-kpi crit"><b>'+fmt(s.rj)+'</b><span>rusak shift ini</span></div>' : '')+
       '<div class="pv-kpi'+(s.lvl==="kosong"?' crit':s.lvl==="rendah"?' warn':'')+'"><b>'+fmt(s.tot)+'</b><span>stok karton sekarang</span></div>'+
       '<div class="pv-kpi info"><b>'+fmt(s.hand)+'</b><span>menuju ke sini</span></div><div class="pv-kpi warn"><b>'+fmt(s.oq)+'</b><span>outstanding buka</span></div></div>';
@@ -2839,8 +3254,15 @@
     var body = $("#pv-body"); if(!body) return;
     var q = PV.q.trim().toLowerCase(), ps = plList(), stats = {}, kos = 0, ren = 0, hand = 0, oon = 0;
     var tout = 0, trj = 0, belum = 0;
-    ps.forEach(function(p){ var s = plStat(p); stats[p.id] = s; if(p.kind==="mesin" && s.lvl==="kosong") kos++; if(s.lvl==="rendah") ren++; hand += s.hand; oon += s.oo.length; tout += s.out; trj += s.rj; if(p.kind==="mesin" && s.tot>0 && !s.out && !s.rj) belum++; });
-    var h = '<div class="pv-shift">'+shiftCtl("psh")+'</div><div class="pv-kpis"><div class="pv-kpi info big"><b>'+fmt(tout)+'</b><span>output shift ini (karton)</span></div><div class="pv-kpi crit"><b>'+fmt(trj)+'</b><span>rusak shift ini</span></div><div class="pv-kpi"><b>'+belum+'</b><span>mesin output 0</span></div><div class="pv-kpi crit"><b>'+kos+'</b><span>stok karton kosong (mesin)</span></div><div class="pv-kpi warn"><b>'+ren+'</b><span>stok karton rendah (&lt; '+fmt(LOW_PCS)+')</span></div><div class="pv-kpi info"><b>'+fmt(hand)+'</b><span>pcs belum ditaruh</span></div><div class="pv-kpi warn"><b>'+oon+'</b><span>outstanding buka</span></div></div>';
+    var DR = {}; dshRows().forEach(function(r){ DR[r.p.id] = r; });
+    ps.forEach(function(p){ var s = plStat(p); s.d = DR[p.id] || null; stats[p.id] = s; if(p.kind==="mesin" && s.lvl==="kosong") kos++; if(s.lvl==="rendah") ren++; hand += s.hand; oon += s.oo.length; tout += s.out; trj += s.rj; if(p.kind==="mesin" && s.tot>0 && !s.out && !s.rj) belum++; });
+    var dra = Object.keys(DR).map(function(k){ return DR[k]; }), run = dra.filter(function(r){ return r.tg.t; }), el = dshElapsed();
+    var tT = run.reduce(function(a,r){ return a+r.tg.t; }, 0), tO = run.reduce(function(a,r){ return a+r.out; }, 0), tE = tT*el/24;
+    var cap = JDW ? '<div class="pv-kpis dsh-kpis" style="margin-bottom:8px"><div class="pv-kpi info big"><b>'+(tT?Math.round(tO/tT*100):0)+'%</b><span>capaian hari ini · '+fmt(tO)+' dari '+fmt(tT)+' CT</span></div>'+
+      '<div class="pv-kpi'+(tE && tO/tE<0.9?' warn':'')+'"><b>'+(tE?Math.round(tO/tE*100)+'%':'–')+'</b><span>dibanding seharusnya sampai jam ini ('+fmt(Math.round(tE))+' CT)</span></div>'+
+      '<div class="pv-kpi"><b>'+dra.filter(function(r){ return r.st==="ok"; }).length+'</b><span>mesin sesuai jalur</span></div><div class="pv-kpi'+(dra.some(function(r){ return r.st==="low"; })?' crit':'')+'"><b>'+dra.filter(function(r){ return r.st==="low"; }).length+'</b><span>mesin tertinggal</span></div><div class="pv-kpi"><b>'+dra.filter(function(r){ return r.st==="off"; }).length+'</b><span>mesin OFF</span></div></div>'+
+      '<div class="muted" style="font-size:.7rem;margin:-2px 0 8px">Capaian = output hari ini ÷ target per hari (jadwal PPIC). Sesuai jalur = output ≥ 90% dari yang seharusnya sampai jam ini (garis hitam di bar). Hari produksi mulai 07:00.</div>' : '';
+    var h = '<div class="pv-shift">'+shiftCtl("psh")+'</div>'+cap+'<div class="pv-kpis"><div class="pv-kpi info big"><b>'+fmt(tout)+'</b><span>output shift ini (karton)</span></div><div class="pv-kpi crit"><b>'+fmt(trj)+'</b><span>rusak shift ini</span></div><div class="pv-kpi"><b>'+belum+'</b><span>mesin output 0</span></div><div class="pv-kpi crit"><b>'+kos+'</b><span>stok karton kosong (mesin)</span></div><div class="pv-kpi warn"><b>'+ren+'</b><span>stok karton rendah (&lt; '+fmt(LOW_PCS)+')</span></div><div class="pv-kpi info"><b>'+fmt(hand)+'</b><span>pcs belum ditaruh</span></div><div class="pv-kpi warn"><b>'+oon+'</b><span>outstanding buka</span></div></div>';
     // pencarian no material: tampilkan semua lokasinya
     if(q.length>=3){
       var mm = MATS.filter(function(m){ return m.code.indexOf(q)>=0 || m.name.toLowerCase().indexOf(q)>=0; }).slice(0,3);
@@ -2862,7 +3284,8 @@
       var ms = ps.filter(function(p){ return p.fam===f.k; }), vis = ms.filter(function(p){ return pvMatch(p, stats[p.id], q) && pvPass(stats[p.id]); });
       if(!vis.length) return; shown += vis.length;
       var k0 = ms.filter(function(p){ return stats[p.id].lvl==="kosong"; }).length, r0 = ms.filter(function(p){ return stats[p.id].lvl==="rendah"; }).length;
-      h += '<div class="pv-famh"><h3>Mesin '+f.k+'</h3><span class="muted" style="font-size:.76rem">'+ms.length+' mesin · output <b class="mono" style="color:var(--info)">'+fmt(ms.reduce(function(t,p){ return t+stats[p.id].out; },0))+'</b>'+((k0||r0)?' · stok karton: ':'')+(k0?'<b style="color:var(--crit)">'+k0+' kosong</b>':'')+(k0&&r0?', ':'')+(r0?'<b style="color:var(--warn)">'+r0+' rendah</b>':'')+(vis.length<ms.length?' · tampil '+vis.length:'')+'</span></div><div class="pv-grid">'+vis.map(function(p){ return pvTile(p, stats[p.id]); }).join("")+'</div>';
+      var gT = ms.reduce(function(t,p){ var d = stats[p.id].d; return t+(d && d.tg.t ? d.tg.t : 0); }, 0), gO = ms.reduce(function(t,p){ var d = stats[p.id].d; return t+(d && d.tg.t ? d.out : 0); }, 0);
+      h += '<div class="pv-famh"><h3>Mesin '+f.k+'</h3><span class="muted" style="font-size:.76rem">'+ms.length+' mesin · '+(gT?'capaian <b class="mono" style="color:var(--info)">'+Math.round(gO/gT*100)+'%</b> ('+fmt(gO)+' / '+fmt(gT)+' CT)':'output shift ini <b class="mono" style="color:var(--info)">'+fmt(ms.reduce(function(t,p){ return t+stats[p.id].out; },0))+'</b>')+((k0||r0)?' · stok karton: ':'')+(k0?'<b style="color:var(--crit)">'+k0+' kosong</b>':'')+(k0&&r0?', ':'')+(r0?'<b style="color:var(--warn)">'+r0+' rendah</b>':'')+(vis.length<ms.length?' · tampil '+vis.length:'')+'</span></div><div class="pv-grid">'+vis.map(function(p){ return pvTile(p, stats[p.id]); }).join("")+'</div>';
     });
     if(!shown && !(showSn && sn.length)) h += '<div class="muted" style="padding:12px 0">Tidak ada yang cocok dengan filter.</div>';
     body.innerHTML = h;
@@ -2875,7 +3298,7 @@
     outSweep();
     if(!$("#pv-q")){
       A.innerHTML = '<div class="pv-bar"><div class="field" style="flex:1 1 240px"><label for="pv-q">Cari mesin atau no material</label><input type="search" id="pv-q" class="txtin" placeholder="mis. Facial 42, 20986756, napkin" autocomplete="off"></div>'+
-        '<div class="field"><label>Tampilkan</label><div class="pv-chips" id="pv-f">'+[["all","Semua"],["belum","Output 0"],["kosong","Stok kosong"],["rendah","Stok rendah"],["hand","Belum ditaruh"],["out","Outstanding"]].map(function(o){ return '<button data-f="'+o[0]+'" aria-pressed="'+(PV.f===o[0])+'">'+o[1]+'</button>'; }).join("")+'</div></div>'+
+        '<div class="field"><label>Tampilkan</label><div class="pv-chips" id="pv-f">'+[["all","Semua"],["low","Tertinggal"],["belum","Output 0"],["kosong","Stok kosong"],["rendah","Stok rendah"],["hand","Belum ditaruh"],["out","Outstanding"]].map(function(o){ return '<button data-f="'+o[0]+'" aria-pressed="'+(PV.f===o[0])+'">'+o[1]+'</button>'; }).join("")+'</div></div>'+
         '<div class="field"><label for="pv-fam">Jenis</label><select id="pv-fam"><option value="">Semua</option>'+FAM.map(function(f){ return '<option value="'+f.k+'">Mesin '+f.k+'</option>'; }).join("")+'<option value="Sentral">Area sentral</option></select></div>'+
         '<div class="field"><label for="pv-low">Batas rendah (pcs)</label><input type="number" id="pv-low" min="0" step="50" value="'+LOW_PCS+'" style="width:100px"></div></div>'+
         '<div class="pv-legend muted"><b>Angka besar</b> = output shift ini · garis warna = stok karton: <span class="pv-dot ok"></span> aman <span class="pv-dot warn"></span> rendah <span class="pv-dot crit"></span> kosong · <span class="tag info">↓</span> diterima, belum ditaruh · <span class="tag warn">!</span> outstanding</div><div id="pv-body"></div>';
@@ -3132,6 +3555,74 @@
     A.innerHTML = '<div class="so-top"><div><b style="font-size:1rem">'+done.length+' dari '+ps.length+' area sudah dicek</b> <span class="muted">· '+shiftLabel()+'</span><div style="font-size:.78rem;margin-top:3px"><span class="tag ok">'+(done.length-beda.length)+' sesuai</span> <span class="tag warn">'+beda.length+' ada selisih</span> <span class="tag">'+(ps.length-done.length)+' belum</span></div></div>'+
       '<div class="so-bar" role="progressbar" aria-valuenow="'+pct+'" aria-valuemin="0" aria-valuemax="100"><i style="width:'+pct+'%"></i></div><a class="btn-link" href="#so">Buka Stock opname →</a></div>';
   }
+  /* =========================================================
+     Dashboard produksi · capaian vs target harian (jadwal PPIC). Untuk semua level produksi.
+     Hari produksi mulai 07:00 (shift 1). Target per hari tidak membawa kekurangan hari sebelumnya.
+     ========================================================= */
+  var DSH = { sort:"low", f:"all", fam:"" };
+  function dshElapsed(){
+    var c = curShift();
+    if(!SHIFT.auto) return (c.n-1)*8;
+    var st = new Date(c.d+"T07:00:00"), h = (Date.now()-st.getTime())/3600000;
+    return Math.max(0, Math.min(24, h));
+  }
+  function dshTarget(pid){
+    var j = jMc(pid); if(!j) return { t:null, off:false };
+    var act = j.rows.filter(function(r){ var s = r._st.s; return s==="jalan" || s==="habis" || (s==="start" && r===j.cur); });
+    var off = j.cur._st.s==="off";
+    var t = act.reduce(function(s, r){ return s+(r.target||0); }, 0);
+    return { t:off ? 0 : (t || null), off:off, j:j };
+  }
+  function dshRows(){
+    var c = curShift(), el = dshElapsed();
+    return MC0.map(function(m){
+      var p = plOf(m.id), tg = dshTarget(m.id), sh = { 1:0, 2:0, 3:0 }, out = 0;
+      PRODO.forEach(function(r){ if(r.pid===m.id && r.k==="out" && r.d===c.d){ sh[r.sh] = (sh[r.sh]||0) + r.q; out += r.q; } });
+      var pct = tg.t ? out/tg.t : null, exp = tg.t ? tg.t*el/24 : null, st;
+      if(tg.off) st = "off"; else if(!tg.t) st = "nt"; else if(el<0.5) st = "mulai"; else st = (out >= 0.9*exp) ? "ok" : "low";
+      return { p:p, fam:m.fam, tg:tg, out:out, sh:sh, pct:pct, exp:exp, st:st };
+    });
+  }
+  function renderDash(force){
+    var A = $("#dash-page"); if(!A) return;
+    var ae = document.activeElement; if(!force && ae && A.contains(ae) && /^(INPUT|SELECT)$/.test(ae.tagName)) return;
+    var c = curShift(), el = dshElapsed(), rows = dshRows();
+    var run = rows.filter(function(r){ return r.tg.t; }), tT = run.reduce(function(s,r){ return s+r.tg.t; }, 0), tO = run.reduce(function(s,r){ return s+r.out; }, 0), tE = tT*el/24;
+    var nOk = rows.filter(function(r){ return r.st==="ok"; }).length, nLow = rows.filter(function(r){ return r.st==="low"; }).length, nOff = rows.filter(function(r){ return r.st==="off"; }).length;
+    var pctAll = tT ? Math.round(tO/tT*100) : 0, pctExp = tE ? Math.round(tO/tE*100) : 0;
+    var h = '<div class="dsh-sub">Hari produksi <b>'+c.d+'</b> · sekarang shift '+c.n+' · berjalan '+String(Math.round(el*10)/10).replace(".",",")+' dari 24 jam'+(JDW?' · jadwal '+esc(JDW.tgl||('sheet '+JDW.sheet)):'')+'</div>';
+    if(!JDW) h += '<div class="msg warn">Belum ada jadwal produksi, jadi target belum ada. Unggah jadwal di menu <a href="#jadwal">Jadwal produksi</a>.</div>';
+    h += '<div class="pv-kpis dsh-kpis"><div class="pv-kpi info big"><b>'+pctAll+'%</b><span>capaian hari ini · '+fmt(tO)+' dari '+fmt(tT)+' CT</span></div>'+
+      '<div class="pv-kpi'+(tE && pctExp<90?' warn':'')+'"><b>'+(tE?pctExp+'%':'–')+'</b><span>dibanding yang seharusnya sampai jam ini ('+fmt(Math.round(tE))+' CT)</span></div>'+
+      '<div class="pv-kpi"><b>'+nOk+'</b><span>mesin sesuai jalur</span></div><div class="pv-kpi'+(nLow?' crit':'')+'"><b>'+nLow+'</b><span>mesin tertinggal</span></div><div class="pv-kpi"><b>'+nOff+'</b><span>mesin OFF</span></div></div>';
+    var fams = FAM.map(function(f){ return f.k; });
+    h += '<div class="row dsh-ctl"><div class="field"><label for="dsh-f">Tampilkan</label><select id="dsh-f"><option value="all"'+(DSH.f==="all"?' selected':'')+'>Semua mesin</option><option value="low"'+(DSH.f==="low"?' selected':'')+'>Tertinggal saja</option><option value="off"'+(DSH.f==="off"?' selected':'')+'>OFF</option></select></div>'+
+      '<div class="field"><label for="dsh-s">Urutkan</label><select id="dsh-s"><option value="low"'+(DSH.sort==="low"?' selected':'')+'>Capaian terendah dulu</option><option value="mc"'+(DSH.sort==="mc"?' selected':'')+'>Urut mesin</option></select></div>'+
+      (fams.length>1?'<div class="field"><label for="dsh-fam">Kelompok</label><select id="dsh-fam"><option value="">Semua</option>'+fams.map(function(f){ return '<option'+(DSH.fam===f?' selected':'')+'>'+esc(f)+'</option>'; }).join("")+'</select></div>':'')+
+      (tO===0 && run.length ? '<button id="dsh-demo" class="small">Isi data contoh (simulasi)</button>' : '')+'</div>';
+    var vis = rows.filter(function(r){ return (DSH.f==="all" || r.st===DSH.f) && (!DSH.fam || r.fam===DSH.fam); });
+    var rank = { low:0, ok:1, mulai:2, nt:3, off:4 };
+    vis.sort(DSH.sort==="low" ? function(a,b){ return (rank[a.st]-rank[b.st]) || ((a.pct==null?9:a.pct)-(b.pct==null?9:b.pct)); } : function(a,b){ return a.p.id<b.p.id?-1:1; });
+    var lbl = { ok:["ok","sesuai jalur"], low:["crit","tertinggal"], off:["","OFF"], nt:["","tanpa target"], mulai:["","baru mulai"] };
+    h += '<div class="dsh-grid">'+(vis.length ? vis.map(function(r){
+      var j = r.tg.j, pc = r.pct!=null ? Math.round(r.pct*100) : null, ex = r.exp ? Math.min(100, Math.round(r.exp/r.tg.t*100)) : 0;
+      return '<div class="dsh-card '+r.st+'"><div class="dsh-h"><b>'+esc(r.p.name)+'</b><span class="tag '+lbl[r.st][0]+'">'+lbl[r.st][1]+'</span></div>'+
+        (j?'<div class="dsh-fg"><span class="mono">'+esc(j.cur.sku)+'</span> '+esc(String(j.cur.desc||"").slice(0,30))+'</div>':'')+
+        '<div class="dsh-pct">'+(pc!=null?pc+'%':'–')+'</div>'+
+        (r.tg.t?'<div class="dsh-bar" title="garis = seharusnya sampai jam ini"><i style="width:'+Math.min(100,pc||0)+'%"></i><s style="left:'+ex+'%"></s></div>':'')+
+        '<div class="dsh-n"><b class="mono">'+fmt(r.out)+'</b> / '+(r.tg.t?fmt(r.tg.t):'–')+' CT</div>'+
+        '<div class="dsh-sh">'+[1,2,3].map(function(n){ return '<span'+(n===c.n?' class="cur"':'')+'>S'+n+' <b class="mono">'+(r.sh[n]?fmt(r.sh[n]):(n>c.n?'·':'0'))+'</b></span>'; }).join("")+'</div>'+
+        (j && j.cur.remark && !/^continue$|^-$/i.test(j.cur.remark)?'<div class="dsh-rm">'+esc(j.cur.remark)+'</div>':'')+'</div>';
+    }).join("") : '<div class="muted">Tidak ada mesin sesuai filter.</div>')+'</div>';
+    h += '<div class="muted" style="font-size:.72rem;margin-top:10px">Capaian = output tercatat hari ini ÷ target per hari dari jadwal PPIC (1 karton = 1 CT). Sesuai jalur = output ≥ 90% dari yang seharusnya sampai jam ini (target × jam berjalan ÷ 24). Target tidak membawa kekurangan hari sebelumnya. Nanti bisa dilengkapi OEE (availability, performance, quality).</div>';
+    A.innerHTML = h;
+    var on = function(sel, ev, fn){ var e = A.querySelector(sel); if(e) e.addEventListener(ev, fn); };
+    on("#dsh-f", "change", function(){ DSH.f = this.value; renderDash(true); });
+    on("#dsh-s", "change", function(){ DSH.sort = this.value; renderDash(true); });
+    on("#dsh-fam", "change", function(){ DSH.fam = this.value; renderDash(true); });
+    on("#dsh-demo", "click", function(){ genDemo(); renderAll(); renderDash(true); });
+  }
+  setInterval(function(){ if(VIEW==="produksi") pvBody(); }, 60000);
   /* halaman khusus Stock opname (#so) · laptop 2 kolom, HP 1 kolom */
   function renderSOPage(force){
     var A = $("#so-page"); if(!A) return;
@@ -3457,7 +3948,7 @@
     var recs = shiftRecs().slice().reverse().slice(0,10);
     if(recs.length) h += '<div class="mblock"><table class="ptable"><tr><th>Dicatat shift ini</th><th>Qty</th></tr>'+recs.map(function(r){ return '<tr><td style="font-size:.74rem"><b>'+esc(plOf(r.pid).name)+'</b> · '+(r.k==="out"?'SKU '+mat(r.matId).sku+' · ':'')+mat(r.matId).code+' · '+(r.k==="out"?(r.ref||'output'):'rusak')+(r.part?' <span class="tag warn">palet tidak penuh</span>':'')+(r.lebih?'<br><span class="tag crit">lebih '+fmt(r.lebih)+' dari stok</span>':'')+'</td><td class="mono">'+(r.k==="rj"?'−':'')+fmt(r.q)+'</td></tr>'; }).join("")+'</table></div>';
     var done = {}; PRODO.forEach(function(r){ if(r.ref) done[r.ref] = 1; });
-    h += '<details class="shdet"><summary><b>Data contoh (dummy)</b> · kode TS &amp; master SKU FG</summary><div class="muted" style="font-size:.72rem;margin:4px 0">Kode TS ini hanya contoh. Nanti diganti sambungan ke aplikasi TS. Tekan Scan untuk mencoba.</div><div class="tablewrap"><table><tr><th>Kode TS</th><th>Mesin</th><th>Qty</th><th></th></tr>'+TSDB.map(function(r){ return '<tr><td class="mono" style="font-size:.7rem">'+r.po+'<br>'+r.sku+'<br>'+r.no+'</td><td style="font-size:.76rem">'+esc(plOf(r.pid).name)+'</td><td class="mono">'+r.qty+(r.qty<r.pal?' <span class="tag warn">tdk penuh</span>':'')+'</td><td>'+(done[r.code]?'<span class="tag ok">sudah</span>':'<button class="small" data-tsc="'+r.code+'">Scan</button>')+'</td></tr>'; }).join("")+'</table></div>'+
+    h += '<details class="shdet"><summary><b>Data contoh (dummy)</b> · kode TS &amp; master SKU FG</summary><div class="muted" style="font-size:.72rem;margin:4px 0">Kode TS ini hanya contoh. Nanti diganti sambungan ke aplikasi TS. Tekan Scan untuk mencoba.</div><div class="tablewrap"><table><tr><th>Kode TS</th><th>Mesin</th><th>Qty</th><th></th></tr>'+(function(){ var seen = {}; return TSDB.filter(function(r){ if(done[r.code]) return false; if(!TSJ) return true; var c = (seen[r.pid]||0)+1; seen[r.pid] = c; return c<=2; }); })().map(function(r){ return '<tr><td class="mono" style="font-size:.7rem">'+r.po+'<br>'+r.sku+'<br>'+r.no+'</td><td style="font-size:.76rem">'+esc(plOf(r.pid).name)+'</td><td class="mono">'+r.qty+(r.qty<r.pal?' <span class="tag warn">tdk penuh</span>':'')+'</td><td>'+(done[r.code]?'<span class="tag ok">sudah</span>':'<button class="small" data-tsc="'+r.code+'">Scan</button>')+'</td></tr>'; }).join("")+'</table></div>'+
       '<div class="k" style="margin-top:8px">Master SKU FG → karton</div><div class="tablewrap" style="max-height:220px;overflow:auto"><table><tr><th>SKU FG</th><th>Karton</th><th>Isi palet</th></tr>'+MATS.map(function(m){ return '<tr><td class="mono" style="font-size:.74rem">'+m.sku+'<br><span class="muted" style="font-family:var(--body)">'+esc(m.name)+'</span></td><td class="mono">'+m.code+'</td><td class="mono">'+m.pal+'</td></tr>'; }).join("")+'</table></div></details>';
     return h;
   }
@@ -3470,7 +3961,7 @@
       var row = null; TSDB.forEach(function(r){ if(r.code===t.code) row = r; });
       if(!row){ OT.err = "Kode "+esc(t.code)+" tidak ada di data TS (dummy). Pilih dari daftar contoh di bawah."; buzz(false); renderOperator(true); return; }
       if(PRODO.some(function(r){ return r.ref===t.code; })){ OT.err = "Transfer slip "+t.code+" sudah pernah discan."; buzz(false); renderOperator(true); return; }
-      OT.err = ""; OT.pv = { code:row.code, po:row.po, no:row.no, pid:row.pid, matId:row.matId, slipq:row.qty, q:null }; buzz(true); renderOperator(true);
+      OT.err = ""; OT.pv = { code:row.code, po:row.po, no:row.no, pid:row.pid, matId:row.matId, sku:row.sku, slipq:row.qty, q:null }; buzz(true); renderOperator(true);
     };
     on("#ot-tsok", "click", function(){ tsGo($("#ot-ts").value); });
     on("#ot-ts", "keydown", function(e){ if(e.key==="Enter") tsGo(this.value); });
@@ -3485,7 +3976,7 @@
       var lebih = addUse(pv.pid, pv.matId, q, "out", "TS", pv.code), last = PRODO[PRODO.length-1];
       if(pv.part){ last.part = q; LOG[LOG.length-1].note += " · palet tidak penuh"; }
       buzz(!lebih);
-      OT.msg = '✓ Output '+fmt(q)+' karton · <b>'+esc(plOf(pv.pid).name)+'</b> · SKU '+mat(pv.matId).sku+' · karton '+mat(pv.matId).code+' · '+pv.code+(pv.part?' (palet tidak penuh)':'')+'.'+(lebih ? ' <b>Melebihi stok tercatat '+fmt(lebih)+' pcs</b>, cek saat SO.' : '');
+      OT.msg = '✓ Output '+fmt(q)+' karton · <b>'+esc(plOf(pv.pid).name)+'</b> · SKU '+(pv.sku||mat(pv.matId).sku)+' · karton '+mat(pv.matId).code+' · '+pv.code+(pv.part?' (palet tidak penuh)':'')+'.'+(lebih ? ' <b>Melebihi stok tercatat '+fmt(lebih)+' pcs</b>, cek saat SO.' : '');
       OT.pv = null; OT.err = "";
       renderAll(); renderOperator(true);
     });
@@ -3611,7 +4102,7 @@
     if(type==="loc") return S.map(function(p){ return { key:p.id, kind:"qr", code:"LOC-"+p.id, t:p.id, big:true, c:"LOC-"+p.id, n:["Line "+p.cat+" · "+cat(p.cat).name, "Label lokasi permanen"] }; });
     if(type==="needlabel") return allCards().filter(function(x){ return x.c.needLabel; }).map(function(x){ var m = mat(x.c.matId); return { key:x.c.id, kind:"qr", code:x.c.id, t:m.code, c:x.c.id, n:[m.name, "Saran bin "+x.p.id+" · "+fmt(cardQty(x.c))+" pcs", x.c.from?"sisa dari "+x.c.from:"blok baru"] }; });
     if(type==="mesin") return plList().map(function(p){ return { key:p.code, kind:"qr", code:p.code, t:p.name, c:p.code, n:[plKind(p), "Label area permanen"] }; });
-    if(type==="ts"){ return TSDB.map(function(r){ var m = mat(r.matId); return { key:r.code, kind:"bar", code:r.code, t:"Tranfer Slip · "+plOf(r.pid).name, n:["No Material "+m.sku, "Qty Pallete "+r.qty+" CT", m.name] }; }); }
+    if(type==="ts"){ return TSDB.filter(function(r){ return !TSJ || +r.no<=2; }).map(function(r){ var m = mat(r.matId); return { key:r.code, kind:"bar", code:r.code, t:"Tranfer Slip · "+plOf(r.pid).name, n:["No Material "+m.sku, "Qty Pallete "+r.qty+" CT", m.name] }; }); }
     if(type==="demoin_old") return [].map(function(x){ var m = mat(x.matId); return { key:x.id, kind:"qr", code:x.id, t:m.code, c:x.id, n:[m.name, "Booking bin "+x.pos+" · "+fmt(x.qty)+" pcs"] }; });
     return MATS.map(function(m){ return { key:m.code, kind:"qr", code:m.code, t:m.name, n:["Contoh QR karton"] }; });
   }
@@ -3743,7 +4234,7 @@
     return { waktu:r.t, ts:r.ts||0, jenis:r.type, idQr:r.id, nama:r.mat, bin:r.pos, qty:r.qty||0, saldoSetelah:(r.saldo==null?null:r.saldo),
              fifo:(r.fifo===undefined?null:!!r.fifo), catatan:r.note||"", oleh:r.oleh||"" };
   }
-  function metaDoc(){ var bs = {}; S.forEach(function(p){ if(p.manual) bs[p.id] = p.manual; }); return { seq:seq, orderSeq:orderSeq, cadSeq:cadSeq, statusBin:bs, returCut:RCUT, gabungTugas:KT, masterOv:MOV, masterTol:TOL_DEFAULT, stokMesin:MSTK, batasRendah:LOW_PCS, shiftAktif:SHIFT, produksiOut:PRODO, returProduksi:RQS, retSeq:retSeq, outstanding:OUTS, outSeq:outSeq, outHari:OUT_DAYS, soProduksi:SOS }; }
+  function metaDoc(){ var bs = {}; S.forEach(function(p){ if(p.manual) bs[p.id] = p.manual; }); return { seq:seq, orderSeq:orderSeq, cadSeq:cadSeq, statusBin:bs, returCut:RCUT, gabungTugas:KT, masterOv:MOV, masterTol:TOL_DEFAULT, stokMesin:MSTK, batasRendah:LOW_PCS, shiftAktif:SHIFT, produksiOut:PRODO, returProduksi:RQS, retSeq:retSeq, outstanding:OUTS, outSeq:outSeq, outHari:OUT_DAYS, soProduksi:SOS, jadwal:JDW, skuKarton:SKUK }; }
 
   /* ---------- data remote -> state lokal ---------- */
   function rebuildFromRemote(){
@@ -3772,7 +4263,7 @@
     LOG = Object.keys(FB.raw.transaksi).map(function(k){ var d = FB.raw.transaksi[k]; return {
       _id:k, ts:d.ts||0, t:d.waktu, type:d.jenis, id:d.idQr, mat:d.nama, pos:d.bin, qty:d.qty, saldo:d.saldoSetelah, fifo:(d.fifo===null||d.fifo===undefined)?undefined:d.fifo, note:d.catatan, oleh:d.oleh }; });
     LOG.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
-    if(FB.meta){ seq = Math.max(1, FB.meta.seq||1); orderSeq = Math.max(1, FB.meta.orderSeq||1); cadSeq = Math.max(0, FB.meta.cadSeq||10); RCUT = FB.meta.returCut || {}; KT = FB.meta.gabungTugas || []; MOV = FB.meta.masterOv || {}; MSTK = FB.meta.stokMesin || {}; LOW_PCS = FB.meta.batasRendah!=null ? FB.meta.batasRendah : 300; if(FB.meta.shiftAktif) SHIFT = FB.meta.shiftAktif; PRODO = FB.meta.produksiOut || []; RQS = FB.meta.returProduksi || []; SOS = FB.meta.soProduksi || []; retSeq = Math.max(1, FB.meta.retSeq||1); OUTS = FB.meta.outstanding || []; outSeq = Math.max(1, FB.meta.outSeq||1); OUT_DAYS = FB.meta.outHari || 2; TOL_DEFAULT = FB.meta.masterTol!=null ? FB.meta.masterTol : 0.02; applyMaster(); if(VIEW==="label") renderMaster(); var bs = FB.meta.statusBin||{}; S.forEach(function(p){ p.manual = bs[p.id] || null; }); }
+    if(FB.meta){ seq = Math.max(1, FB.meta.seq||1); orderSeq = Math.max(1, FB.meta.orderSeq||1); cadSeq = Math.max(0, FB.meta.cadSeq||10); RCUT = FB.meta.returCut || {}; KT = FB.meta.gabungTugas || []; MOV = FB.meta.masterOv || {}; MSTK = FB.meta.stokMesin || {}; LOW_PCS = FB.meta.batasRendah!=null ? FB.meta.batasRendah : 300; if(FB.meta.shiftAktif) SHIFT = FB.meta.shiftAktif; PRODO = FB.meta.produksiOut || []; RQS = FB.meta.returProduksi || []; SOS = FB.meta.soProduksi || []; JDW = FB.meta.jadwal || null; SKUK = FB.meta.skuKarton || {}; applyJadwal(); retSeq = Math.max(1, FB.meta.retSeq||1); OUTS = FB.meta.outstanding || []; outSeq = Math.max(1, FB.meta.outSeq||1); OUT_DAYS = FB.meta.outHari || 2; TOL_DEFAULT = FB.meta.masterTol!=null ? FB.meta.masterTol : 0.02; applyMaster(); if(VIEW==="label") renderMaster(); var bs = FB.meta.statusBin||{}; S.forEach(function(p){ p.manual = bs[p.id] || null; }); }
     selCard = keepSel && findCard(keepSel) ? keepSel : null;
     plan = null; lastAlloc = {};
     snapSynced();
@@ -3895,7 +4386,7 @@
     camCtx.refresh = function(){ if(FB.on) renderAll(); else renderKamera(); };
   })();
 
-  function renderAll(){ fillSelects(); renderStats(); renderChips(); renderPickInfo(); renderSearch(); renderPutaway(); renderKonsol(); renderReturAdmin(); if(!$("#chat-log")) renderChat(); if(!$("#dn-cam")) renderDnAi(); renderOrderForm(); renderOrderAdmin(); renderOrderList(); renderPicker(simCtx, $("#sim-scr")); renderLog(); update3D(); if(VIEW==="label") renderLabels(); if(VIEW==="kamera") renderKamera(); renderProd(); renderSO(); renderOperator(); if(VIEW==="so") renderSOPage(); flush(); }
+  function renderAll(){ fillSelects(); renderStats(); renderChips(); renderPickInfo(); renderSearch(); renderPutaway(); renderKonsol(); renderReturAdmin(); if(!$("#chat-log")) renderChat(); if(!$("#dn-cam")) renderDnAi(); renderOrderForm(); renderRsv(); renderOrderAdmin(); renderOrderList(); renderPicker(simCtx, $("#sim-scr")); renderLog(); update3D(); if(VIEW==="label") renderLabels(); if(VIEW==="kamera") renderKamera(); renderProd(); renderSO(); renderOperator(); if(VIEW==="so") renderSOPage(); if(VIEW==="jadwal") renderJadwal(); if(VIEW==="dash") renderDash(); flush(); }
 
   /* ---------- 3D (denah lapangan: 3 line karton + racking plastik) ---------- */
   function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888888"; }
@@ -4141,10 +4632,10 @@
   document.addEventListener("keydown", function(e){ if(e.key==="Escape" && !$("#ai-pop").hidden) aiOpen(false); });
   function route(){
     var v = (location.hash||"").replace("#","");
-    var OKV = APP==="produksi" ? ["produksi","operator","so","label"] : ["admin","petugas","kamera","label"]; if(OKV.indexOf(v)<0) v = OKV[0];
+    var OKV = APP==="produksi" ? ["produksi","operator","so","jadwal","label"] : ["admin","petugas","kamera","label"]; if(OKV.indexOf(v)<0) v = OKV[0];
     VIEW = v;
     $("#ai-fab").hidden = v!=="admin" || !$("#ai-pop").hidden; if(v!=="admin") $("#ai-pop").hidden = true;
-    ["admin","petugas","kamera","label","produksi","operator","so"].forEach(function(k){ $("#v-"+k).hidden = k!==v; });
+    ["admin","petugas","kamera","label","produksi","operator","so","jadwal","dash"].forEach(function(k){ $("#v-"+k).hidden = k!==v; });
     Array.prototype.forEach.call(document.querySelectorAll(".topnav a"), function(a){ if(a.dataset.v===v) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
     if(v!=="kamera" && CAM.inst) closeCam();
     if(v==="label") renderLabels();
@@ -4153,6 +4644,8 @@
     if(v==="produksi") renderProd();
     if(v==="operator") renderOperator(true);
     if(v==="so") renderSOPage(true);
+    if(v==="jadwal") renderJadwal(true);
+    if(v==="dash") renderDash(true);
     try{ window.scrollTo(0,0); }catch(e){}
   }
   window.addEventListener("hashchange", route);
