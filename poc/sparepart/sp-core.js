@@ -566,7 +566,7 @@ function seedHistory(){
 
 /* ================= state ================= */
 var S = { stock:{}, hist:[], seq:0, v:4, known:{} }, ORDERS = [], PHOTOS = {};   // PHOTOS: mat -> [dataURL] (foto tambahan dari master data)
-function resetState(){ S = { stock:{}, hist:seedHistory(), seq:0, v:4, known:{} }; ITEMS.forEach(function(it){ S.stock[it.mat] = it.stock0; }); ORDERS = []; PHOTOS = {}; EMBS = {}; }
+function resetState(){ S = { stock:{}, hist:seedHistory(), seq:0, v:4, known:{} }; ITEMS.forEach(function(it){ S.stock[it.mat] = it.stock0; }); ORDERS = []; PHOTOS = {}; EMBS = {}; seedMaint2(); }
 function stockOf(mat){ var s = S.stock[mat]; return s==null ? 0 : s; }
 // stok barang hasil impor BOM belum diketahui sampai tim sparepart mengisinya (di Master data); barang bawaan POC selalu dianggap diketahui
 function stockKnown(mat){ var it = ITEM_BY[mat]; return !(it && it.imp) || !!(S.known && S.known[mat]); }
@@ -705,7 +705,7 @@ function snapshotAll(){
 }
 function importAll(o){
   var m = JSON.parse(o.meta); if(!m || m.v!==4) throw new Error("versi");
-  S = m; if(!S.known) S.known = {};
+  S = m; if(!S.known) S.known = {}; ensureMaint();
   CAT = { machines:{}, items:{} }; Object.keys(o.cat||{}).forEach(function(k){ try{ if(k==="__items") CAT.items = JSON.parse(o.cat[k]); else CAT.machines[k] = JSON.parse(o.cat[k]); }catch(e){} });
   EMBS = {}; Object.keys(o.emb||{}).forEach(function(k){ try{ EMBS[k] = JSON.parse(o.emb[k]); }catch(e){} });
   applyCat();
@@ -720,6 +720,7 @@ function importAll(o){
 function lsGet(){ try{ var j = localStorage.getItem(LS_KEY); return j ? JSON.parse(j) : null; }catch(e){ return null; } }
 function lsSet(o){ try{ localStorage.setItem(LS_KEY, JSON.stringify(o)); }catch(e){} }
 function saveState(){
+  maintSync();
   var snap = snapshotAll();
   navBadge();
   if(STORE.mode!=="fb"){ lsSet(snap); STORE.synced = snap; return; }
@@ -739,8 +740,10 @@ function saveState(){
 }
 // angka pesanan baru di menu "Tim sparepart" (dan di judul tab pada halaman tim sparepart)
 function navBadge(){
+  try{ maintBadge(); }catch(e){}
   try{
     var n = 0, u = 0; ORDERS.forEach(function(o){ if(o.status==="baru"){ n++; if(o.urgent) u++; } });
+    var mt = maintTodo(), no = n; n += mt.n; u += mt.k;
     var a = document.querySelector('.topnav a[href="sp-gudang.html"]');
     if(a){
       var b = a.querySelector(".nbadge");
@@ -748,7 +751,7 @@ function navBadge(){
       else{
         if(!b){ b = document.createElement("span"); a.appendChild(b); }
         b.className = "nbadge"+(u ? " urg" : ""); b.textContent = n>99 ? "99+" : String(n);
-        b.title = n+" pesanan baru"+(u ? ", "+u+" mendesak" : "");
+        b.title = no+" pesanan baru, "+mt.n+" barang reservasi perlu ditindak"+(u ? " ("+u+" mendesak/kritis)" : "");
         a.setAttribute("aria-label", "Tim sparepart, "+b.title);
       }
       if(a.className.indexOf("on")>=0){ var t = document.title.replace(/^\(\d+\+?\)\s*/, ""); document.title = n ? "("+n+") "+t : t; }
@@ -950,4 +953,206 @@ function shrinkImage(file, max, q){
     fr.onload = function(){ var img = new Image(); img.onload = function(){ var k = Math.min(1, (max||420)/Math.max(img.width, img.height)), c = document.createElement("canvas"); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", q||0.78)); }; img.onerror = rej; img.src = fr.result; };
     fr.onerror = rej; fr.readAsDataURL(file);
   });
+}
+
+/* ================= reservasi maintenance (modul terpisah dari order unplan; data di S.maint, tahanan hanya di aplikasi) ================= */
+var KRIT = { kritis:["Kritis","crit",0], penting:["Penting","warn",1], opsional:["Opsional","dim",2] };
+var TINDAKAN = { beli_urgent:"Beli urgent", beli_biasa:"Beli biasa", padanan:"Cari padanan", tidak_bisa:"Tidak bisa diadakan" };
+var PUTUSAN = { beli_urgent:"Beli urgent", tunggu:"Tunggu", padanan:"Pakai padanan", tunda_penggantian:"Tunda penggantian", tunda_event:"Tunda event" };
+function ensureMaint(){
+  if(!S.maint) S.maint = { seq:0, events:[], reqs:[] };
+  // buang event contoh bawaan versi lama (dulu dibuat otomatis); event contoh yang dibuat sendiri lewat tombol bertanda contoh:true
+  var gone = {}; S.maint.events = S.maint.events.filter(function(ev){ var seed = !ev.contoh && /\(contoh\)\s*$/.test(ev.name||"") && ev.log && ev.log[0] && ev.log[0].by==="sistem"; if(seed) gone[ev.id] = 1; return !seed; });
+  if(Object.keys(gone).length) S.maint.reqs = S.maint.reqs.filter(function(r){ return !gone[r.evId]; });
+}
+function maintLog(ev, txt, by){ ev.log.push({ t:Date.now(), by:by||"", txt:txt }); }
+function evActive(ev){ return ev.status!=="selesai" && ev.status!=="dibatalkan"; }
+function eventById(id){ var L = (S.maint && S.maint.events) || []; for(var i=0;i<L.length;i++) if(L[i].id===id) return L[i]; return null; }
+function lineById(ev, id){ for(var i=0;i<ev.lines.length;i++) if(ev.lines[i].id===id) return ev.lines[i]; return null; }
+function heldOf(mat, except){ var n = 0; if(!S.maint) return 0; S.maint.events.forEach(function(ev){ if(!evActive(ev)) return; ev.lines.forEach(function(l){ if(l.mat===mat && l!==except && !l.dilepas) n += l.tahan; }); }); return n; }
+function grantedOf(mat){ var n = 0; if(!S.maint) return 0; S.maint.reqs.forEach(function(r){ if(r.mat===mat && r.status==='disetujui' && !r.diambil) n += r.q; }); return n; }
+function freeOf(mat){ return stockOf(mat) - heldOf(mat) - grantedOf(mat); }
+function heldBy(mat){ var r = []; if(!S.maint) return r; S.maint.events.forEach(function(ev){ if(!evActive(ev)) return; ev.lines.forEach(function(l){ if(l.mat===mat && !l.dilepas && l.tahan>0) r.push({ ev:ev, line:l }); }); }); return r; }
+var HARI = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+function tglMaint(s){ if(!s) return "-"; var a = s.split("-"); return HARI[new Date(+a[0], +a[1]-1, +a[2]).getDay()]+", "+tgFull(s); }
+function sisaHari(s){ var d = daysTo(s); return d===0 ? "hari ini" : d===1 ? "besok" : d>1 ? d+" hari lagi" : "lewat "+(-d)+" hari"; }
+function maintTodo(){ var n = 0, k = 0; if(!S.maint) return { n:0, k:0 }; S.maint.events.forEach(function(ev){ if(!evActive(ev)) return; ev.lines.forEach(function(l){ if(!l.dilepas && l.tunda>0 && !l.tindakan){ n++; if(l.krit==="kritis") k++; } }); }); return { n:n, k:k }; }
+function engTodo(){ var n = 0, k = 0; if(!S.maint) return { n:0, k:0 }; S.maint.events.forEach(function(ev){ if(!evActive(ev)) return; var r = readiness(ev); n += r.tanpaKrit + r.kritKosong + r.draft; k += r.kritKosong; }); return { n:n, k:k }; }
+function daysTo(s){ if(!s) return 0; var a = s.split("-"), t = todayStr().split("-"); return Math.round((new Date(+a[0],+a[1]-1,+a[2]) - new Date(+t[0],+t[1]-1,+t[2]))/864e5); }
+// BR-13: baris yang disimpan menahan sebesar stok bebas yang ada; sisanya kebutuhan tertunda
+function holdLine(ev, l){
+  if(l.dilepas){ l.tahan = 0; l.tunda = 0; return; }
+  var free = Math.max(0, freeOf(l.mat) ), keep = Math.min(l.tahan, l.q);
+  var extra = Math.min(l.q-keep, Math.max(0, stockOf(l.mat) - heldOf(l.mat, l) - keep));
+  l.tahan = keep + Math.max(0, extra); l.tunda = l.q - l.tahan;
+}
+function addLine(ev, mat, q, krit, by){
+  var ex = ev.lines.filter(function(l){ return l.mat===mat && !l.dilepas; })[0];
+  if(ex) return null;
+  S.maint.seq++;
+  var l = { id:"L"+S.maint.seq, mat:mat, q:Math.max(1, q|0), krit:krit||"", tahan:0, tunda:0, note:"", eta:"", pr:"", putusan:"", alasan:"", dilepas:false, terpakai:0, draft:true };
+  ev.lines.push(l);   // belum dikirim: belum menahan stok dan belum terlihat oleh tim sparepart
+  return l;
+}
+function setLineQty(ev, l, q, by){ q = Math.max(1, q|0); if(l.draft){ l.q = q; return; } l.q = q; l.tahan = Math.min(l.tahan, q); l.tunda = q - l.tahan; holdLine(ev, l); maintLog(ev, "Jumlah "+item(l.mat).name+" diubah ke "+q, by); }
+function releaseLine(ev, l, by){ if(l.draft){ var di = ev.lines.indexOf(l); if(di>=0) ev.lines.splice(di, 1); return; } if(l.siapH && l.tahan>0) l.balikRak = l.tahan; l.dilepas = true; l.tahan = 0; l.tunda = 0; maintLog(ev, "Baris dilepas: "+item(l.mat).name, by); maintSync(); }
+// BR-14: stok masuk dialokasikan ke kebutuhan tertunda menurut kritikalitas, lalu tanggal H terdekat, lalu waktu baris dibuat
+// kirim ke tim sparepart: barang yang dipilih mulai menahan stok dan muncul di tim sparepart (barang baru bisa dikirim lagi kapan saja)
+function sendLines(ev, by, nosave){
+  var ds = ev.lines.filter(function(l){ return l.draft && !l.dilepas; }); if(!ds.length) return { n:0, held:0, short:0 };
+  var held = 0, short = 0;
+  ds.forEach(function(l){ l.draft = false; l.sent = Date.now(); l.tahan = 0; l.tunda = l.q; holdLine(ev, l); held += l.tahan; if(l.tunda>0) short++; });
+  maintLog(ev, "Dikirim ke tim sparepart: "+ds.length+" barang ("+held+" pcs ditahan"+(short ? ", "+short+" barang kurang stok" : "")+")", by);
+  if(!nosave) saveState();
+  return { n:ds.length, held:held, short:short };
+}
+function allocPending(mat){
+  var q = [];
+  S.maint.events.forEach(function(ev, ei){ if(!evActive(ev)) return; ev.lines.forEach(function(l, li){ if(l.mat===mat && !l.dilepas && l.tunda>0) q.push({ ev:ev, l:l, k:[(KRIT[l.krit]||[0,0,1])[2], ev.tgl, ev.created, ei, li] }); }); });
+  q.sort(function(a, b){ for(var i=0;i<a.k.length;i++){ if(a.k[i]<b.k[i]) return -1; if(a.k[i]>b.k[i]) return 1; } return 0; });
+  var got = false;
+  q.forEach(function(x){
+    var free = freeOf(mat); if(free<=0) return;
+    var take = Math.min(x.l.tunda, free); x.l.tahan += take; x.l.tunda -= take; got = true;
+    maintLog(x.ev, "Stok masuk dialokasikan: "+item(mat).name+" +"+take+(x.l.tunda ? " (masih kurang "+x.l.tunda+")" : " (lengkap)"), "sistem");
+  });
+  return got;
+}
+function maintSync(){
+  if(!S.maint) return;
+  var mats = {}; S.maint.events.forEach(function(ev){ if(evActive(ev)) ev.lines.forEach(function(l){ if(!l.dilepas && l.tunda>0) mats[l.mat] = 1; }); });
+  Object.keys(mats).forEach(allocPending);
+}
+function lineStatus(l){ if(l.draft) return ["belum dikirim","info"]; if(l.dilepas) return ["dilepas","dim"]; if((l.diambil||0)>0 && l.tahan<=0 && l.tunda<=0) return ["diserahkan","ok"]; if(l.tahan>=l.q) return ["siap","ok"]; if(l.tahan>0) return ["sebagian","warn"]; return ["kosong","crit"]; }
+function overHeld(mat){ return heldOf(mat) > stockOf(mat); }
+function etaLate(ev, l){ return !!(l.eta && l.eta > ev.tgl); }
+function lineSafe(ev, l){ return l.tunda<=0 || (l.tindakan && l.tindakan!=="tidak_bisa" && l.eta && !etaLate(ev, l)); }
+function readiness(ev){
+  var r = { total:0, siap:0, kurang:0, kritKosong:0, tanpaTindakan:0, tanpaKrit:0, disiapkan:0, draft:0 };
+  ev.lines.forEach(function(l){
+    if(l.dilepas) return; if(l.draft){ r.draft++; return; } r.total++;
+    if(!l.krit) r.tanpaKrit++;
+    if(l.tahan + (l.diambil||0) - (l.kembali||0) >= l.q || (l.diambil||0)>0 && l.tunda<=0) r.siap++;
+    if(l.siapH && l.tahan>0) r.disiapkan++;
+    if(l.tunda>0){ r.kurang++; if(!l.tindakan) r.tanpaTindakan++; if(l.krit==="kritis" && !lineSafe(ev, l)) r.kritKosong++; }
+  });
+  r.risk = evActive(ev) && r.kritKosong>0;
+  return r;
+}
+// tim sparepart: tindakan untuk barang kurang (beli, padanan), lalu barang datang
+function setTindakan(ev, l, t, eta, ref, by){ l.tindakan = t; l.eta = eta||""; l.ref = ref||""; l.tdkBy = by||"Tim sparepart"; maintLog(ev, "Tindakan tim sparepart untuk "+item(l.mat).name+": "+TINDAKAN[t]+(eta ? ", perkiraan datang "+tgFull(eta) : "")+(ref ? " ("+ref+")" : ""), l.tdkBy); saveState(); }
+function receiveStock(mat, q, by){ S.stock[mat] = stockOf(mat) + Math.max(1, q|0); S.maint.events.forEach(function(ev){ if(evActive(ev) && ev.lines.some(function(l){ return l.mat===mat && l.tunda>0; })) maintLog(ev, "Barang datang di gudang: "+item(mat).name+" +"+q, by||"Tim sparepart"); }); saveState(); }
+function evLabel(ev){
+  if(evActive(ev)){ var r0 = readiness(ev); if(!r0.total && r0.draft) return ["belum dikirim","info"]; return r0.kritKosong>0 ? ["berisiko","crit"] : r0.kurang>0 ? ["ada yang kurang","warn"] : r0.total ? ["lengkap","ok"] : ["belum ada barang","info"]; }
+  if(ev.status==="dikunci"){ var r = readiness(ev); return r.kritKosong>0 ? ["berisiko","crit"] : ["siap","ok"]; }
+  return { draf:["draf","info"], selesai:["selesai","dim"], ditunda:["ditunda","warn"], dibatalkan:["dibatalkan","dim"] }[ev.status] || [ev.status,""];
+}
+// BR-15: baris kurang atau kosong memberi peringatan seketika ke expert, planner, dan tim sparepart; baris kritis jadi prioritas
+function maintAlerts(){
+  var out = []; if(!S.maint) return out;
+  S.maint.events.forEach(function(ev){ if(ev.status==="selesai" || ev.status==="dibatalkan") return; ev.lines.forEach(function(l){ if(!l.dilepas && l.tunda>0) out.push({ ev:ev, l:l, krit:l.krit, kurang:l.tunda }); }); });
+  out.sort(function(a, b){ var ka = (KRIT[a.krit]||[0,0,1])[2], kb = (KRIT[b.krit]||[0,0,1])[2]; if(ka!==kb) return ka-kb; return a.ev.tgl<b.ev.tgl ? -1 : a.ev.tgl>b.ev.tgl ? 1 : 0; });
+  return out;
+}
+function maintAlertsHtml(){
+  var al = maintAlerts(), kr = al.filter(function(x){ return x.krit==="kritis"; }).length;
+  var h = '<section><div class="section-head"><h2>Peringatan barang kosong untuk maintenance</h2><a class="note" href="sp-reservasi.html">Buka Reservasi maintenance &rsaquo;</a></div>';
+  if(!al.length) return h+'<div class="panel"><p class="note">Tidak ada barang kurang atau kosong untuk event maintenance.</p></div></section>';
+  h += '<div class="row" style="margin-bottom:8px"><span class="tag crit">'+kr+' baris kritis</span><span class="tag warn">'+al.length+' baris kurang / kosong</span></div><div class="panel tbl-wrap" style="padding:0"><table class="list"><tr><th>Prioritas</th><th>Barang</th><th>Kurang</th><th>Event</th><th>Catatan expert &amp; ETA</th><th>Keputusan</th></tr>';
+  al.forEach(function(x){
+    var it = item(x.l.mat), k = KRIT[x.krit], d = daysTo(x.ev.tgl);
+    h += '<tr><td>'+(k ? '<span class="tag '+k[1]+'">'+k[0]+'</span>' : '<span class="tag">belum dikategorikan</span>')+'</td><td><b>'+esc(it.name)+'</b><div class="note"><span class="mono">'+it.mat+'</span> &middot; stok '+stockOf(it.mat)+' '+it.unit+' &middot; bin <span class="mono">'+esc(it.bin)+'</span></div></td><td class="mono">'+x.kurang+' '+it.unit+'</td><td>'+esc(x.ev.name)+'<div class="note">H '+tgFull(x.ev.tgl)+' &middot; '+(d>=0 ? d+' hari lagi' : 'lewat '+(-d)+' hari')+'</div></td><td>'+(x.l.note ? esc(x.l.note) : '<span class="note">belum ada catatan</span>')+(x.l.eta ? '<div class="note">ETA '+tgFull(x.l.eta)+'</div>' : '')+'</td><td>'+(x.l.putusan ? esc(PUTUSAN[x.l.putusan]) : '<span class="tag warn">belum diputuskan</span>')+'</td></tr>';
+  });
+  return h+'</table></div></section>';
+}
+function maintBadge(){
+  var a = document.querySelector('.topnav a[href="sp-reservasi.html"]'); if(!a) return;
+  var t = engTodo(), b = a.querySelector(".nbadge");
+  if(!t.n){ if(b) b.parentNode.removeChild(b); return; }
+  if(!b){ b = document.createElement("span"); a.appendChild(b); }
+  b.className = "nbadge"+(t.k ? " urg" : ""); b.textContent = String(t.n); b.title = t.n+" barang perlu perhatian engineering"+(t.k ? ", "+t.k+" kritis belum aman" : "");
+}
+// FR-25 / FR-26: stok tertahan terlihat di halaman mekanik; mekanik hanya bisa mengajukan pakai
+function heldTag(mat){
+  var h = heldBy(mat); if(!h.length) return "";
+  var n = h.reduce(function(a, x){ return a+x.line.tahan; }, 0);
+  return '<span class="tag info" title="'+esc(h.map(function(x){ return x.ev.name; }).join(", "))+'">'+n+' tertahan untuk '+esc(h[0].ev.name)+(h.length>1 ? ' +'+(h.length-1) : '')+'</span>';
+}
+function requestUse(mat, q, by, note){
+  ensureMaint(); var h = heldBy(mat)[0]; if(!h) return null;
+  var open = S.maint.reqs.filter(function(r){ return r.mat===mat && r.status==="diajukan" && r.by===(by||"Mekanik"); })[0]; if(open) return open;
+  S.maint.seq++;
+  var r = { id:"AJU-"+String(S.maint.seq).padStart(3,"0"), mat:mat, q:Math.max(1, q|0), by:by||"Mekanik", note:note||"", evId:h.ev.id, lineId:h.line.id, status:"diajukan", ts:Date.now(), alasan:"" };
+  S.maint.reqs.push(r); maintLog(h.ev, "Pengajuan pakai "+item(mat).name+" ×"+r.q+" dari "+r.by, r.by); saveState(); return r;
+}
+function decideReq(r, ok, alasan, by){
+  var ev = eventById(r.evId), l = ev && lineById(ev, r.lineId);
+  r.status = ok ? "disetujui" : "ditolak"; r.alasan = alasan||""; r.by2 = by||"Pemilik event";
+  if(ok && l){ var mv = Math.min(r.q, l.tahan); r.q = mv; l.tahan -= mv; l.tunda += mv; maintLog(ev, "Pengajuan "+r.id+" disetujui: "+mv+" "+item(r.mat).name+" dilepas untuk "+r.by+"; baris kembali kurang", by); }
+  else if(ev) maintLog(ev, "Pengajuan "+r.id+" ditolak"+(alasan ? ": "+alasan : ""), by);
+  saveState();
+}
+function closeMaint(ev, used, by){
+  ev.lines.forEach(function(l){
+    if(l.dilepas) return;
+    var u = Math.max(0, Math.min(l.tahan, used && used[l.id]!=null ? used[l.id] : l.tahan));
+    l.terpakai = u; if(u>0){ S.stock[l.mat] = Math.max(0, stockOf(l.mat)-u); S.hist.push({ m:ev.machine, s:"", mat:l.mat, d:todayStr(), q:u, by:ev.id }); }
+    l.kembali = l.tahan-u; l.gagal = l.tunda; l.tahan = 0; l.tunda = 0;
+  });
+  ev.status = "selesai"; ev.closed = Date.now();
+  var f = ev.lines.filter(function(l){ return l.gagal>0; }).length;
+  maintLog(ev, "Event ditutup: "+ev.lines.filter(function(l){ return l.terpakai>0; }).length+" baris terpakai, "+f+" baris gagal diganti karena kosong", by);
+  saveState();
+}
+function newEvent(o){
+  ensureMaint(); S.maint.seq++;
+  var ev = { id:"MNT-"+todayStr().slice(2,4)+todayStr().slice(5,7)+"-"+String(S.maint.seq).padStart(3,"0"), name:o.name, machine:o.machine, tgl:o.tgl, cakupan:o.cakupan||"Seluruh mesin", status:"aktif", planner:o.planner||"Planner engineering", expert:o.expert||"", created:Date.now(), lines:[], log:[] };
+  S.maint.events.push(ev); maintLog(ev, "Event dibuat untuk "+(machineById(o.machine)||{}).name+", H "+tgFull(o.tgl), ev.planner); saveState(); return ev;
+}
+function seedMaint(){
+  ensureMaint(); S.maint.seq++;
+  var ev = { id:"MNT-"+todayStr().slice(2,4)+todayStr().slice(5,7)+"-"+String(S.maint.seq).padStart(3,"0"), name:"Maintenance Facial 26 (contoh)", contoh:true, machine:"FCI26", tgl:addDays(todayStr(), 21), cakupan:"Seluruh mesin", status:"aktif", planner:"Planner engineering", expert:"Expert mesin Facial", created:Date.now(), lines:[], log:[] };
+  S.maint.events.push(ev); maintLog(ev, "Event contoh dibuat", "sistem");
+  [["2001004",4,"penting"],["2001015",4,"kritis"],["2001302",6,"opsional"],["2001007",6,"kritis"],["2001006",2,"kritis"],["2001480",1,"penting"]].forEach(function(r){ if(item(r[0])) addLine(ev, r[0], r[1], r[2], "sistem"); });
+  sendLines(ev, "sistem", true);
+  var l = ev.lines.filter(function(x){ return x.mat==="2001006"; })[0]; if(l) l.note = "Dipakai saat ganti roller unwind; tanpa ini roller tidak bisa dipasang.";
+  var l2 = ev.lines.filter(function(x){ return x.mat==="2001480"; })[0]; if(l2){ l2.tindakan = "beli_biasa"; l2.eta = addDays(ev.tgl, 10); l2.ref = "PR 1000xxxx"; }
+  return ev;
+}
+// hapus event dari daftar (hanya yang sudah selesai/dibatalkan)
+function deleteEvent(id){
+  var ev = eventById(id); if(!ev || evActive(ev)) return false;
+  S.maint.events = S.maint.events.filter(function(e){ return e.id!==id; }); S.maint.reqs = S.maint.reqs.filter(function(r){ return r.evId!==id; });
+  saveState(); return true;
+}
+// klik "Ajukan pakai" di halaman mekanik
+document.addEventListener("click", function(e){
+  var b = e.target && e.target.closest ? e.target.closest("[data-req]") : null; if(!b) return;
+  var who = ""; try{ who = (document.querySelector("#who")||{}).value || localStorage.getItem("sp-who") || ""; }catch(x){}
+  var qi = b.parentNode && b.parentNode.querySelector ? b.parentNode.querySelector("[data-rqty]") : null, qn = qi ? Math.max(1, parseInt(qi.value, 10) || 1) : 1;
+  var r = requestUse(b.getAttribute("data-req"), qn, who || "Mekanik");
+  if(r){ b.disabled = true; b.textContent = "Pengajuan terkirim ke "+((eventById(r.evId)||{}).planner||"pemilik event"); }
+});
+
+function seedMaint2(){ S.maint = { seq:0, events:[], reqs:[] }; }
+
+// serah terima di hari maintenance: stok berkurang saat barang diserahkan ke mekanik
+function handOver(ev, l, by){
+  var n = l.tahan; if(n<=0) return;
+  S.stock[l.mat] = Math.max(0, stockOf(l.mat)-n); l.diambil = (l.diambil||0)+n; l.tahan = 0; l.siapH = true;
+  S.hist.push({ m:ev.machine, s:"", mat:l.mat, d:todayStr(), q:n, by:ev.id });
+  maintLog(ev, "Diserahkan ke mekanik: "+item(l.mat).name+" ×"+n+" (stok berkurang)", by||"Tim sparepart"); saveState();
+}
+function returnUnused(ev, l, q, by){
+  q = Math.max(0, Math.min(q|0, (l.diambil||0)-(l.kembali||0))); if(!q) return;
+  S.stock[l.mat] = stockOf(l.mat)+q; l.kembali = (l.kembali||0)+q;
+  for(var i=S.hist.length-1;i>=0;i--){ var h = S.hist[i]; if(h.by===ev.id && h.mat===l.mat){ h.q -= q; if(h.q<=0) S.hist.splice(i,1); break; } }
+  maintLog(ev, "Tidak terpakai, kembali ke rak: "+item(l.mat).name+" ×"+q, by||"Tim sparepart"); saveState();
+}
+function finishMaint(ev, by){
+  ev.lines = ev.lines.filter(function(l){ return !l.draft; });
+  ev.lines.forEach(function(l){ if(l.dilepas) return; l.terpakai = (l.diambil||0)-(l.kembali||0); l.gagal = l.tunda; if(l.tahan>0) maintLog(ev, "Tidak diambil, tahanan dilepas: "+item(l.mat).name+" ×"+l.tahan, by); l.tahan = 0; l.tunda = 0; });
+  ev.status = "selesai"; ev.closed = Date.now();
+  var f = ev.lines.filter(function(l){ return l.gagal>0; }).length;
+  maintLog(ev, "Maintenance selesai"+(f ? "; "+f+" barang gagal diganti karena kosong" : ""), by||"Tim sparepart"); saveState();
 }

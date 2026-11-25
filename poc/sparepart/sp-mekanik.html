@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="sp.css">
 <div class="wrap">
-  <nav class="topnav"><a href="sp-mekanik.html" class="on">Mekanik</a><a href="sp-gudang.html">Tim sparepart</a><a href="sp-master.html">Master data</a><span id="store-st"></span><button type="button" class="minebtn" id="mine-btn">Pesanan saya</button></nav>
+  <nav class="topnav"><a href="sp-mekanik.html" class="on">Mekanik</a><a href="sp-gudang.html">Tim sparepart</a><a href="sp-reservasi.html">Reservasi maintenance</a><a href="sp-master.html">Master data</a><span id="store-st"></span><button type="button" class="minebtn" id="mine-btn">Pesanan saya</button></nav>
   <header class="top">
     <span class="eyebrow">Sparepart &middot; katalog untuk mekanik / produksi</span>
     <h1>Cari &amp; pesan sparepart</h1>
@@ -109,19 +109,22 @@
   $("#mc").addEventListener("change", function(){ var id = machine(); if(id){ this.value = machineById(id).name+" · "+id; lss("sp-mc", this.value); } renderAll(); });
 
   function inCart(mat){ for(var i=0;i<CART.length;i++) if(CART[i].mat===mat) return CART[i]; return null; }
-  function avail(mat){ return stockOf(mat) - reservedOf(mat); }
+  function avail(mat){ return stockOf(mat) - reservedOf(mat) - heldOf(mat); }
+  function openReq(mat){ var who = ($("#who").value.trim() || "Mekanik"); return (S.maint && S.maint.reqs || []).filter(function(r){ return r.mat===mat && r.status==="diajukan" && r.by===who; })[0] || null; }
   function card(it, opt){
     opt = opt || {};
     var m = machine(), sec = curSec(), lu = m ? (lastUse(m, it.mat, sec) || lastUse(m, it.mat)) : null, st = stockOf(it.mat), av = avail(it.mat), c = inCart(it.mat), f = famById(it.fam), known = stockKnown(it.mat);
-    var stock = !known ? '<span class="tag" title="Stok barang ini belum diisi tim sparepart">Stok belum diisi</span>' : st<=0 ? '<span class="tag crit">Stok kosong</span>' : '<span class="tag ok">Stok '+st+' '+it.unit+(st-av>0 ? ' &middot; '+(st-av)+' dipesan' : '')+'</span>';
-    var btn = (known && st<=0) ? '<button type="button" disabled>'+(it.status==="S1" ? 'S1 &middot; reservasi SRM' : 'Stok kosong')+'</button>'
+    var hd = heldOf(it.mat), rs = reservedOf(it.mat), blocked = known && st>0 && hd>0 && av<=0;
+    var stock = !known ? '<span class="tag" title="Stok barang ini belum diisi tim sparepart">Stok belum diisi</span>' : st<=0 ? '<span class="tag crit">Stok kosong</span>' : '<span class="tag '+(st-hd>0 ? 'ok' : 'warn')+'">Stok '+Math.max(0, st-hd)+' '+it.unit+(rs>0 ? ' &middot; '+rs+' dipesan' : '')+'</span>';
+    var rq = blocked ? openReq(it.mat) : null;
+    var btn = blocked ? (rq ? '<button type="button" disabled>Pengajuan terkirim &middot; menunggu persetujuan</button>' : '<span class="qty"><input type="number" min="1" max="'+hd+'" value="1" data-rqty="'+it.mat+'" aria-label="Jumlah yang diajukan" style="width:62px; padding:6px 8px"></span><button type="button" data-req="'+it.mat+'">Ajukan pakai</button>') : (known && st<=0) ? '<button type="button" disabled>'+(it.status==="S1" ? 'S1 &middot; reservasi SRM' : 'Stok kosong')+'</button>'
       : '<button type="button" class="'+(c ? '' : 'primary')+'" data-add="'+it.mat+'">'+(c ? '&#10003; Di keranjang' : '+ Siapkan')+'</button>';
     return '<div class="card'+(c ? ' sel' : '')+'"><button type="button" class="tlink" data-detail="'+it.mat+'" aria-label="Detail '+esc(it.name)+'">'+thumbHtml(it)+'</button><div class="body">'+
       '<button type="button" class="tlink nm" data-detail="'+it.mat+'">'+esc(it.name)+'</button>'+
       '<div class="sp"><span class="mono">'+it.mat+'</span> &middot; '+esc(it.brand)+' &middot; '+esc(f.name)+'</div>'+
       '<div class="sp">'+esc(it.spec)+'</div>'+
       (lu ? '<div class="lastuse">&#9679; Terakhir dipakai '+esc(machineById(m).name)+(lu.s ? ' &rsaquo; '+esc(secName(m, lu.s)) : '')+': '+tgFull(lu.d)+' ('+ago(lu.d)+')</div>' : '')+(opt.otherUse ? '<div class="sp">'+opt.otherUse+'</div>' : '')+
-      '<div class="meta">'+stock+'<span class="tag">'+it.status+'</span>'+(opt.sim!=null ? (function(){ var lv = simLevel(opt.sim); return '<span class="tag '+lv.c+'" title="Kemiripan foto ke foto katalog">mirip foto '+Math.round(opt.sim*100)+'% · '+lv.k+'</span>'; })() : '')+'</div>'+
+      '<div class="meta">'+stock+heldTag(it.mat)+'<span class="tag">'+it.status+'</span>'+(opt.sim!=null ? (function(){ var lv = simLevel(opt.sim); return '<span class="tag '+lv.c+'" title="Kemiripan foto ke foto katalog">mirip foto '+Math.round(opt.sim*100)+'% · '+lv.k+'</span>'; })() : '')+'</div>'+
       '<div class="act">'+btn+'</div></div></div>';
   }
   function cards(list, opt){ return list.length ? '<div class="cards">'+list.map(function(it){ return card(it, opt && opt(it)); }).join("")+'</div>' : '<p class="note">Tidak ada barang yang cocok.</p>'; }
@@ -135,7 +138,7 @@
     var wu = whereUsed(it.mat), hist = S.hist.filter(function(h){ return h.mat===it.mat; }).sort(function(a, b){ return a.d<b.d ? 1 : -1; });
     var h = '<div class="gal">'+(ph.length ? ph.map(function(src){ return '<img src="'+esc(src)+'" alt="'+esc(it.name)+'">'; }).join("") : '<span class="thumb ill big-ill">'+famSvg(it.fam)+'</span>')+'</div>'+
       '<div><div style="font-weight:600; font-size:1.05rem">'+esc(it.name)+'</div><div class="note"><span class="mono">'+it.mat+'</span> &middot; '+esc(f.name)+'</div></div>'+
-      '<table class="list"><tr><th>Brand</th><td>'+esc(it.brand)+'</td></tr><tr><th>Spesifikasi</th><td>'+esc(it.spec)+'</td></tr><tr><th>Status</th><td>'+STATUS_TXT[it.status]+'</td></tr><tr><th>Stok</th><td>'+(!stockKnown(it.mat) ? '<span class="note">belum diisi tim sparepart</span>' : st>0 ? st+' '+it.unit+(st-avail(it.mat)>0 ? ' ('+(st-avail(it.mat))+' sudah dipesan)' : '') : '<span style="color:var(--crit)">kosong</span>')+'</td></tr>'+(ph.length ? '' : '<tr><th>Foto</th><td class="note">belum ada foto katalog</td></tr>')+'</table>'+
+      '<table class="list"><tr><th>Brand</th><td>'+esc(it.brand)+'</td></tr><tr><th>Spesifikasi</th><td>'+esc(it.spec)+'</td></tr><tr><th>Status</th><td>'+STATUS_TXT[it.status]+'</td></tr><tr><th>Stok</th><td>'+(!stockKnown(it.mat) ? '<span class="note">belum diisi tim sparepart</span>' : st>0 ? Math.max(0, st-heldOf(it.mat))+' '+it.unit+(reservedOf(it.mat)>0 ? ' ('+reservedOf(it.mat)+' sudah dipesan)' : '')+(heldOf(it.mat)>0 ? ' &middot; '+heldOf(it.mat)+' ditahan untuk maintenance' : '') : '<span style="color:var(--crit)">kosong</span>')+'</td></tr>'+(ph.length ? '' : '<tr><th>Foto</th><td class="note">belum ada foto katalog</td></tr>')+'</table>'+
       '<div><h3 style="margin-bottom:4px">Terpasang di (BOM)</h3>'+(wu.length ? '<table class="list">'+wu.map(function(x){ var b = x.bom.filter(function(y){ return y.mat===it.mat; })[0]; var lu = lastUse(x.m, it.mat, x.code); return '<tr'+(m===x.m ? ' style="background:var(--accent-2)"' : '')+'><td>'+esc(machineById(x.m).name)+' &rsaquo; '+esc(x.name)+'<div class="note mono">'+esc(x.fl)+'</div></td><td class="mono">&times;'+b.q+'</td><td class="note">'+(lu ? 'terakhir '+tgFull(lu.d) : '')+'</td></tr>'; }).join("")+'</table>' : '<p class="note">Belum ada di BOM mesin mana pun.</p>')+'</div>'+
       '<div><h3 style="margin-bottom:4px">Riwayat pemakaian</h3>'+(hist.length ? '<table class="list">'+hist.slice(0,8).map(function(x){ return '<tr><td class="mono">'+tgFull(x.d)+'</td><td>'+esc((machineById(x.m)||{}).name||x.m)+(x.s ? ' &rsaquo; '+esc(secName(x.m, x.s)) : '')+'</td><td class="mono">'+x.q+'</td></tr>'; }).join("")+'</table>'+(hist.length>8 ? '<p class="note">'+(hist.length-8)+' lainnya</p>' : '') : '<p class="note">Belum pernah dipakai.</p>')+'</div>'+
       ((st>0 || !stockKnown(it.mat)) ? '<button type="button" class="'+(c ? '' : 'primary ')+'big" data-add="'+it.mat+'">'+(c ? '&#10003; Di keranjang (tap untuk batal)' : '+ Siapkan barang ini')+'</button>' : '<button type="button" class="big" disabled>'+(it.status==="S1" ? 'S1 · reservasi lewat SRM' : 'Stok kosong · tanya tim sparepart')+'</button>');
@@ -315,7 +318,7 @@
   function renderCartBtn(){ var n = CART.reduce(function(a, x){ return a+x.q; }, 0); $("#cart-btn").textContent = "Keranjang ("+n+")"; }
   function renderCart(){
     var fc = {}; CART.forEach(function(x){ var f = item(x.mat).fam; fc[f] = (fc[f]||0)+1; });
-    $("#cart-lines").innerHTML = CART.length ? CART.map(function(x, i){ var it = item(x.mat); return '<div class="cart-line">'+thumbHtml(it)+'<div style="min-width:0"><div style="font-weight:600; font-size:.88rem">'+esc(it.name)+'</div><div class="note"><span class="mono">'+it.mat+'</span> &middot; stok '+stockOf(it.mat)+'</div>'+
+    $("#cart-lines").innerHTML = CART.length ? CART.map(function(x, i){ var it = item(x.mat); return '<div class="cart-line">'+thumbHtml(it)+'<div style="min-width:0"><div style="font-weight:600; font-size:.88rem">'+esc(it.name)+'</div><div class="note"><span class="mono">'+it.mat+'</span> &middot; tersedia '+Math.max(0, avail(it.mat))+'</div>'+
       '<label class="row note" style="gap:4px"><input type="checkbox" data-cand="'+i+'" style="width:auto"'+(x.cand ? ' checked' : '')+'> kandidat (belum pasti ukuran)</label></div>'+
       '<div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px"><div class="qty"><button type="button" data-qm="'+i+'">&minus;</button><span>'+x.q+'</span><button type="button" data-qp="'+i+'">+</button></div><button type="button" class="ghost note" data-rm="'+i+'">Hapus</button></div></div>'; }).join("")
       : '<p class="note">Keranjang kosong. Tekan "+ Siapkan" pada barang.</p>';
@@ -377,3 +380,4 @@
 
 </body>
 </html>
+f:\Elvino\Kuliah UIN\Pribadi\APP\Mill Serang\PoC Application\sparepart-reservasi\sp-reservasi.html

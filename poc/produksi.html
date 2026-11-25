@@ -377,6 +377,35 @@
   .rsv-tot{font-size:.8rem; margin-top:8px; line-height:1.7}
   .fgk{font-size:.8rem; display:flex; flex-direction:column; gap:2px; margin-top:4px} .fgk .k{display:inline-block; min-width:46px; font-size:.66rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-dim); font-weight:600}
   .fgl{display:flex; gap:6px; align-items:center; font-size:.76rem; margin-top:3px} .fgl .k, .fgk .k{display:inline-block; min-width:46px; font-size:.66rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-dim); font-weight:600} .pv-tile .mc small{font-size:.6rem; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-dim); margin-right:2px}
+  body[data-term="1"] .topnav{display:none}
+  .pt-top{display:flex; gap:16px; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; margin-bottom:12px}
+  .pt-mc{font-size:2.4rem; line-height:1.1; margin:2px 0}
+  .pt-time{font-size:2rem; font-weight:600; text-align:right}
+  .pt-clock{text-align:right}
+  .pt-tabs{display:flex; gap:8px; margin-bottom:10px}
+  .pt-tabs button{flex:1 1 0; padding:14px 10px; font-size:1.05rem; font-weight:600; border-radius:10px}
+  .pt-tabs button.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  .pt-panel{margin-bottom:12px}
+  .pt-panel h3{margin-bottom:6px}
+  .pt-in{font-size:1.6rem !important; padding:12px 14px !important; font-family:var(--mono) !important; letter-spacing:.06em; border-radius:10px !important; width:100%}
+  .pt-go{font-size:1.1rem; padding:0 22px; border-radius:10px; white-space:nowrap}
+  .pt-res{margin-top:12px; padding:14px 16px; border-radius:10px; font-size:1.05rem; font-weight:600; border:2px solid var(--line)}
+  .pt-res.good{border-color:var(--ok); color:var(--ok)} .pt-res.bad{border-color:var(--crit); color:var(--crit)} .pt-res.info{border-color:var(--info); color:var(--info)}
+  .pk-opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px}
+  .pk-opt{text-align:left; display:flex; flex-direction:column; gap:6px; padding:12px 14px; border-radius:10px; line-height:1.4; font-weight:400}
+  .pk-opt b{font-family:var(--display); text-transform:uppercase; letter-spacing:.03em; font-size:.9rem; font-weight:600}
+  .pk-opt span{font-size:.78rem; color:var(--ink-dim)}
+  .pk-opt .pk-need{font-size:.74rem; border-top:1px dashed var(--line); padding-top:6px}
+  .pk-opt.on{border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); background:var(--surface-2)}
+  .pk-mc{border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-top:10px; background:var(--surface-2)}
+  .pk-mh{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:6px}
+  .pk-tot td{border-top:2px solid var(--line); font-weight:600}
+  .pk-list{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px}
+  .pk-list .chip{display:inline-flex; gap:6px; align-items:center}
+  .pk-list a{color:var(--crit); text-decoration:none; font-weight:700}
+  .pk-ti{width:128px}
+  textarea, input[type=time], input[type=text]{background:var(--surface-2); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 8px; font-family:var(--body); font-size:.85rem; min-width:0}
+  textarea{resize:vertical; width:100%}
   .jdw-card{border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--surface); margin-top:12px} .jdw-card h3{font-size:.95rem; margin:0}
   .fgl.nxt{color:var(--warn)} .fgl.nxt span{color:var(--ink)}
   .dsh-sub{font-size:.8rem; color:var(--ink-dim); margin-bottom:8px}
@@ -456,6 +485,8 @@
     <a href="#produksi" data-v="produksi">Produksi</a>
     <a href="#operator" data-v="operator">Produksi · HP</a>
     <a href="#so" data-v="so">Stock opname</a>
+    <a href="#packer" data-v="packer">Output packer</a>
+    <a href="#terminal" data-v="terminal">Terminal mesin</a>
     <a href="#jadwal" data-v="jadwal">Jadwal produksi</a>
     <a href="#label" data-v="label">Label produksi</a>
     <span class="fbst" id="fb-state">Offline</span>
@@ -674,6 +705,15 @@
     <p class="lede">Dua langkah: (1) terima semua barang di area transfer gudang dengan centang per no material dan tujuan, (2) bawa ke area masing-masing, scan QR area, scan karton, isi jumlah. Bebas urutannya.</p>
   </header>
   <div class="phone"><div class="scr" id="opr-scr"></div></div>
+</div>
+
+<div class="wrap view" id="v-packer" hidden>
+  <div class="section-head" style="margin-top:6px"><span class="eyebrow">Produksi · Output packer</span><h2>Output packer per orang</h2><p class="lede">Output tiap mesin diambil dari TS. Siapa yang ada di mesin itu, dari jam berapa sampai jam berapa, dicatat lewat tap kartu RFID atau ketik NIP. Hasilnya daftar per orang yang siap dicek admin, tanpa mengetik ulang dari kertas.</p></div>
+  <div id="pk-page"></div>
+</div>
+
+<div class="wrap view" id="v-terminal" hidden>
+  <div id="pt-page"></div>
 </div>
 
 <div class="wrap view" id="v-dash" hidden>
@@ -3814,7 +3854,7 @@
   var OT = { pid:null, matId:null, err:"", msg:"" };
   var RP = { rows:[], err:"", msg:"" };          // form retur admin produksi
   var RW = {};                                    // centang retur di gudang
-  function b1Reset(){ SHIFT = { auto:true, d:"", n:1 }; PRODO = []; RQS = []; retSeq = 1; MV = { asal:null, matId:null, err:"", near:null, busy:false, msg:"" }; OT = { pid:null, matId:null, err:"", msg:"" }; RP = { rows:[ { matId:null, raw:"", from:"", qty:0 } ], err:"", msg:"" }; RW = {}; }
+  function b1Reset(){ SHIFT = { auto:true, d:"", n:1 }; PRODO = []; RQS = []; retSeq = 1; MV = { asal:null, matId:null, err:"", near:null, busy:false, msg:"" }; OT = { pid:null, matId:null, err:"", msg:"" }; RP = { rows:[ { matId:null, raw:"", from:"", qty:0 } ], err:"", msg:"" }; RW = {}; pkReset(); }
   function p2(n){ return (n<10?"0":"")+n; }
   function autoShift(){ var now = new Date(), h = now.getHours(), d = new Date(now.getTime()); var n = h>=7 && h<15 ? 1 : (h>=15 && h<23 ? 2 : 3); if(h<7) d.setDate(d.getDate()-1); return { d:d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate()), n:n }; }
   function curShift(){ return SHIFT.auto || !SHIFT.d ? autoShift() : { d:SHIFT.d, n:SHIFT.n }; }
@@ -4234,7 +4274,324 @@
     return { waktu:r.t, ts:r.ts||0, jenis:r.type, idQr:r.id, nama:r.mat, bin:r.pos, qty:r.qty||0, saldoSetelah:(r.saldo==null?null:r.saldo),
              fifo:(r.fifo===undefined?null:!!r.fifo), catatan:r.note||"", oleh:r.oleh||"" };
   }
-  function metaDoc(){ var bs = {}; S.forEach(function(p){ if(p.manual) bs[p.id] = p.manual; }); return { seq:seq, orderSeq:orderSeq, cadSeq:cadSeq, statusBin:bs, returCut:RCUT, gabungTugas:KT, masterOv:MOV, masterTol:TOL_DEFAULT, stokMesin:MSTK, batasRendah:LOW_PCS, shiftAktif:SHIFT, produksiOut:PRODO, returProduksi:RQS, retSeq:retSeq, outstanding:OUTS, outSeq:outSeq, outHari:OUT_DAYS, soProduksi:SOS, jadwal:JDW, skuKarton:SKUK }; }
+  /* =========================================================
+     Output packer · siapa di mesin mana, dari jam berapa, dan bagian output mesin (dari TS) per orang.
+     Dua cara mencatat: (1) tap kartu ID RFID di mesin, (2) tanpa RFID: ketik NIP di HP/tablet mesin.
+     Keduanya menghasilkan sesi yang sama {nip, mesin, masuk, keluar}. Disimpan di database bersama
+     (meta: packerMaster, packerSesi, packerOk). Hitungan upah (harga per carton, cost center) tetap di SAP.
+     Aturan bagi: output mesin dibagi menurut waktu. Pada tiap rentang waktu, bagian output rentang itu
+     dibagi rata ke orang yang ada di mesin pada rentang itu.
+     ========================================================= */
+  var PKM = [], PKS = [], PKOK = {}, pkSeq = 1;
+  var PKU = { mode:"rfid", d:"", n:0, pid:"", card:"", nips:"", t:"", msg:"", err:"", nm:"", nn:"", copied:0 };
+  function pkReset(){ PKM = []; PKS = []; PKOK = {}; pkSeq = 1; }
+  function pkShift(){ if(!PKU.d){ var c = curShift(); PKU.d = c.d; PKU.n = c.n; } return { d:PKU.d, n:PKU.n }; }
+  function pkStart(d, n){ var h = n===1 ? 7 : (n===2 ? 15 : 23); return new Date(d+"T"+p2(h)+":00:00").getTime(); }
+  function pkEnd(d, n){ return pkStart(d, n) + 8*3600000; }
+  function pkHM(ts){ var x = new Date(ts); return p2(x.getHours())+":"+p2(x.getMinutes()); }
+  function pkDur(ms){ var m = Math.max(0, Math.round(ms/60000)); return Math.floor(m/60)+":"+p2(m%60); }
+  function pkAt(d, n, hhmm){
+    var m = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm||"").trim()); if(!m) return null;
+    var st = pkStart(d, n), t = new Date(d+"T"+p2(+m[1])+":"+m[2]+":00").getTime();
+    if(t < st) t += 24*3600000;
+    return t >= st && t < st+8*3600000 ? t : null;
+  }
+  function pkDefT(d, n){ var now = Date.now(), st = pkStart(d, n); return pkHM(now>=st && now<st+8*3600000 ? now : st); }
+  function pkName(nip){ for(var i=0;i<PKM.length;i++) if(PKM[i].nip===nip) return PKM[i].nama; return null; }
+  function pkMcName(pid){ for(var i=0;i<MC0.length;i++) if(MC0[i].id===pid) return MC0[i].name; return pid; }
+  function pkSes(d, n, pid){ return PKS.filter(function(s){ return s.d===d && s.sh===n && (!pid || s.pid===pid); }); }
+  // catat masuk / pindah / keluar. Satu NIP hanya boleh di satu mesin pada satu waktu.
+  function pkIn(nip, pid, ts, src, dd, nn){
+    var d = dd || PKU.d, n = nn || PKU.n, nama = pkName(nip);
+    if(!nama) return { err:"NIP "+nip+" belum ada di daftar packer (bagian 6)." };
+    if(!pid) return { err:"Pilih mesin dulu." };
+    if(ts==null) return { err:"Jam di luar shift "+n+" ("+SH_JAM[n]+")." };
+    var open = PKS.filter(function(s){ return s.d===d && s.sh===n && s.nip===nip && s.out==null; })[0];
+    if(open){
+      if(ts < open.in) return { err:nama+": jam tap lebih awal dari jam masuk sebelumnya ("+pkHM(open.in)+")." };
+      if(src==="terminal" && open.pid===pid) return { info:nama+" sudah clock in di "+pkMcName(pid)+" sejak "+pkHM(open.in)+". Untuk selesai, pakai tab Clock out." };
+      open.out = ts;
+      if(open.pid===pid) return { ok:nama+" keluar dari "+pkMcName(pid)+" pukul "+pkHM(ts)+"." };
+      PKS.push({ id:pkSeq++, nip:nip, nama:nama, pid:pid, d:d, sh:n, in:ts, out:null, src:src });
+      return { ok:nama+" pindah dari "+pkMcName(open.pid)+" ke "+pkMcName(pid)+" pukul "+pkHM(ts)+"." };
+    }
+    var last = PKS.filter(function(s){ return s.d===d && s.sh===n && s.nip===nip && s.out!=null && s.out>ts; })[0];
+    if(last) return { err:nama+" sudah tercatat di "+pkMcName(last.pid)+" sampai "+pkHM(last.out)+". Koreksi jamnya di bagian 2." };
+    PKS.push({ id:pkSeq++, nip:nip, nama:nama, pid:pid, d:d, sh:n, in:ts, out:null, src:src });
+    if(PKS.length>1500) PKS = PKS.slice(-1500);
+    return { ok:nama+" masuk "+pkMcName(pid)+" pukul "+pkHM(ts)+"." };
+  }
+  function pkOutputs(d, n, pid){
+    var o = {}; PRODO.forEach(function(r){ if(r.k==="out" && r.pid===pid && r.d===d && r.sh===n) o[r.matId] = (o[r.matId]||0) + r.q; });
+    return o;
+  }
+  function pkJob(pid, matId){ var m = mat(matId); return pkMcName(pid)+" · "+(m && m.sku ? "SKU "+m.sku : (m ? m.code : matId)); }
+  // hitung bagian tiap orang di satu mesin pada satu shift
+  function pkCalc(d, n, pid){
+    var ws = pkStart(d, n), we = ws + 8*3600000, now = Date.now(), live = now>ws && now<we;
+    var wend = live ? now : we, wlen = Math.max(1, wend-ws);
+    var segs = pkSes(d, n, pid).map(function(s){
+      var a = Math.max(s.in, ws), b = Math.min(s.out==null ? wend : s.out, wend);
+      return { s:s, a:a, b:b, open:s.out==null };
+    }).filter(function(x){ return x.b > x.a; });
+    var cut = [ws, wend]; segs.forEach(function(x){ cut.push(x.a, x.b); });
+    cut = cut.filter(function(t, i){ return t>=ws && t<=wend && cut.indexOf(t)===i; }).sort(function(a,b){ return a-b; });
+    var P = {}, gap = 0, steps = [];
+    for(var i=0;i<cut.length-1;i++){
+      var a = cut[i], b = cut[i+1], L = (b-a)/wlen;
+      var here = segs.filter(function(x){ return x.a<=a && x.b>=b; });
+      if(!here.length){ gap += L; steps.push({ a:a, b:b, L:L, p:0 }); continue; }
+      steps.push({ a:a, b:b, L:L, p:here.length });
+      here.forEach(function(x){
+        var k = x.s.nip; if(!P[k]) P[k] = { nip:k, nama:x.s.nama, ms:0, f:0, open:false, src:{} };
+        P[k].f += L/here.length; P[k].ms += (b-a); P[k].src[x.s.src] = 1; if(x.open) P[k].open = true;
+      });
+    }
+    var out = pkOutputs(d, n, pid), tot = 0; Object.keys(out).forEach(function(k){ tot += out[k]; });
+    var people = Object.keys(P).map(function(k){ return P[k]; }).sort(function(x,y){ return x.nama<y.nama?-1:1; });
+    return { pid:pid, d:d, n:n, live:live, wlen:wlen, out:out, total:tot, people:people, gap:gap, steps:steps, n_ses:segs.length };
+  }
+  function pkMachines(d, n){
+    var ids = {}; pkSes(d, n).forEach(function(s){ ids[s.pid] = 1; });
+    PRODO.forEach(function(r){ if(r.k==="out" && r.d===d && r.sh===n) ids[r.pid] = 1; });
+    var order = {}; MC0.forEach(function(m, i){ order[m.id] = i; });
+    return Object.keys(ids).sort(function(a,b){ return (order[a]==null?999:order[a]) - (order[b]==null?999:order[b]); });
+  }
+  function pkRows(d, n){
+    var rows = [];
+    pkMachines(d, n).forEach(function(pid){
+      var c = pkCalc(d, n, pid);
+      Object.keys(c.out).forEach(function(mid){
+        c.people.forEach(function(p){ rows.push({ pid:pid, job:pkJob(pid, mid), nip:p.nip, nama:p.nama, ct:c.out[mid]*p.f }); });
+      });
+    });
+    return rows;
+  }
+  function pkFmt(x){ return (Math.round(x*10)/10).toLocaleString("id-ID", { minimumFractionDigits:1, maximumFractionDigits:1 }); }
+  var PK_DEMO = [ ["10021","Budi Santoso"],["10022","Ani Lestari"],["10023","Citra Dewi"],["10024","Dedi Kurniawan"],["10025","Eko Prasetyo"],["10026","Fajar Nugroho"],["10027","Gina Maharani"],["10028","Hadi Wijaya"],["10029","Indra Permana"],["10030","Joko Susilo"],["10031","Kiki Amelia"],["10032","Lukman Hakim"],["10033","Maya Sari"],["10034","Nanda Putra"],["10035","Oki Setiawan"],["10036","Putri Ayu"] ];
+  // data contoh: Eko mulai di mesin pertama bersama 4 orang, pindah ke mesin kedua pukul 10:00 (mesin kedua sudah berisi 5 orang)
+  function pkDemo(){
+    var d = PKU.d, n = PKU.n, mcs = MC0.slice(0, 2);
+    if(mcs.length<2) return "Daftar mesin belum ada.";
+    PK_DEMO.forEach(function(r){ if(!pkName(r[0])) PKM.push({ nip:r[0], nama:r[1], demo:1 }); });
+    PKS = PKS.filter(function(s){ return !(s.demo && s.d===d && s.sh===n); });
+    var A = mcs[0].id, B = mcs[1].id, st = pkStart(d, n), mk = function(nip, pid, a, b){ PKS.push({ id:pkSeq++, nip:nip, nama:pkName(nip), pid:pid, d:d, sh:n, in:a, out:b, src:"rfid", demo:1 }); };
+    ["10021","10022","10023","10024"].forEach(function(k){ mk(k, A, st, null); });
+    mk("10025", A, st, st+3*3600000); mk("10025", B, st+3*3600000, null);
+    ["10026","10027","10028","10029","10030"].forEach(function(k){ mk(k, B, st, null); });
+    var have = pkOutputs(d, n, A), haveB = pkOutputs(d, n, B), msg = "Sesi contoh dibuat: 5 orang di "+pkMcName(A)+" (Eko pindah ke "+pkMcName(B)+" pukul "+pkHM(st+3*3600000)+"), 5 orang di "+pkMcName(B)+".";
+    if(!Object.keys(have).length || !Object.keys(haveB).length){
+      var mid = MATS[0].id;
+      PRODO = PRODO.filter(function(r){ return !(r.demo && r.pkd && r.d===d && r.sh===n); });
+      [[A, 1000],[B, 1000]].forEach(function(x){ if(!Object.keys(pkOutputs(d, n, x[0])).length) PRODO.push({ d:d, sh:n, pid:x[0], matId:mid, q:x[1], k:"out", src:"TS", ref:"", lebih:0, ts:st+3600000, by:"contoh", demo:1, pkd:1 }); });
+      msg += " Output TS contoh 1.000 CT per mesin ditambahkan karena shift ini belum punya output.";
+    }
+    return msg;
+  }
+  function renderPacker(force){
+    var A = $("#pk-page"); if(!A) return;
+    var ae = document.activeElement; if(!force && ae && A.contains(ae) && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName)) return;
+    var sh = pkShift(), d = sh.d, n = sh.n, h = '';
+    if(!PKU.t) PKU.t = pkDefT(d, n);
+    var mcOpts = '<option value="">Pilih mesin</option>'+MC0.map(function(m){ return '<option value="'+esc(m.id)+'"'+(m.id===PKU.pid?' selected':'')+'>'+esc(m.name)+'</option>'; }).join("");
+    var cardOpts = '<option value="">Pilih kartu</option>'+PKM.map(function(p){ return '<option value="'+esc(p.nip)+'"'+(p.nip===PKU.card?' selected':'')+'>'+esc(p.nama)+' · '+esc(p.nip)+'</option>'; }).join("");
+    // pilih shift yang dilihat
+    h += '<div class="shctl"><div class="field"><label for="pk-d">Tanggal produksi</label><input type="date" id="pk-d" value="'+d+'"></div><div class="field"><label for="pk-n">Shift</label><select id="pk-n">'+[1,2,3].map(function(x){ return '<option value="'+x+'"'+(x===n?' selected':'')+'>Shift '+x+' · '+SH_JAM[x]+'</option>'; }).join("")+'</select></div></div>';
+    // 1 pilih opsi
+    var rf = PKU.mode==="rfid";
+    h += '<div class="jdw-card"><h3>1 · Cara packer tercatat: pilih opsi</h3><p class="muted" style="font-size:.78rem;margin:2px 0 10px">Hasil dua opsi sama: siapa, di mesin mana, dari jam berapa sampai jam berapa. Bedanya hanya cara memasukkan identitas.</p>'+
+      '<div class="pk-opts">'+
+      '<button class="pk-opt'+(rf?' on':'')+'" id="pk-m-rfid" aria-pressed="'+rf+'"><b>Opsi A · Tap kartu RFID</b><span>Packer tap ID card di pembaca mesin saat mulai shift dan saat pindah. Nama dan NIP terbaca otomatis.</span><span class="pk-need">Perlu: kartu ID benar-benar RFID, pembaca di tiap mesin, jaringan di mesin. Satu tap, hampir tanpa ketik.</span></button>'+
+      '<button class="pk-opt'+(!rf?' on':'')+'" id="pk-m-nip" aria-pressed="'+(!rf)+'"><b>Opsi B · Tanpa RFID: input NIP</b><span>Packer atau ketua tim mengetik NIP di HP/tablet mesin. Satu isian bisa memuat beberapa NIP sekaligus (satu tim). Nama tampil untuk dicek.</span><span class="pk-need">Perlu: tidak ada perangkat baru selain HP atau tablet. Risiko salah ketik atau lupa catat, dijaga dengan cek NIP ke daftar dan koreksi supervisor.</span></button>'+
+      '</div>';
+    h += '<div class="row" style="margin-top:12px">';
+    if(rf){
+      h += '<div class="field"><label for="pk-card">Kartu (simulasi tap)</label><select id="pk-card">'+cardOpts+'</select></div><div class="field"><label for="pk-pid">Pembaca di mesin</label><select id="pk-pid">'+mcOpts+'</select></div>';
+    } else {
+      h += '<div class="field"><label for="pk-pid">Mesin</label><select id="pk-pid">'+mcOpts+'</select></div><div class="field" style="flex:1 1 220px"><label for="pk-nips">NIP (boleh beberapa: pisahkan koma, spasi, atau baris)</label><textarea id="pk-nips" rows="2" placeholder="10021 10022 10023">'+esc(PKU.nips)+'</textarea></div>';
+    }
+    h += '<div class="field"><label for="pk-t">Jam</label><input type="time" id="pk-t" value="'+esc(PKU.t)+'"></div><button class="primary" id="pk-go">'+(rf?'Tap kartu':'Catat masuk')+'</button></div>';
+    h += '<div class="muted" style="font-size:.76rem">'+(rf?'Tap lagi di mesin lain = pindah: sesi lama berhenti pada jam itu dan sesi baru mulai. Tap lagi di mesin yang sama = keluar.':'Mengetik NIP orang yang sudah ada di mesin lain = pindah. NIP orang yang sedang di mesin ini = keluar.')+' Jam diisi otomatis; ubah untuk mencoba kasus pindah di tengah shift.</div>';
+    if(PKU.err) h += '<div class="msg crit">✕ '+esc(PKU.err)+'</div>';
+    if(PKU.msg) h += '<div class="msg ok">'+esc(PKU.msg)+'</div>';
+    h += '</div>';
+    // 2 sesi
+    var ses = pkSes(d, n).sort(function(a,b){ return (a.pid<b.pid?-1:a.pid>b.pid?1:0) || a.in-b.in; });
+    h += '<div class="jdw-card"><h3>2 · Siapa di mesin mana, shift '+n+' · '+d+'</h3>';
+    if(!ses.length) h += '<p class="muted" style="font-size:.8rem;margin:6px 0 0">Belum ada packer tercatat di shift ini. Catat lewat bagian 1, atau isi contoh di bagian 6.</p>';
+    else h += '<div class="tablewrap"><table><tr><th>Mesin</th><th>Nama</th><th>NIP</th><th>Masuk</th><th>Keluar</th><th>Cara</th><th></th></tr>'+ses.map(function(s){
+      return '<tr><td class="mono"><b>'+esc(pkMcName(s.pid))+'</b></td><td>'+esc(s.nama)+'</td><td class="mono">'+esc(s.nip)+'</td>'+
+        '<td><input type="time" class="pk-ti" data-id="'+s.id+'" data-f="in" value="'+pkHM(s.in)+'"></td>'+
+        '<td><input type="time" class="pk-ti" data-id="'+s.id+'" data-f="out" value="'+(s.out!=null?pkHM(s.out):'')+'">'+(s.out==null?' <span class="tag info">masih di mesin</span>':'')+'</td>'+
+        '<td><span class="tag">'+(s.src==="rfid"?'RFID':(s.src==="nip"?'NIP':(s.src==="terminal"?'terminal':'koreksi')))+'</span></td><td><button class="small pk-del" data-id="'+s.id+'">Hapus</button></td></tr>';
+    }).join("")+'</table></div><p class="muted" style="font-size:.76rem;margin:8px 0 0">Jam bisa dikoreksi langsung (lupa tap, salah mesin). Koreksi ditandai di kolom Cara. Sesi yang belum ditutup berakhir otomatis di akhir shift.</p>';
+    h += '</div>';
+    // 3 hitungan
+    var mcs = pkMachines(d, n);
+    h += '<div class="jdw-card"><h3>3 · Output mesin (dari TS) dan bagian per orang</h3>';
+    if(!mcs.length) h += '<p class="muted" style="font-size:.8rem;margin:6px 0 0">Belum ada output atau packer di shift ini.</p>';
+    var bad = 0;
+    mcs.forEach(function(pid){
+      var c = pkCalc(d, n, pid), mids = Object.keys(c.out);
+      h += '<div class="pk-mc"><div class="pk-mh"><b>'+esc(pkMcName(pid))+'</b><span class="mono">'+fmt(c.total)+' CT</span>'+(c.live?'<span class="tag warn">sementara, shift berjalan</span>':'')+(PKOK[d+"|"+n]?'':'')+'</div>';
+      if(!mids.length) h += '<div class="msg warn" style="margin-top:6px">Mesin ini belum punya output TS di shift ini.</div>';
+      if(!c.people.length) { h += '<div class="msg warn" style="margin-top:6px">Belum ada packer tercatat di mesin ini. Output belum bisa dibagi.</div>'; bad++; }
+      else {
+        h += '<div class="tablewrap"><table><tr><th>Nama</th><th>NIP</th><th>Jam di mesin</th><th>Bagian</th>'+mids.map(function(m){ return '<th>'+esc(pkJob(pid, m))+' (CT)</th>'; }).join("")+'<th>Total CT</th></tr>';
+        var sum = 0;
+        c.people.forEach(function(p){
+          var tt = 0; mids.forEach(function(m){ tt += c.out[m]*p.f; }); sum += tt;
+          h += '<tr><td>'+esc(p.nama)+(p.open?' <span class="tag info">masih di mesin</span>':'')+'</td><td class="mono">'+esc(p.nip)+'</td><td class="mono">'+pkDur(p.ms)+'</td><td class="mono">'+pkFmt(p.f*100)+'%</td>'+mids.map(function(m){ return '<td class="mono">'+pkFmt(c.out[m]*p.f)+'</td>'; }).join("")+'<td class="mono"><b>'+pkFmt(tt)+'</b></td></tr>';
+        });
+        h += '<tr class="pk-tot"><td colspan="4">Total dibagi</td>'+mids.map(function(m){ var t = 0; c.people.forEach(function(p){ t += c.out[m]*p.f; }); return '<td class="mono">'+pkFmt(t)+'</td>'; }).join("")+'<td class="mono"><b>'+pkFmt(sum)+'</b></td></tr></table></div>';
+        if(c.gap>0.0005){ bad++; h += '<div class="msg warn">Ada rentang waktu tanpa packer tercatat (sekitar '+pkFmt(c.gap*100)+'% dari shift). Output pada rentang itu <b>belum terbagi</b>: '+pkFmt(c.total*c.gap)+' CT. Cek sesi di bagian 2.</div>'; }
+        else if(mids.length) h += '<div class="muted" style="font-size:.76rem;margin-top:4px">Total terbagi = output TS mesin ✓</div>';
+        h += '<details style="margin-top:6px"><summary class="muted" style="font-size:.76rem;cursor:pointer">Rincian rentang waktu</summary><table class="ptable"><tr><th>Dari</th><th>Sampai</th><th>Orang di mesin</th><th>Bagian rentang</th></tr>'+c.steps.map(function(s){ return '<tr><td class="mono">'+pkHM(s.a)+'</td><td class="mono">'+pkHM(s.b)+'</td><td class="mono">'+s.p+'</td><td class="mono">'+pkFmt(s.L*100)+'%</td></tr>'; }).join("")+'</table></details>';
+      }
+      h += '</div>';
+    });
+    h += '</div>';
+    // 4 daftar SAP
+    var rows = pkRows(d, n), ok = PKOK[d+"|"+n];
+    h += '<div class="jdw-card"><h3>4 · Daftar untuk SAP (admin tinggal cek)</h3><p class="muted" style="font-size:.78rem;margin:2px 0 8px">Urutan sama dengan input di SAP: mesin dan job ID dulu, lalu total output, lalu nama. Harga per carton dan cost center tetap dari SAP.</p>';
+    if(!rows.length) h += '<div class="muted" style="font-size:.8rem">Belum ada baris. Perlu output TS dan packer tercatat.</div>';
+    else {
+      h += '<div class="tablewrap"><table><tr><th>Mesin · job ID</th><th>NIP</th><th>Nama</th><th>CT</th></tr>'+rows.map(function(r){ return '<tr><td>'+esc(r.job)+'</td><td class="mono">'+esc(r.nip)+'</td><td>'+esc(r.nama)+'</td><td class="mono"><b>'+pkFmt(r.ct)+'</b></td></tr>'; }).join("")+'</table></div>';
+      h += '<div class="row" style="margin-top:10px;align-items:center"><button id="pk-copy">'+(PKU.copied && Date.now()-PKU.copied<2500?'Tersalin ✓':'Salin sebagai tabel')+'</button><button class="'+(ok?'':'primary')+'" id="pk-ok">'+(ok?'Batalkan persetujuan':'Setujui daftar shift ini')+'</button>'+(ok?'<span class="tag ok">disetujui '+new Date(ok).toLocaleString("id-ID")+'</span>':'')+(bad?'<span class="tag warn">'+bad+' mesin perlu dicek sebelum disetujui</span>':'')+'</div>';
+      h += '<div class="muted" style="font-size:.74rem;margin-top:6px">Pembulatan belum ditetapkan: angka ditampilkan satu desimal. Aturan pembulatan mengikuti kesepakatan dengan bagian upah.</div>';
+    }
+    h += '</div>';
+    // 5 aturan
+    h += '<div class="jdw-card"><h3>5 · Aturan hitung</h3><ol style="margin:6px 0 0 18px;padding:0;font-size:.82rem;display:flex;flex-direction:column;gap:3px"><li>Output mesin per job ID dan shift diambil dari TS (jumlah carton per TS, bisa diedit; palet yang tidak penuh di akhir shift memakai TS tersendiri per shift).</li><li>Shift dibagi menjadi rentang waktu pada setiap jam ada yang masuk atau keluar.</li><li>Bagian output sebuah rentang = lamanya rentang ÷ lama shift × output mesin.</li><li>Bagian itu dibagi rata ke orang yang ada di mesin pada rentang itu. Orang yang pindah hanya mendapat dari rentang ia berada di mesin itu; yang tetap tinggal mendapat tambahan dari rentang ia bekerja tanpa dia.</li><li>Jumlah semua orang di mesin = output TS mesin. Rentang tanpa packer ditandai, tidak dibagi diam-diam.</li><li>SAP menghitung upah: harga per carton job ID × CT, dan cost center.</li></ol></div>';
+    // 6 daftar packer
+    h += '<div class="jdw-card"><h3>6 · Daftar packer (NIP dan nama)</h3><p class="muted" style="font-size:.78rem;margin:2px 0 8px">Dipakai untuk membaca NIP dari kartu atau ketikan. Di lapangan dari data karyawan; di simulasi diisi di sini.</p>'+
+      '<div class="row"><div class="field"><label for="pk-nn">NIP</label><input type="text" id="pk-nn" value="'+esc(PKU.nn)+'" style="width:110px"></div><div class="field"><label for="pk-nm">Nama</label><input type="text" id="pk-nm" value="'+esc(PKU.nm)+'" style="width:200px"></div><button id="pk-add">Tambah</button><button id="pk-demo" class="primary">Isi contoh packer dan sesi shift ini</button>'+(PKM.some(function(p){ return p.demo; }) || PKS.some(function(s){ return s.demo; })?'<button id="pk-clr">Hapus contoh</button>':'')+'</div>';
+    h += PKM.length ? '<div class="pk-list">'+PKM.map(function(p){ return '<span class="chip">'+esc(p.nama)+' · '+esc(p.nip)+' <a href="#packer" class="pk-rm" data-nip="'+esc(p.nip)+'" aria-label="Hapus '+esc(p.nama)+'">×</a></span>'; }).join("")+'</div>' : '<div class="muted" style="font-size:.8rem">Belum ada packer.</div>';
+    h += '</div>';
+    A.innerHTML = h;
+    var on = function(sel, ev, fn){ var e = A.querySelector(sel); if(e) e.addEventListener(ev, fn); };
+    var rer = function(){ renderPacker(true); flush(); };
+    on("#pk-d", "change", function(){ if(this.value){ PKU.d = this.value; PKU.t = ""; PKU.msg = ""; PKU.err = ""; renderPacker(true); } });
+    on("#pk-n", "change", function(){ PKU.n = +this.value; PKU.t = ""; PKU.msg = ""; PKU.err = ""; renderPacker(true); });
+    on("#pk-m-rfid", "click", function(){ PKU.mode = "rfid"; PKU.msg = ""; PKU.err = ""; renderPacker(true); });
+    on("#pk-m-nip", "click", function(){ PKU.mode = "nip"; PKU.msg = ""; PKU.err = ""; renderPacker(true); });
+    on("#pk-card", "change", function(){ PKU.card = this.value; });
+    on("#pk-pid", "change", function(){ PKU.pid = this.value; });
+    on("#pk-t", "change", function(){ PKU.t = this.value; });
+    on("#pk-nips", "input", function(){ PKU.nips = this.value; });
+    on("#pk-go", "click", function(){
+      PKU.msg = ""; PKU.err = "";
+      var ts = pkAt(d, n, ($("#pk-t")||{}).value || PKU.t), pid = ($("#pk-pid")||{}).value || PKU.pid; PKU.pid = pid;
+      if(PKU.mode==="rfid"){
+        var r = pkIn(($("#pk-card")||{}).value || "", pid, ts, "rfid");
+        if(r.err) PKU.err = r.err; else PKU.msg = r.ok;
+      } else {
+        var list = String(($("#pk-nips")||{}).value||"").split(/[\s,;]+/).filter(Boolean), ms = [], es = [];
+        if(!list.length) es.push("Isi minimal satu NIP.");
+        list.forEach(function(k){ var r = pkIn(k, pid, ts, "nip"); if(r.err) es.push(r.err); else ms.push(r.ok); });
+        PKU.err = es.join(" "); PKU.msg = ms.join(" "); if(!es.length) PKU.nips = "";
+      }
+      buzz(!PKU.err); rer();
+    });
+    Array.prototype.forEach.call(A.querySelectorAll(".pk-ti"), function(e){
+      e.addEventListener("change", function(){
+        var id = +this.dataset.id, f = this.dataset.f, s = PKS.filter(function(x){ return x.id===id; })[0]; if(!s) return;
+        if(f==="out" && !this.value){ s.out = null; s.src = "koreksi"; return rer(); }
+        var ts = pkAt(d, n, this.value);
+        if(ts==null){ PKU.err = "Jam di luar shift "+n+" ("+SH_JAM[n]+")."; PKU.msg = ""; return rer(); }
+        if(f==="in") s.in = ts; else s.out = ts;
+        if(s.out!=null && s.out<=s.in){ PKU.err = "Jam keluar harus setelah jam masuk."; PKU.msg = ""; if(f==="in") s.in = Math.min(s.in, s.out-60000); else s.out = null; }
+        else { PKU.err = ""; PKU.msg = "Jam "+s.nama+" dikoreksi."; }
+        s.src = "koreksi"; rer();
+      });
+    });
+    Array.prototype.forEach.call(A.querySelectorAll(".pk-del"), function(e){ e.addEventListener("click", function(){ var id = +this.dataset.id; PKS = PKS.filter(function(x){ return x.id!==id; }); PKU.msg = ""; PKU.err = ""; rer(); }); });
+    on("#pk-copy", "click", function(){
+      var t = "Mesin · job ID\tNIP\tNama\tCT\n"+rows.map(function(r){ return [r.job, r.nip, r.nama, pkFmt(r.ct)].join("\t"); }).join("\n");
+      PKU.copied = Date.now();
+      try{ navigator.clipboard.writeText(t).then(function(){ renderPacker(true); }, function(){ renderPacker(true); }); }catch(e){ renderPacker(true); }
+      setTimeout(function(){ renderPacker(true); }, 2600);
+    });
+    on("#pk-ok", "click", function(){ var k = d+"|"+n; if(PKOK[k]) delete PKOK[k]; else PKOK[k] = Date.now(); rer(); });
+    on("#pk-nn", "input", function(){ PKU.nn = this.value; });
+    on("#pk-nm", "input", function(){ PKU.nm = this.value; });
+    on("#pk-add", "click", function(){
+      var nip = String(PKU.nn||"").trim(), nm = String(PKU.nm||"").trim();
+      if(!nip || !nm){ PKU.err = "Isi NIP dan nama."; PKU.msg = ""; return rer(); }
+      if(pkName(nip)){ PKU.err = "NIP "+nip+" sudah ada."; PKU.msg = ""; return rer(); }
+      PKM.push({ nip:nip, nama:nm }); PKU.nn = ""; PKU.nm = ""; PKU.err = ""; PKU.msg = nm+" ditambahkan."; rer();
+    });
+    Array.prototype.forEach.call(A.querySelectorAll(".pk-rm"), function(e){ e.addEventListener("click", function(ev){ ev.preventDefault(); var nip = this.dataset.nip; if(PKS.some(function(s){ return s.nip===nip; })){ PKU.err = "NIP "+nip+" masih punya sesi tercatat; hapus sesinya dulu."; PKU.msg = ""; return rer(); } PKM = PKM.filter(function(p){ return p.nip!==nip; }); rer(); }); });
+    on("#pk-demo", "click", function(){ var m = pkDemo(); if(/belum ada\.$/.test(m)){ PKU.err = m; PKU.msg = ""; } else { PKU.err = ""; PKU.msg = m; } renderAll(); });
+    on("#pk-clr", "click", function(){ PKS = PKS.filter(function(s){ return !s.demo; }); PRODO = PRODO.filter(function(r){ return !r.pkd; }); PKM = PKM.filter(function(p){ return !p.demo || PKS.some(function(s){ return s.nip===p.nip; }); }); PKU.msg = "Data contoh packer dihapus."; PKU.err = ""; renderAll(); });
+  }
+  /* ---------- Terminal mesin: komputer di mesin, mesin terkunci lewat tautan (#terminal-F21), tab Clock in dan Clock out ---------- */
+  var PKT = { key:"", tab:"in", msg:"", err:"", info:"", at:0 };
+  function pkSan(id){ return String(id).replace(/[^A-Za-z0-9]+/g, "_"); }
+  function pkTermMc(){ var k = String(PKT.key||"").toLowerCase(); if(!k) return null; for(var i=0;i<MC0.length;i++) if(pkSan(MC0[i].id).toLowerCase()===k) return MC0[i]; return null; }
+  function pkOnMc(pid, d, n){ return PKS.filter(function(s){ return s.d===d && s.sh===n && s.pid===pid && s.out==null; }).sort(function(a,b){ return a.in-b.in; }); }
+  function pkOutS(nip, pid, ts, d, n){
+    var nama = pkName(nip); if(!nama) return { err:"NIP "+nip+" belum ada di daftar packer." };
+    var s = PKS.filter(function(x){ return x.d===d && x.sh===n && x.nip===nip && x.pid===pid && x.out==null; })[0];
+    if(!s){
+      var o = PKS.filter(function(x){ return x.d===d && x.sh===n && x.nip===nip && x.out==null; })[0];
+      return { err:nama+" tidak tercatat di mesin ini."+(o ? " Ia sedang di "+pkMcName(o.pid)+"; clock in di mesin baru akan memindahkannya otomatis." : " Belum ada clock in di shift ini.") };
+    }
+    if(ts < s.in) return { err:"Jam keluar lebih awal dari jam masuk." };
+    s.out = ts; s.src = s.src==="koreksi" ? "koreksi" : s.src;
+    return { ok:nama+" clock out dari "+pkMcName(pid)+" pukul "+pkHM(ts)+" (di mesin "+pkDur(s.out-s.in)+")." };
+  }
+  function pkTermDo(raw){
+    var mc = pkTermMc(); if(!mc) return;
+    var sh = autoShift(), ts = Date.now(), list = String(raw||"").split(/[\s,;]+/).filter(Boolean), ms = [], es = [], inf = [];
+    if(!list.length){ PKT.err = "Isi NIP atau tap kartu."; PKT.msg = ""; PKT.info = ""; return; }
+    list.forEach(function(k){
+      var r = PKT.tab==="in" ? pkIn(k, mc.id, ts, "terminal", sh.d, sh.n) : pkOutS(k, mc.id, ts, sh.d, sh.n);
+      if(r.err) es.push(r.err); else if(r.info) inf.push(r.info); else ms.push(r.ok);
+    });
+    PKT.msg = ms.join(" "); PKT.err = es.join(" "); PKT.info = inf.join(" "); PKT.at = Date.now();
+    buzz(!es.length);
+  }
+  function renderTerminal(force){
+    var A = $("#pt-page"); if(!A || VIEW!=="terminal") return;
+    var ae = document.activeElement;
+    if(!force && ae && A.contains(ae) && /^(INPUT|TEXTAREA)$/.test(ae.tagName) && ae.value) return;
+    var mc = pkTermMc(), h = '';
+    if(!PKT.key){
+      h += '<div class="section-head" style="margin-top:6px"><span class="eyebrow">Produksi · Terminal mesin</span><h2>Pilih mesin untuk terminal ini</h2><p class="lede">Di lapangan, komputer tiap mesin dibuka sekali dengan tautan mesinnya (contoh: <span class="mono">produksi.html#terminal-'+esc(pkSan(MC0[0] ? MC0[0].id : "F21"))+'</span>), jadi packer tidak pernah memilih mesin. Di sini dipakai untuk mencoba.</p></div><div class="pk-list" style="margin-top:0">'+
+        MC0.map(function(m){ return '<a class="chip" href="#terminal-'+esc(pkSan(m.id))+'" style="text-decoration:none;color:var(--ink)">'+esc(m.name)+'</a>'; }).join("")+'</div>';
+      A.innerHTML = h; return;
+    }
+    if(!mc){ A.innerHTML = '<div class="msg crit">Mesin "'+esc(PKT.key)+'" tidak dikenal. <a href="#terminal">Pilih mesin</a></div>'; return; }
+    var sh = autoShift(), on = pkOnMc(mc.id, sh.d, sh.n), jb = null, desc = "", sku = "";
+    try{ jb = jMc(mc.id); if(jb){ desc = jb.cur.desc || ""; sku = String(jb.cur.sku||""); } }catch(e){}
+    var tin = PKT.tab==="in";
+    h += '<div class="pt-top"><div><span class="eyebrow">Terminal mesin</span><h1 class="pt-mc">'+esc(mc.name)+'</h1><div class="muted" style="font-size:.9rem">Sedang jalan: '+(sku ? '<b>SKU '+esc(sku)+'</b>'+(desc?' · '+esc(desc):'') : 'belum ada data jadwal')+'</div></div>'+
+      '<div class="pt-clock"><div class="mono pt-time" id="pt-clock">'+new Date().toLocaleTimeString("en-GB")+'</div><div class="muted" style="font-size:.82rem">Shift '+sh.n+' · '+SH_JAM[sh.n]+' · '+sh.d+'</div></div></div>';
+    h += '<div class="pt-tabs" role="tablist"><button role="tab" id="pt-tab-in" aria-selected="'+tin+'" class="'+(tin?'on':'')+'">Clock in</button><button role="tab" id="pt-tab-out" aria-selected="'+(!tin)+'" class="'+(!tin?'on':'')+'">Clock out</button></div>';
+    h += '<div class="panel pt-panel"><p class="muted" style="margin:0 0 8px;font-size:.88rem">'+(tin ? 'Tap kartu ID atau ketik NIP, lalu Enter. Kalau Anda masih tercatat di mesin lain, Anda otomatis dipindahkan ke mesin ini.' : 'Tap kartu ID atau ketik NIP untuk selesai di mesin ini, atau tekan tombol Clock out di samping nama Anda.')+'</p>'+
+      '<div class="row" style="align-items:stretch;flex-wrap:nowrap"><input type="text" id="pt-nip" class="pt-in" inputmode="numeric" autocomplete="off" placeholder="NIP / tap kartu" style="flex:1 1 auto" aria-label="NIP"><button class="primary pt-go" id="pt-go">'+(tin?'Clock in':'Clock out')+'</button></div>';
+    if(PKT.err) h += '<div class="pt-res bad" role="alert">✕ '+esc(PKT.err)+'</div>';
+    if(PKT.info) h += '<div class="pt-res info">'+esc(PKT.info)+'</div>';
+    if(PKT.msg) h += '<div class="pt-res good" role="status">✓ '+esc(PKT.msg)+(tin?' Selamat bekerja.':'')+'</div>';
+    h += '</div>';
+    h += '<div class="panel pt-panel"><h3>Di mesin ini sekarang ('+on.length+')</h3>'+(on.length ? '<div class="tablewrap"><table><tr><th>Nama</th><th>NIP</th><th>Clock in</th><th>Di mesin</th>'+(tin?'':'<th></th>')+'</tr>'+on.map(function(s){
+      return '<tr><td><b>'+esc(s.nama)+'</b></td><td class="mono">'+esc(s.nip)+'</td><td class="mono">'+pkHM(s.in)+'</td><td class="mono">'+pkDur(Date.now()-s.in)+'</td>'+(tin?'':'<td><button class="pt-outb" data-nip="'+esc(s.nip)+'">Clock out</button></td>')+'</tr>'; }).join("")+'</table></div>' : '<p class="muted" style="margin:6px 0 0;font-size:.88rem">Belum ada yang clock in di mesin ini pada shift ini.</p>')+'</div>';
+    if(PKM.length) h += '<div class="panel pt-panel"><h3>Simulasi tap kartu <span class="tag">hanya untuk demo</span></h3><p class="muted" style="margin:2px 0 8px;font-size:.78rem">Di lapangan pembaca RFID mengetik NIP seperti keyboard. Di sini klik nama untuk meniru tap kartu pada tab yang sedang aktif.</p><div class="pk-list" style="margin-top:0">'+PKM.slice(0, 24).map(function(p){ return '<button class="chip pt-sim" data-nip="'+esc(p.nip)+'">'+esc(p.nama)+'</button>'; }).join("")+'</div></div>';
+    else h += '<div class="msg warn">Daftar packer masih kosong. Isi di <a href="#packer">Output packer</a>, bagian 6.</div>';
+    h += '<p class="muted" style="font-size:.74rem;margin-top:12px"><a href="#terminal">Pilih mesin lain</a> (khusus demo; di lapangan tautan ini tidak ditampilkan) · <a href="#packer">Lihat hasil per orang</a></p>';
+    A.innerHTML = h;
+    var q = function(sel){ return A.querySelector(sel); };
+    var go = function(raw){ pkTermDo(raw); flush(); renderTerminal(true); setTimeout(function(){ if(Date.now()-PKT.at>=6000){ PKT.msg = ""; PKT.err = ""; PKT.info = ""; renderTerminal(true); } }, 6100); };
+    q("#pt-tab-in").addEventListener("click", function(){ PKT.tab = "in"; PKT.msg = ""; PKT.err = ""; PKT.info = ""; renderTerminal(true); });
+    q("#pt-tab-out").addEventListener("click", function(){ PKT.tab = "out"; PKT.msg = ""; PKT.err = ""; PKT.info = ""; renderTerminal(true); });
+    q("#pt-go").addEventListener("click", function(){ go(q("#pt-nip").value); });
+    q("#pt-nip").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); go(this.value); } });
+    Array.prototype.forEach.call(A.querySelectorAll(".pt-sim, .pt-outb"), function(b){ b.addEventListener("click", function(){ go(this.dataset.nip); }); });
+    try{ q("#pt-nip").focus(); }catch(e){}
+  }
+  setInterval(function(){ var e = document.getElementById("pt-clock"); if(e) e.textContent = new Date().toLocaleTimeString("en-GB"); }, 1000);
+  function metaDoc(){ var bs = {}; S.forEach(function(p){ if(p.manual) bs[p.id] = p.manual; }); return { seq:seq, orderSeq:orderSeq, cadSeq:cadSeq, statusBin:bs, returCut:RCUT, gabungTugas:KT, masterOv:MOV, masterTol:TOL_DEFAULT, stokMesin:MSTK, batasRendah:LOW_PCS, shiftAktif:SHIFT, produksiOut:PRODO, returProduksi:RQS, retSeq:retSeq, outstanding:OUTS, outSeq:outSeq, outHari:OUT_DAYS, soProduksi:SOS, jadwal:JDW, skuKarton:SKUK, packerMaster:PKM, packerSesi:PKS, packerOk:PKOK, packerSeq:pkSeq }; }
 
   /* ---------- data remote -> state lokal ---------- */
   function rebuildFromRemote(){
@@ -4263,7 +4620,7 @@
     LOG = Object.keys(FB.raw.transaksi).map(function(k){ var d = FB.raw.transaksi[k]; return {
       _id:k, ts:d.ts||0, t:d.waktu, type:d.jenis, id:d.idQr, mat:d.nama, pos:d.bin, qty:d.qty, saldo:d.saldoSetelah, fifo:(d.fifo===null||d.fifo===undefined)?undefined:d.fifo, note:d.catatan, oleh:d.oleh }; });
     LOG.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
-    if(FB.meta){ seq = Math.max(1, FB.meta.seq||1); orderSeq = Math.max(1, FB.meta.orderSeq||1); cadSeq = Math.max(0, FB.meta.cadSeq||10); RCUT = FB.meta.returCut || {}; KT = FB.meta.gabungTugas || []; MOV = FB.meta.masterOv || {}; MSTK = FB.meta.stokMesin || {}; LOW_PCS = FB.meta.batasRendah!=null ? FB.meta.batasRendah : 300; if(FB.meta.shiftAktif) SHIFT = FB.meta.shiftAktif; PRODO = FB.meta.produksiOut || []; RQS = FB.meta.returProduksi || []; SOS = FB.meta.soProduksi || []; JDW = FB.meta.jadwal || null; SKUK = FB.meta.skuKarton || {}; applyJadwal(); retSeq = Math.max(1, FB.meta.retSeq||1); OUTS = FB.meta.outstanding || []; outSeq = Math.max(1, FB.meta.outSeq||1); OUT_DAYS = FB.meta.outHari || 2; TOL_DEFAULT = FB.meta.masterTol!=null ? FB.meta.masterTol : 0.02; applyMaster(); if(VIEW==="label") renderMaster(); var bs = FB.meta.statusBin||{}; S.forEach(function(p){ p.manual = bs[p.id] || null; }); }
+    if(FB.meta){ seq = Math.max(1, FB.meta.seq||1); orderSeq = Math.max(1, FB.meta.orderSeq||1); cadSeq = Math.max(0, FB.meta.cadSeq||10); RCUT = FB.meta.returCut || {}; KT = FB.meta.gabungTugas || []; MOV = FB.meta.masterOv || {}; MSTK = FB.meta.stokMesin || {}; LOW_PCS = FB.meta.batasRendah!=null ? FB.meta.batasRendah : 300; if(FB.meta.shiftAktif) SHIFT = FB.meta.shiftAktif; PRODO = FB.meta.produksiOut || []; RQS = FB.meta.returProduksi || []; SOS = FB.meta.soProduksi || []; JDW = FB.meta.jadwal || null; SKUK = FB.meta.skuKarton || {}; PKM = FB.meta.packerMaster || []; PKS = FB.meta.packerSesi || []; PKOK = FB.meta.packerOk || {}; pkSeq = Math.max(1, FB.meta.packerSeq||1, PKS.reduce(function(m,s){ return Math.max(m, (s.id||0)+1); }, 1)); applyJadwal(); retSeq = Math.max(1, FB.meta.retSeq||1); OUTS = FB.meta.outstanding || []; outSeq = Math.max(1, FB.meta.outSeq||1); OUT_DAYS = FB.meta.outHari || 2; TOL_DEFAULT = FB.meta.masterTol!=null ? FB.meta.masterTol : 0.02; applyMaster(); if(VIEW==="label") renderMaster(); var bs = FB.meta.statusBin||{}; S.forEach(function(p){ p.manual = bs[p.id] || null; }); }
     selCard = keepSel && findCard(keepSel) ? keepSel : null;
     plan = null; lastAlloc = {};
     snapSynced();
@@ -4386,7 +4743,7 @@
     camCtx.refresh = function(){ if(FB.on) renderAll(); else renderKamera(); };
   })();
 
-  function renderAll(){ fillSelects(); renderStats(); renderChips(); renderPickInfo(); renderSearch(); renderPutaway(); renderKonsol(); renderReturAdmin(); if(!$("#chat-log")) renderChat(); if(!$("#dn-cam")) renderDnAi(); renderOrderForm(); renderRsv(); renderOrderAdmin(); renderOrderList(); renderPicker(simCtx, $("#sim-scr")); renderLog(); update3D(); if(VIEW==="label") renderLabels(); if(VIEW==="kamera") renderKamera(); renderProd(); renderSO(); renderOperator(); if(VIEW==="so") renderSOPage(); if(VIEW==="jadwal") renderJadwal(); if(VIEW==="dash") renderDash(); flush(); }
+  function renderAll(){ fillSelects(); renderStats(); renderChips(); renderPickInfo(); renderSearch(); renderPutaway(); renderKonsol(); renderReturAdmin(); if(!$("#chat-log")) renderChat(); if(!$("#dn-cam")) renderDnAi(); renderOrderForm(); renderRsv(); renderOrderAdmin(); renderOrderList(); renderPicker(simCtx, $("#sim-scr")); renderLog(); update3D(); if(VIEW==="label") renderLabels(); if(VIEW==="kamera") renderKamera(); renderProd(); renderSO(); renderOperator(); if(VIEW==="so") renderSOPage(); if(VIEW==="jadwal") renderJadwal(); if(VIEW==="dash") renderDash(); renderPacker(); renderTerminal(); flush(); }
 
   /* ---------- 3D (denah lapangan: 3 line karton + racking plastik) ---------- */
   function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888888"; }
@@ -4631,11 +4988,11 @@
   $("#ai-x").addEventListener("click", function(){ aiOpen(false); });
   document.addEventListener("keydown", function(e){ if(e.key==="Escape" && !$("#ai-pop").hidden) aiOpen(false); });
   function route(){
-    var v = (location.hash||"").replace("#","");
-    var OKV = APP==="produksi" ? ["produksi","operator","so","jadwal","label"] : ["admin","petugas","kamera","label"]; if(OKV.indexOf(v)<0) v = OKV[0];
+    var v = (location.hash||"").replace("#",""); var TM = null; if(/^terminal(-|$)/.test(v)){ TM = v.slice(9); v = "terminal"; } PKT.key = TM || "";
+    var OKV = APP==="produksi" ? ["produksi","operator","so","packer","terminal","jadwal","label"] : ["admin","petugas","kamera","label"]; if(OKV.indexOf(v)<0) v = OKV[0];
     VIEW = v;
     $("#ai-fab").hidden = v!=="admin" || !$("#ai-pop").hidden; if(v!=="admin") $("#ai-pop").hidden = true;
-    ["admin","petugas","kamera","label","produksi","operator","so","jadwal","dash"].forEach(function(k){ $("#v-"+k).hidden = k!==v; });
+    ["admin","petugas","kamera","label","produksi","operator","so","jadwal","dash","packer","terminal"].forEach(function(k){ $("#v-"+k).hidden = k!==v; }); document.body.setAttribute("data-term", v==="terminal" && TM ? "1" : "");
     Array.prototype.forEach.call(document.querySelectorAll(".topnav a"), function(a){ if(a.dataset.v===v) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
     if(v!=="kamera" && CAM.inst) closeCam();
     if(v==="label") renderLabels();
@@ -4646,6 +5003,8 @@
     if(v==="so") renderSOPage(true);
     if(v==="jadwal") renderJadwal(true);
     if(v==="dash") renderDash(true);
+    if(v==="packer") renderPacker(true);
+    if(v==="terminal") renderTerminal(true);
     try{ window.scrollTo(0,0); }catch(e){}
   }
   window.addEventListener("hashchange", route);

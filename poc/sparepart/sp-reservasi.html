@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Reservasi Maintenance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sp.css">
+<style>
+.evd{display:flex; gap:8px; align-items:center; font-size:.86rem} .evd .cal{font-size:1rem} .evd.big{font-size:.95rem; margin-bottom:4px}
+.evlist{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px}
+.evc{text-align:left; display:flex; flex-direction:column; gap:4px; padding:12px; border-radius:12px; background:var(--surface); border:1px solid var(--line); cursor:pointer; color:var(--ink)}
+.evc.on{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-2)}
+.rd{display:flex; gap:8px; flex-wrap:wrap}
+.rd .k{flex:1 1 120px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:8px 10px}
+.rd .k b{display:block; font-family:var(--mono); font-size:1.25rem}
+.rd .k.bad b{color:var(--crit)} .rd .k.good b{color:var(--ok)}
+td select, td input{padding:5px 7px; font-size:.82rem}
+td input.q{width:62px}
+.log{font-size:.78rem; color:var(--ink-dim); max-height:220px; overflow:auto}
+.log div{padding:3px 0; border-bottom:1px dashed var(--line)}
+.res{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+.res input{width:auto; flex:1 1 160px}
+.ln{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:8px}
+.ln.off{opacity:.5}
+.lns{display:flex; flex-direction:column; gap:8px}
+.ln-main{display:flex; gap:10px; align-items:flex-start}
+.ln-main .thumb{width:56px; height:56px} .ln-main .thumb.ill svg{width:38px; height:38px}
+.ln-txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px}
+.ln-st{display:flex; gap:4px; flex-wrap:wrap}
+.ln-bar{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; border-top:1px dashed var(--line); padding-top:8px}
+.kcs{display:flex; gap:4px; flex-wrap:wrap}
+.kc{padding:4px 11px; font-size:.78rem; border-radius:99px}
+.kc.on.crit{background:var(--crit); border-color:var(--crit); color:#fff} .kc.on.warn{background:var(--warn); border-color:var(--warn); color:#fff} .kc.on.dim{background:var(--ink-dim); border-color:var(--ink-dim); color:var(--surface)}
+button.sm{padding:4px 10px; font-size:.78rem}
+button.needs{color:var(--crit); border-color:var(--crit)}
+.ln-more{display:flex; flex-direction:column; gap:8px; background:var(--surface-2); border-radius:8px; padding:10px}
+.spi{font-size:.8rem; padding:6px 9px; border-radius:8px; background:var(--surface-2); color:var(--ink-dim)} .spi.ok{color:var(--ok)} .spi.bad{color:var(--crit)} .spi.wait{color:var(--info)}
+.sumline{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px}
+.gobar{position:sticky; bottom:calc(10px + env(safe-area-inset-bottom,0px)); margin-top:12px; display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; background:var(--surface); border:1px solid var(--accent); box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.card .act .qty button{padding:3px 9px}
+details summary{cursor:pointer}
+.lt{display:flex; gap:8px; align-items:flex-start} .lt .thumb{width:44px; height:44px} .lt .thumb.ill svg{width:30px; height:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav"><a href="sp-mekanik.html">Mekanik</a><a href="sp-gudang.html">Tim sparepart</a><a href="sp-reservasi.html" class="on">Reservasi maintenance</a><a href="sp-master.html">Master data</a><span id="store-st"></span></nav>
+  <header class="top">
+    <span class="eyebrow">Proyek 06 &middot; engineering &amp; expert mesin</span>
+    <h1>Reservasi maintenance mesin</h1>
+    <p class="lede">Daftar sparepart untuk maintenance terencana ditahan di aplikasi (SAP tidak diubah). Barang yang kosong tetap dicatat sebagai kebutuhan tertunda dan langsung muncul sebagai peringatan untuk expert, planner, dan tim sparepart. Lead time pembelian belum dimodelkan: cukup catatan, kategori, dan perkiraan datang.</p>
+  </header>
+  <div class="banner">Prototipe simulasi. Data contoh dan tersimpan di browser ini (atau Firebase bila aktif).</div>
+  <section><div class="section-head"><h2>Event maintenance</h2><button type="button" class="primary" id="new-btn">+ Event baru</button></div>
+    <div id="newform" hidden></div>
+    <div class="tabs" id="evtabs"></div>
+    <div id="evlist" class="evlist"></div>
+  </section>
+  <div id="detail"></div>
+  <footer>POC &middot; Aturan: stok bebas = stok SAP &minus; tahanan aktif; stok masuk dialokasikan ke kebutuhan tertunda menurut kritikalitas, tanggal H terdekat, waktu dibuat; tahanan yang sudah ada tidak dicabut otomatis.</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js"></script>
+<script src="sp-core.js"></script>
+<script>
+(function(){
+  var CUR = null, NEWMSG = "", LIST = "akan";
+  function opts(map, sel, blank){ var h = blank ? '<option value="">'+blank+'</option>' : ""; Object.keys(map).forEach(function(k){ h += '<option value="'+k+'"'+(k===sel ? " selected" : "")+'>'+(Array.isArray(map[k]) ? map[k][0] : map[k])+'</option>'; }); return h; }
+  function evCard(ev){
+    var r = readiness(ev), lb = evLabel(ev), m = machineById(ev.machine) || {}, act = evActive(ev);
+    return '<button type="button" class="evc'+(CUR===ev.id ? " on" : "")+'" data-ev="'+ev.id+'"><div class="row"><b>'+esc(ev.name)+'</b><span class="tag '+lb[1]+'">'+lb[0]+'</span></div><div class="evd"><span class="cal">&#128197;</span><span><b>'+tglMaint(ev.tgl)+'</b>'+(act ? ' <span class="tag '+(daysTo(ev.tgl)<=7 ? 'warn' : '')+'">'+sisaHari(ev.tgl)+'</span>' : '')+'</span></div><div class="note">'+esc(m.name||ev.machine)+' &middot; '+(act ? r.siap+'/'+r.total+' barang siap' : ev.lines.filter(function(l){ return l.terpakai>0; }).length+' barang terpakai')+(act && r.kritKosong ? ' &middot; <span style="color:var(--crit)">'+r.kritKosong+' kritis belum aman</span>' : '')+(act && r.draft ? ' &middot; <span style="color:var(--warn)">'+r.draft+' belum dikirim</span>' : '')+'</div></button>';
+  }
+  var OPEN = {}, QTY = {}, STEP = {};
+  function stepper(attr, id, v, dis){ return '<span class="qty"><button type="button" '+attr+'="'+id+'|-1"'+dis+' aria-label="Kurangi">&minus;</button><span>'+v+'</span><button type="button" '+attr+'="'+id+'|1"'+dis+' aria-label="Tambah">+</button></span>'; }
+  function spInfo(ev, l){
+    if(l.dilepas || l.tunda<=0) return '';
+    if(!l.tindakan) return '<div class="spi wait">Menunggu tindakan tim sparepart</div>';
+    if(l.tindakan==="tidak_bisa") return '<div class="spi bad">Tim sparepart: tidak bisa diadakan. Bahas di rapat (tunda penggantian, padanan, atau geser jadwal).</div>';
+    var late = etaLate(ev, l);
+    return '<div class="spi'+(late ? ' bad' : ' ok')+'">Tim sparepart: '+esc(TINDAKAN[l.tindakan])+(l.eta ? ' &middot; perkiraan datang '+tgFull(l.eta)+(late ? ' (setelah hari H)' : ' (sebelum hari H)') : ' &middot; perkiraan datang belum ada')+(l.ref ? ' &middot; '+esc(l.ref) : '')+'</div>';
+  }
+  function lineRow(ev, l, ro){
+    var it = item(l.mat), ls = lineStatus(l), dis = ro || l.dilepas || l.diambil>0 ? " disabled" : "", open = OPEN[l.id];
+    var chips = Object.keys(KRIT).map(function(k){ return '<button type="button" class="kc'+(l.krit===k ? ' on '+KRIT[k][1] : '')+'" data-kr="'+l.id+'|'+k+'"'+dis+'>'+KRIT[k][0]+'</button>'; }).join("");
+    var st = l.draft ? 'Belum dikirim &middot; stok bebas '+Math.max(0, freeOf(l.mat))+' '+it.unit : !evActive(ev) ? (l.dilepas ? 'dihapus dari daftar' : l.terpakai>0 ? 'Terpakai '+l.terpakai+' '+it.unit : l.gagal>0 ? 'Tidak diganti, stok kosong' : 'Tidak diambil') : l.dilepas ? 'dilepas' : l.diambil>0 && l.tahan<=0 && l.tunda<=0 ? 'Diserahkan '+l.diambil+' '+it.unit+(l.kembali ? ', kembali '+l.kembali : '') : l.tunda<=0 ? 'Ditahan '+l.tahan+' '+it.unit+(l.siapH ? ' · sudah disiapkan' : '') : l.tahan>0 ? 'Ada '+l.tahan+', kurang '+l.tunda : 'Kosong, kurang '+l.tunda;
+    var h = '<div class="ln'+(l.dilepas ? ' off' : '')+'"><div class="ln-main">'+thumbHtml(it)+'<div class="ln-txt"><b>'+esc(it.name)+'</b><div class="note"><span class="mono">'+it.mat+'</span> &middot; bin '+esc(it.bin)+'</div><div class="ln-st"><span class="tag '+ls[1]+'">'+st+'</span></div>'+(l.note && !open ? '<div class="note">&ldquo;'+esc(l.note)+'&rdquo;</div>' : '')+'</div>'+
+      '<div class="ln-q">'+stepper("data-lq", l.id, l.q, dis)+'</div></div>'+spInfo(ev, l)+
+      '<div class="ln-bar"><div class="kcs">'+chips+'</div><div class="row" style="gap:6px">'+(l.dilepas || !evActive(ev) ? '' : '<button type="button" class="ghost sm" data-open="'+l.id+'">'+(open ? 'Selesai' : l.note ? 'Ubah catatan' : 'Catatan')+'</button>')+(ro||l.dilepas||l.diambil>0 ? '' : '<button type="button" class="ghost sm" data-rel="'+l.id+'" aria-label="Hapus dari daftar">Hapus</button>')+'</div></div>';
+    if(open && !l.dilepas) h += '<div class="ln-more"><label class="f">Catatan untuk tim sparepart dan rapat<input data-f="note|'+l.id+'" placeholder="mis. wajib ganti, aus berat, boleh merek lain" value="'+esc(l.note)+'"'+(evActive(ev) ? '' : ' disabled')+'></label></div>';
+    return h+'</div>';
+  }
+
+  var ADD = { ev:null, sec:null, q:"" }, FLASH = {};
+  function sendBar(ev, r){
+    if(!r.draft) return FLASH[ev.id] ? '<div class="msg ok show">'+esc(FLASH[ev.id])+'</div>' : '';
+    return '<div class="gobar sendbar"><span><b>'+r.draft+' barang belum dikirim</b> ke tim sparepart. Stok baru ditahan setelah dikirim.</span><button type="button" class="primary" data-send="1">Kirim ke tim sparepart</button></div>';
+  }
+  function addCard(ev, it, qty){
+    var st = stockOf(it.mat), fr = Math.max(0, freeOf(it.mat)), inL = ev.lines.filter(function(l){ return l.mat===it.mat && !l.dilepas; })[0], hb = heldBy(it.mat).filter(function(x){ return x.ev.id!==ev.id; });
+    var stock = st<=0 ? '<span class="tag crit">Stok kosong</span>' : '<span class="tag ok">Bisa ditahan '+fr+' '+it.unit+'</span>';
+    var f = FAMS.filter(function(z){ return z.id===it.fam; })[0] || {name:""}, q = QTY[it.mat] || 1;
+    return '<div class="card'+(inL ? ' sel' : '')+'">'+thumbHtml(it)+'<div class="body"><div class="nm">'+esc(it.name)+'</div><div class="sp"><span class="mono">'+it.mat+'</span> &middot; '+esc(it.brand)+' &middot; '+esc(f.name)+'</div><div class="sp">'+esc(it.spec)+'</div><div class="meta">'+stock+'<span class="tag">bin '+esc(it.bin)+'</span>'+(qty ? '<span class="tag dim">terpasang '+qty+' di mesin</span>' : '')+(hb.length ? '<span class="tag warn">dipakai juga '+esc(hb[0].ev.name)+'</span>' : '')+'</div>'+
+      '<div class="act">'+(inL ? '<button type="button" disabled>&#10003; Di daftar ('+inL.q+')</button>' : stepper("data-aq", it.mat, q, "")+'<button type="button" class="primary" data-add="'+it.mat+'">Tambah</button>')+'</div></div></div>';
+  }
+  function addList(ev){
+    var q = ADD.q.trim(), items = [], qmap = {};
+    if(q){ items = searchText(q, ev.machine).slice(0, 24); }
+    else if(ADD.sec){ var code = ADD.sec==="*" ? null : ADD.sec; bomOf(ev.machine, code).forEach(function(b){ qmap[b.mat] = b.q; if(item(b.mat)) items.push(item(b.mat)); }); }
+    else return '<p class="note">Pilih bagian mesin yang akan di-maintenance, atau ketik nama, kode, atau ukuran barang.</p>';
+    if(q){ var all = bomOf(ev.machine, null); items.forEach(function(it){ var u = all.filter(function(b){ return b.mat===it.mat; })[0]; if(u) qmap[it.mat] = u.q; }); }
+    return items.length ? '<div class="cards">'+items.map(function(it){ return addCard(ev, it, qmap[it.mat]); }).join("")+'</div>' : '<p class="note">Tidak ada barang yang cocok.</p>';
+  }
+  function addHtml(ev){
+    if(ADD.ev!==ev.id){ ADD = { ev:ev.id, sec:null, q:"" }; }
+    var secs = sectionsOf(ev.machine);
+    if(ADD.sec && !ADD.q) {
+      var nm = ADD.sec==="*" ? "Semua bagian" : secName(ev.machine, ADD.sec);
+      return '<div class="crumb" style="margin-top:8px"><button type="button" data-sec="">&lsaquo; Ganti bagian</button><b>'+esc(nm)+'</b></div><div class="fsearch"><input id="add-q" type="search" placeholder="Cari di semua barang: nama, kode, ukuran" value="" autocomplete="off"></div><div id="add-res">'+addList(ev)+'</div>';
+    }
+    var h = '<div class="fsearch" style="margin-top:8px"><input id="add-q" type="search" placeholder="Cari nama, kode, ukuran (mis. 6205)" value="'+esc(ADD.q)+'" autocomplete="off"></div><div id="add-res">';
+    if(ADD.q) return h+addList(ev)+'</div>';
+    h += '<p class="note" style="margin-bottom:6px">Atau pilih bagian mesin:</p><div class="flgrid"><button type="button" class="flc all" data-sec="*"><b>Semua bagian</b><span class="mono">seluruh komponen mesin</span></button>';
+    secs.forEach(function(s){ h += '<button type="button" class="flc" data-sec="'+s.code+'"><b>'+esc(s.name)+'</b><span class="mono">'+s.bom.length+' komponen</span></button>'; });
+    return h+'</div></div>';
+  }
+  function detail(){
+    var ev = eventById(CUR), h = ""; if(!ev){ $("#detail").innerHTML = ""; return; }
+    var r = readiness(ev), m = machineById(ev.machine) || {}, ro = !evActive(ev), lb = evLabel(ev), d = daysTo(ev.tgl);
+    var live = ev.lines.filter(function(l){ return !l.dilepas; });
+    var step = ro || ev.status==="dikunci" ? "daftar" : (STEP[ev.id] || (live.length ? "daftar" : "pilih"));
+    h += '<section><div class="section-head"><h2>'+esc(ev.name)+'</h2><span class="tag '+lb[1]+'">'+lb[0]+'</span></div>';
+    h += '<div class="evd big"><span class="cal">&#128197;</span><span>Jadwal maintenance <b>'+tglMaint(ev.tgl)+'</b>'+(ro ? '' : ' <span class="tag '+(d<=7 ? 'warn' : '')+'">'+sisaHari(ev.tgl)+'</span>')+'</span></div><p class="note" style="margin-bottom:10px">'+esc(m.name||ev.machine)+' &middot; planner: '+esc(ev.planner)+(ev.expert ? ' &middot; expert: '+esc(ev.expert) : '')+'</p>';
+    var lk = false;
+    if(false) h += '<div class="msg ok show">Daftar final sudah dikunci'+(ev.locked ? ' pada '+tgFull(ymd(new Date(ev.locked))) : '')+'. Tim sparepart mulai menyiapkan barang. Perubahan jumlah, kategori, atau barang harus lewat <b>Buka kunci</b> dan tercatat di riwayat.</div>';
+    if(!ro && !lk) h += '<div class="tabs"><button type="button" data-step="pilih" class="'+(step==="pilih" ? "on" : "")+'"><span class="stepn">1</span>Pilih barang</button><button type="button" data-step="daftar" class="'+(step==="daftar" ? "on" : "")+'"><span class="stepn">2</span>Daftar &amp; kategori ('+live.length+')</button></div>';
+    if(step==="pilih"){
+      h += '<div class="addbox">'+addHtml(ev)+'</div>';
+      if(live.length) h += (r.draft ? sendBar(ev, r) : '')+'<div class="gobar"><span>'+live.length+' barang di daftar'+(r.draft ? ' ('+r.draft+' belum dikirim)' : '')+'</span><button type="button" data-step="daftar">Lihat daftar &rsaquo;</button></div>';
+    } else {
+      var sum = ro ? live.filter(function(l){ return l.terpakai>0; }).length+' dari '+live.length+' barang terpakai' : r.total ? r.siap+' dari '+r.total+' barang siap' : live.length ? 'Belum ada yang dikirim' : 'Daftar masih kosong';
+      h += '<div class="sumline"><b>'+sum+'</b>'+(r.kurang ? '<span class="tag crit">'+r.kurang+' kurang</span>' : '')+(r.tanpaTindakan ? '<span class="tag info">'+r.tanpaTindakan+' menunggu tim sparepart</span>' : '')+(r.tanpaKrit ? '<span class="tag warn">'+r.tanpaKrit+' belum diberi kategori</span>' : '')+(r.draft ? '<span class="tag warn">'+r.draft+' belum dikirim</span>' : '')+'</div>';
+      if(!ro) h += sendBar(ev, r);
+      if(r.risk) h += '<div class="msg crit show">'+r.kritKosong+' barang kritis belum aman untuk hari H (belum ada perkiraan datang, atau datang setelah H). Bahas di rapat bersama tim sparepart.</div>';
+      h += live.length || ev.lines.length ? '<div class="lns">'+ev.lines.filter(function(l){ return !l.dilepas || ro; }).map(function(l){ return lineRow(ev, l, ro || lk); }).join("")+'</div>' : '<div class="panel"><p class="note">Belum ada barang. <button type="button" class="ghost sm" data-step="pilih">Pilih barang</button></p></div>';
+      if(!ro && live.length){
+        h += '<p class="note" style="margin-top:10px">Pilih barang dulu, lalu klik <b>Kirim ke tim sparepart</b>. Setelah dikirim, barang yang ada stoknya ditahan dan disiapkan, yang kurang ditindak (beli). Barang masih bisa ditambah sampai maintenance selesai; yang baru dikirim dengan tombol yang sama. Catatan tiap barang ikut terbaca oleh tim sparepart. Serah terima dilakukan tim sparepart di hari maintenance.</p>';
+        h += '<details class="more"><summary>Lainnya: batalkan maintenance</summary><div class="res" style="margin-top:8px"><button type="button" id="cancel-ev">Batalkan maintenance (lepas semua tahanan)</button></div>';
+        h += '</details>';
+      }
+    }
+    if(ro) h += '<div class="res" style="margin-top:10px"><button type="button" id="del-ev">Hapus dari daftar</button><span class="note" id="del-note"></span></div>';
+    h += '</section>';
+    var reqs = S.maint.reqs.filter(function(x){ return x.evId===ev.id; });
+    if(reqs.length){
+      h += '<section><div class="section-head"><h2>Pengajuan pakai dari mekanik</h2></div><div class="panel tbl-wrap" style="padding:0"><table class="list"><tr><th>No</th><th>Barang</th><th>Dari</th><th>Status</th><th></th></tr>'+reqs.map(function(x){
+        return '<tr><td class="mono">'+x.id+'</td><td>'+esc(item(x.mat).name)+' &times;'+x.q+'</td><td>'+esc(x.by)+'</td><td><span class="tag '+(x.status==="disetujui" ? "ok" : x.status==="ditolak" ? "crit" : "warn")+'">'+x.status+'</span>'+(x.alasan ? '<div class="note">'+esc(x.alasan)+'</div>' : '')+'</td><td>'+(x.status==="disetujui" && !x.diambil ? '<button type="button" data-tk="'+x.id+'">Tandai sudah diambil</button>' : '')+(x.status==="diajukan" ? '<div class="res"><input id="ra-'+x.id+'" placeholder="alasan (opsional)"><button type="button" class="primary" data-ap="'+x.id+'">Setujui</button><button type="button" data-rj="'+x.id+'">Tolak</button></div>' : '')+'</td></tr>';
+      }).join("")+'</table></div><p class="note">Persetujuan oleh pemilik event (planner). Barang yang dilepas membuat barisnya kembali kurang dan memicu peringatan.</p></section>';
+    }
+    h += '<section><details><summary class="note">Riwayat event</summary><div class="panel log" style="margin-top:8px">'+ev.log.slice().reverse().map(function(g){ return '<div>'+new Date(g.t).toLocaleString("id-ID")+' &middot; '+esc(g.txt)+(g.by ? ' <span class="note">('+esc(g.by)+')</span>' : '')+'</div>'; }).join("")+'</div></details></section>';
+    $("#detail").innerHTML = h;
+  }
+  function render(){
+    var sb = $("#store-st"); if(sb) sb.innerHTML = storeBadge();
+    ensureMaint();
+    var up = S.maint.events.filter(evActive).sort(function(a, b){ return a.tgl<b.tgl ? -1 : 1; }), dn = S.maint.events.filter(function(e){ return !evActive(e); }).sort(function(a, b){ return a.tgl>b.tgl ? -1 : 1; });
+    var L = LIST==="selesai" ? dn : up;
+    $("#evtabs").innerHTML = '<button type="button" data-list="akan" class="'+(LIST==="akan" ? "on" : "")+'">Akan datang ('+up.length+')</button><button type="button" data-list="selesai" class="'+(LIST==="selesai" ? "on" : "")+'">Sudah selesai ('+dn.length+')</button>';
+    $("#evlist").innerHTML = L.length ? L.map(evCard).join("") : '<p class="note">'+(LIST==="selesai" ? 'Belum ada maintenance yang selesai.' : 'Belum ada maintenance terjadwal. Klik + Event baru.')+'</p>'+(LIST!=="selesai" && !S.maint.events.length ? '<p><button type="button" id="mk-sample">Buat event contoh (untuk mencoba)</button></p>' : '');
+    if(CUR && !L.some(function(e){ return e.id===CUR; })) CUR = null;
+    detail(); navBadge();
+  }
+  function showNew(){
+    var f = $("#newform"); f.hidden = !f.hidden; if(f.hidden) return;
+    f.innerHTML = '<div class="panel grid2" style="margin-bottom:10px"><label class="f">Nama event<input id="n-name" value="Maintenance "></label><label class="f">Mesin<select id="n-m">'+MACHINES.map(function(m){ return '<option value="'+m.id+'">'+esc(m.name)+'</option>'; }).join("")+'</select></label><label class="f">Tanggal H<input id="n-d" type="date" value="'+addDays(todayStr(), 21)+'"></label><label class="f">Expert mesin<input id="n-x" placeholder="nama expert"></label><div><button type="button" class="primary" id="n-ok">Buat event</button></div></div>';
+  }
+  var BYID = function(id){ var ev = eventById(CUR); return ev && lineById(ev, id); };
+  document.addEventListener("click", function(e){
+    var t = e.target.closest ? e.target.closest("button") : null; if(!t) return; var a, ev = eventById(CUR);
+    if(t.id==="new-btn") return showNew();
+    if(t.id==="mk-sample"){ var e0 = seedMaint(); saveState(); LIST = "akan"; CUR = e0.id; return render(); }
+    if(t.id==="n-ok"){ var n = $("#n-name").value.trim(), d = $("#n-d").value; if(!n || !d) return; var x = newEvent({ name:n, machine:$("#n-m").value, tgl:d, expert:$("#n-x").value.trim() }); CUR = x.id; STEP[x.id] = "pilih"; $("#newform").hidden = true; return render(); }
+    if((a = t.getAttribute("data-list"))){ LIST = a; CUR = null; return render(); }
+    if((a = t.getAttribute("data-ev"))){ CUR = a; return render(); }
+    if(!ev) return;
+    if(t.getAttribute("data-send")){ var rs = sendLines(ev, ev.planner); FLASH[ev.id] = rs.n ? 'Terkirim ke tim sparepart: '+rs.n+' barang ('+rs.held+' pcs ditahan'+(rs.short ? ', '+rs.short+' barang kurang stok dan menunggu tindakan' : '')+').' : ''; STEP[ev.id] = "daftar"; render(); return; }
+    if((a = t.getAttribute("data-rel"))){ var l = lineById(ev, a); if(l){ releaseLine(ev, l, ev.planner); saveState(); render(); } return; }
+    if((a = t.getAttribute("data-add"))){ if(addLine(ev, a, QTY[a]||1, "", ev.planner)){ delete QTY[a]; saveState(); render(); } return; }
+    if(t.hasAttribute("data-sec")){ ADD.sec = t.getAttribute("data-sec")||null; ADD.q = ""; return render(); }
+    if((a = t.getAttribute("data-step"))){ STEP[ev.id] = a; return render(); }
+    if((a = t.getAttribute("data-aq"))){ var pa = a.split("|"); QTY[pa[0]] = Math.max(1, (QTY[pa[0]]||1) + (+pa[1])); t.parentNode.querySelector("span").textContent = QTY[pa[0]]; return; }
+    if((a = t.getAttribute("data-lq"))){ var pl = a.split("|"), ll = lineById(ev, pl[0]); if(ll){ setLineQty(ev, ll, ll.q + (+pl[1]), ev.planner); saveState(); render(); } return; }
+    if((a = t.getAttribute("data-kr"))){ var pk = a.split("|"), lk = lineById(ev, pk[0]); if(lk){ lk.krit = lk.krit===pk[1] ? "" : pk[1]; maintLog(ev, "Kategori "+item(lk.mat).name+": "+(lk.krit||"dikosongkan"), ev.expert||"expert"); saveState(); render(); } return; }
+    if((a = t.getAttribute("data-open"))){ OPEN[a] = !OPEN[a]; return render(); }
+    if(t.getAttribute("data-addall")){ var any = false; Array.prototype.forEach.call(document.querySelectorAll("#add-res [data-add]"), function(b){ if(addLine(ev, b.getAttribute("data-add"), +b.getAttribute("data-qty")||1, "", ev.planner)) any = true; }); if(any){ saveState(); render(); } return; }
+    if(t.id==="lock"){ ev.status = "dikunci"; ev.locked = Date.now(); maintLog(ev, "Daftar final dikunci", ev.planner); saveState(); return render(); }
+    if(t.id==="unlock"){ ev.status = "draf"; maintLog(ev, "Kunci dibuka", ev.planner); saveState(); return render(); }
+    if(t.id==="del-ev"){ if(!t.getAttribute("data-ok")){ t.setAttribute("data-ok","1"); t.textContent = "Klik lagi untuk menghapus permanen"; return; } deleteEvent(CUR); CUR = null; return render(); }
+    if(t.id==="cancel-ev"){ ev.lines.slice().forEach(function(l){ if(!l.dilepas && !(l.diambil>0)) releaseLine(ev, l, ev.planner); }); ev.status = "dibatalkan"; maintLog(ev, "Maintenance dibatalkan", ev.planner); saveState(); LIST = "selesai"; return render(); }
+    if(t.id==="close-ev"){ closeMaint(ev, null, ev.planner); LIST = "selesai"; return render(); }
+    if(t.id==="sim-go"){ var mt = $("#sim-mat").value, q = Math.max(1, +$("#sim-q").value|0); S.stock[mt] = stockOf(mt)+q; maintLog(ev, "Simulasi stok masuk: "+item(mt).name+" +"+q, "gudang"); saveState(); return render(); }
+    if((a = t.getAttribute("data-ap"))){ var r = S.maint.reqs.filter(function(z){ return z.id===a; })[0]; if(r){ decideReq(r, true, ($("#ra-"+a)||{}).value, ev.planner); render(); } return; }
+    if((a = t.getAttribute("data-tk"))){ var r3 = S.maint.reqs.filter(function(z){ return z.id===a; })[0]; if(r3){ r3.diambil = true; maintLog(ev, "Pengajuan "+a+" sudah diambil mekanik", "gudang"); saveState(); render(); } return; }
+    if((a = t.getAttribute("data-rj"))){ var r2 = S.maint.reqs.filter(function(z){ return z.id===a; })[0]; if(r2){ decideReq(r2, false, ($("#ra-"+a)||{}).value, ev.planner); render(); } return; }
+  });
+  document.addEventListener("input", function(e){
+    if(e.target.id==="add-q"){ var ev2 = eventById(CUR); if(!ev2) return; ADD.q = e.target.value; $("#add-res").innerHTML = addList(ev2); }
+  });
+  document.addEventListener("change", function(e){
+    var f = e.target.getAttribute && e.target.getAttribute("data-f"); if(!f) return; var p = f.split("|"), ev = eventById(CUR), l = BYID(p[1]); if(!ev || !l) return;
+    var v = e.target.value;
+    if(p[0]==="q") setLineQty(ev, l, +v, ev.planner);
+    else if(p[0]==="krit"){ l.krit = v; maintLog(ev, "Kategori "+item(l.mat).name+": "+(v||"dikosongkan"), ev.expert||"expert"); }
+    else if(p[0]==="note"){ l.note = v; maintLog(ev, "Catatan expert "+item(l.mat).name+" diubah", ev.expert||"expert"); }
+    else if(p[0]==="eta"){ l.eta = v; maintLog(ev, "ETA "+item(l.mat).name+": "+(v ? tgFull(v) : "dikosongkan"), ev.planner); }
+    else if(p[0]==="putusan"){ l.putusan = v; if(!v) l.alasan = ""; maintLog(ev, "Putusan "+item(l.mat).name+": "+(PUTUSAN[v]||"dibatalkan"), ev.planner); }
+    else if(p[0]==="alasan"){ l.alasan = v; }
+    saveState(); render();
+  });
+  initStore(function(){ render(); });
+  render();
+})();
+</script>
+</body>
+</html>
