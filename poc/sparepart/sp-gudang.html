@@ -7,19 +7,42 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="sp.css">
+<style>
+.seg{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+.seg button{flex:1 1 220px; text-align:left; padding:11px 14px; border-radius:12px; display:flex; align-items:center; gap:6px; flex-wrap:wrap}
+.seg button.on{border-color:var(--accent); background:var(--accent-2); box-shadow:0 0 0 2px var(--accent-2); font-weight:600}
+.sc{margin-left:auto; min-width:22px; text-align:center; font-family:var(--mono); font-size:.75rem; padding:1px 7px; border-radius:10px; background:var(--tag-bg)} .sc.urg{background:var(--crit); color:#fff}
+.ln{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:8px}
+.lns{display:flex; flex-direction:column; gap:10px}
+.ln-main{display:flex; gap:10px; align-items:flex-start} .ln-main .thumb{width:60px; height:60px} .ln-main .thumb.ill svg{width:40px; height:40px}
+.ln-txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px}
+.need{font-size:.84rem}
+.chk{display:flex; align-items:center; gap:6px; font-size:.86rem} .chk input{width:20px; height:20px}
+.grp{background:var(--surface-2)} .grp .ln{background:var(--surface)} .evd{font-size:.86rem}
+.ln-more{display:flex; flex-direction:column; gap:8px; background:var(--surface-2); border-radius:8px; padding:10px}
+.ln-bar{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; border-top:1px dashed var(--line); padding-top:8px}
+.kcs{display:flex; gap:6px; flex-wrap:wrap} .kc{padding:6px 12px; font-size:.82rem; border-radius:99px} .kc.on{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.spi{font-size:.82rem; padding:6px 9px; border-radius:8px; background:var(--surface-2)} .spi.ok{color:var(--ok)} .spi.bad{color:var(--crit)}
+button.sm{padding:4px 10px; font-size:.78rem}
+.order td .thumb{width:40px; height:40px} .order td .thumb.ill svg{width:28px; height:28px}
+</style>
 </head>
 <body>
 <div class="wrap">
-  <nav class="topnav"><a href="sp-mekanik.html">Mekanik</a><a href="sp-gudang.html" class="on">Tim sparepart</a><a href="sp-master.html">Master data</a><span id="store-st"></span></nav>
+  <nav class="topnav"><a href="sp-mekanik.html">Mekanik</a><a href="sp-gudang.html" class="on">Tim sparepart</a><a href="sp-reservasi.html">Reservasi maintenance</a><a href="sp-master.html">Master data</a><span id="store-st"></span></nav>
   <header class="top">
     <span class="eyebrow">Sparepart &middot; tim gudang</span>
-    <h1>Antrian pesanan</h1>
-    <p class="lede">Pesanan dari mekanik masuk di sini: siapkan barang menurut bin, tandai siap diambil, lalu serah terima. Kandidat ukuran yang tidak cocok dikembalikan ke rak; yang dipakai mengurangi stok dan masuk history mesin.</p>
+    <h1 id="ttl">Antrian pesanan</h1>
+    <p class="lede" id="lede">Pesanan dari mekanik masuk di sini: siapkan barang menurut bin, tandai siap diambil, lalu serah terima. Kandidat ukuran yang tidak cocok dikembalikan ke rak; yang dipakai mengurangi stok dan masuk history mesin.</p>
   </header>
+  <div id="modebar"></div>
+  <div id="oview">
   <div class="tabs"><button type="button" data-f="aktif">Aktif</button><button type="button" data-f="selesai">Selesai / batal</button></div>
   <div id="newbar"></div>
   <div id="sum" class="row" style="margin-bottom:10px"></div>
   <div id="list"></div>
+  </div>
+  <div id="mview" hidden></div>
   <footer>POC &middot; Di lapangan GI tetap dicatat di SAP (MB1A) setelah order engineering masuk (YI94); halaman ini membantu menyiapkan barang lebih dulu.</footer>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
@@ -40,7 +63,106 @@
     SEEN = ids;
     $("#newbar").innerHTML = NEWMSG ? '<div class="newbar" role="status"><span><b>'+esc(NEWMSG)+'</b></span><button type="button" id="newbar-x">Tutup</button></div>' : '';
   }
+  /* ===== reservasi maintenance untuk tim sparepart (terpisah dari order mekanik) ===== */
+  var MODE = (function(){ try{ return localStorage.getItem("sp-g-mode") || "order"; }catch(e){ return "order"; } })();
+  var SUB = "tindak", DR = {}, RQ = {};
+  function mlines(){ var out = []; S.maint.events.forEach(function(ev){ if(!evActive(ev)) return; ev.lines.forEach(function(l){ if(!l.dilepas) out.push({ ev:ev, l:l }); }); }); return out; }
+  function prio(a, b){ var ka = (KRIT[a.l.krit]||[0,0,1])[2], kb = (KRIT[b.l.krit]||[0,0,1])[2]; if(ka!==kb) return ka-kb; return a.ev.tgl<b.ev.tgl ? -1 : a.ev.tgl>b.ev.tgl ? 1 : 0; }
+  function mGroups(){
+    var all = mlines();
+    var tindak = all.filter(function(x){ return x.l.tunda>0 && !x.l.tindakan; }).sort(prio);
+    var proses = all.filter(function(x){ return x.l.tunda>0 && x.l.tindakan; }).sort(prio);
+    var evs = S.maint.events.filter(function(ev){ return evActive(ev) && ev.lines.some(function(l){ return (!l.dilepas && (l.tahan>0 || l.diambil>0)) || l.balikRak>0; }); }).sort(function(a, b){ return a.tgl<b.tgl ? -1 : 1; });
+    return { tindak:tindak, proses:proses, evs:evs };
+  }
+  function head(x){
+    var it = item(x.l.mat), k = KRIT[x.l.krit], d = daysTo(x.ev.tgl);
+    return '<div class="ln-main">'+thumbHtml(it)+'<div class="ln-txt"><div class="row" style="gap:6px"><b>'+esc(it.name)+'</b>'+(k ? '<span class="tag '+k[1]+'">'+k[0]+'</span>' : '<span class="tag">belum dikategorikan</span>')+'</div><div class="note"><span class="mono">'+it.mat+'</span> &middot; bin '+esc(it.bin)+' &middot; stok '+stockOf(it.mat)+' '+it.unit+'</div>'+
+      '<div class="need">Kurang <b>'+x.l.tunda+' '+it.unit+'</b> dari '+x.l.q+' yang dibutuhkan</div>'+(x.l.note ? '<div class="note">Catatan engineering: &ldquo;'+esc(x.l.note)+'&rdquo;</div>' : '')+'</div></div>';
+  }
+  function tindakCard(x){
+    var dr = DR[x.l.id] || { t:"", eta:"", ref:"" }, h = '<div class="ln">'+head(x)+'<div class="ln-more"><div class="f">Tindakan</div><div class="kcs">';
+    Object.keys(TINDAKAN).forEach(function(k){ h += '<button type="button" class="kc'+(dr.t===k ? ' on sel' : '')+'" data-tdk="'+x.l.id+'|'+k+'">'+TINDAKAN[k]+'</button>'; });
+    h += '</div>';
+    if(dr.t && dr.t!=="tidak_bisa") h += '<div class="grid2"><label class="f">Perkiraan datang'+(dr.t==="padanan" ? ' (bila ada)' : '')+'<input type="date" data-dr="eta|'+x.l.id+'" value="'+esc(dr.eta)+'"></label><label class="f">No PR / PO (opsional)<input data-dr="ref|'+x.l.id+'" value="'+esc(dr.ref)+'" placeholder="mis. PR 10001234"></label></div>'+(dr.eta && dr.eta>x.ev.tgl ? '<div class="msg warn show">Perkiraan datang setelah hari H. Engineering akan melihatnya sebagai belum aman.</div>' : '');
+    if(dr.t==="tidak_bisa") h += '<p class="note">Engineering akan diberi tahu untuk memutuskan di rapat (tunda penggantian, padanan, atau geser jadwal).</p>';
+    var ok = dr.t && (dr.t==="tidak_bisa" || dr.t==="padanan" || dr.eta);
+    h += '<div><button type="button" class="primary" data-save="'+x.l.id+'"'+(ok ? '' : ' disabled')+'>Simpan tindakan</button>'+(dr.t && !ok ? ' <span class="note">Isi perkiraan datang dulu.</span>' : '')+'</div></div></div>';
+    return h;
+  }
+  function prosesCard(x){
+    var l = x.l, late = etaLate(x.ev, l), q = RQ[l.id] || l.tunda;
+    var h = '<div class="ln">'+head(x)+'<div class="spi'+(l.tindakan==="tidak_bisa" || late ? ' bad' : ' ok')+'">'+esc(TINDAKAN[l.tindakan])+(l.eta ? ' &middot; datang '+tgFull(l.eta)+(late ? ' (setelah hari H)' : '') : '')+(l.ref ? ' &middot; '+esc(l.ref) : '')+(l.tindakan==="tidak_bisa" ? ' &middot; menunggu keputusan engineering' : '')+'</div>';
+    h += '<div class="ln-bar">'+(l.tindakan!=="tidak_bisa" ? '<div class="row" style="gap:6px"><span class="note">Barang datang:</span><span class="qty"><button type="button" data-rq="'+l.id+'|-1">&minus;</button><span>'+q+'</span><button type="button" data-rq="'+l.id+'|1">+</button></span><button type="button" class="primary" data-recv="'+l.id+'">Terima</button></div>' : '<span></span>')+'<button type="button" class="ghost sm" data-redo="'+l.id+'">Ubah tindakan</button></div></div>';
+    return h;
+  }
+  function siapHtml(ev){
+    var ls = ev.lines.filter(function(l){ return !l.dilepas && (l.tahan>0 || l.diambil>0); }).sort(function(a, b){ return item(a.mat).bin<item(b.mat).bin ? -1 : 1; });
+    var back = ev.lines.filter(function(l){ return l.dilepas && l.balikRak>0; });
+    var prep = ls.filter(function(l){ return l.siapH || l.diambil>0; }).length, given = ls.filter(function(l){ return l.diambil>0 && l.tahan<=0; }).length;
+    var kur = ev.lines.filter(function(l){ return !l.dilepas && l.tunda>0; }).length, d = daysTo(ev.tgl), hday = d<=0;
+    var h = '<div class="order grp" style="margin-bottom:14px">'+evHead(ev, '<span class="row" style="gap:4px"><span class="tag '+(prep===ls.length ? 'ok' : 'info')+'">'+prep+'/'+ls.length+' disiapkan</span><span class="tag '+(given===ls.length && ls.length ? 'ok' : '')+'">'+given+'/'+ls.length+' diserahkan</span></span>');
+    if(kur) h += '<div class="note" style="color:var(--crit)">'+kur+' barang masih kurang, lihat tab Perlu ditindak / Diproses.</div>';
+    if(hday) h += '<div class="msg info show">Hari maintenance. Serahkan barang ke mekanik; stok berkurang saat diserahkan.</div>';
+    back.forEach(function(l){ var it = item(l.mat); h += '<div class="msg warn show">Dihapus dari daftar oleh engineering: <b>'+esc(it.name)+'</b> &times;'+l.balikRak+' sudah disiapkan, kembalikan ke bin '+esc(it.bin)+'. <button type="button" class="sm" data-back="'+ev.id+'|'+l.id+'">Sudah dikembalikan</button></div>'; });
+    h += '<div class="lns">'+ls.map(function(l){
+      var it = item(l.mat), out = (l.diambil||0)-(l.kembali||0), rq = RQ["k"+l.id] || out;
+      var act;
+      if(l.tahan>0) act = '<label class="chk"><input type="checkbox" data-siap="'+ev.id+'|'+l.id+'"'+(l.siapH ? ' checked' : '')+'> Disiapkan</label><button type="button" class="'+(hday ? 'primary' : '')+'" data-give="'+ev.id+'|'+l.id+'">Serahkan '+l.tahan+'</button>';
+      else act = '<span class="tag ok">Diserahkan '+l.diambil+(l.kembali ? ', kembali '+l.kembali : '')+'</span>'+(out>0 ? '<span class="row" style="gap:4px"><span class="note">Tidak terpakai:</span><span class="qty"><button type="button" data-kq="'+l.id+'|-1">&minus;</button><span>'+rq+'</span><button type="button" data-kq="'+l.id+'|1">+</button></span><button type="button" class="sm" data-ret="'+ev.id+'|'+l.id+'">Kembalikan ke rak</button></span>' : '');
+      return '<div class="ln"><div class="ln-main">'+thumbHtml(it)+'<div class="ln-txt"><b>'+esc(it.name)+'</b><div class="note"><span class="mono">bin '+esc(it.bin)+'</span> &middot; '+it.mat+' &middot; '+(l.tahan>0 ? 'ditahan '+l.tahan : 'dibutuhkan '+l.q)+' '+it.unit+(KRIT[l.krit] ? ' &middot; <span class="tag '+KRIT[l.krit][1]+'">'+KRIT[l.krit][0]+'</span>' : '')+'</div>'+(l.note ? '<div class="note">Catatan engineering: &ldquo;'+esc(l.note)+'&rdquo;</div>' : '')+'</div></div><div class="ln-bar">'+act+'</div></div>';
+    }).join("")+'</div>';
+    var open = ls.filter(function(l){ return l.tahan>0; }).length;
+    h += '<div class="res" style="margin-top:10px"><button type="button" data-fin="'+ev.id+'"'+(ls.length && given>0 ? '' : ' disabled')+'>Maintenance selesai</button><span class="note">'+(open ? open+' barang belum diserahkan; tahanannya dilepas saat selesai.' : 'Klik setelah barang tidak terpakai dikembalikan.')+'</span></div></div>';
+    return h;
+  }
+
+  function evHead(ev, right){
+    var m = machineById(ev.machine) || {}, d = daysTo(ev.tgl);
+    return '<div class="hd"><span><b>'+esc(ev.name)+'</b><div class="note">'+esc(m.name||ev.machine)+' &middot; '+(ev.planner ? esc(ev.planner) : '')+'</div></span>'+(right||'')+'</div><div class="evd">&#128197; Jadwal maintenance <b>'+tglMaint(ev.tgl)+'</b> <span class="tag '+(d<=7 ? 'warn' : '')+'">'+sisaHari(ev.tgl)+'</span></div>';
+  }
+  function grouped(list, fn){
+    var gs = [], by = {};
+    list.forEach(function(x){ if(!by[x.ev.id]){ by[x.ev.id] = { ev:x.ev, xs:[] }; gs.push(by[x.ev.id]); } by[x.ev.id].xs.push(x); });
+    gs.sort(function(a, b){ return a.ev.tgl<b.ev.tgl ? -1 : 1; });
+    return gs.map(function(g){ var k = g.xs.filter(function(x){ return x.l.krit==="kritis"; }).length; return '<div class="order grp" style="margin-bottom:14px">'+evHead(g.ev, '<span class="row" style="gap:4px">'+(k ? '<span class="tag crit">'+k+' kritis</span>' : '')+'<span class="tag">'+g.xs.length+' barang</span></span>')+'<div class="lns">'+g.xs.map(fn).join("")+'</div></div>'; }).join("");
+  }
+  function renderMaint(){
+    ensureMaint(); var g = mGroups(), h = '';
+    h += '<div class="tabs"><button type="button" data-sub="tindak" class="'+(SUB==="tindak" ? "on" : "")+'">Perlu ditindak ('+g.tindak.length+')</button><button type="button" data-sub="proses" class="'+(SUB==="proses" ? "on" : "")+'">Diproses ('+g.proses.length+')</button><button type="button" data-sub="siap" class="'+(SUB==="siap" ? "on" : "")+'">Siapkan &amp; serah terima ('+g.evs.length+')</button></div>';
+    if(SUB==="tindak") h += '<p class="note" style="margin-bottom:8px">Barang kosong atau kurang dari daftar maintenance. Pilih tindakan dan perkiraan datang; engineering melihatnya langsung di daftar mereka.</p>'+(g.tindak.length ? grouped(g.tindak, tindakCard) : '<div class="panel"><p class="note">Tidak ada barang yang perlu ditindak.</p></div>');
+    if(SUB==="proses") h += '<p class="note" style="margin-bottom:8px">Barang yang sedang dibeli atau dicarikan padanan. Saat barang datang, klik Terima: stok bertambah dan otomatis ditahan untuk event yang membutuhkan (kritis dan hari H terdekat lebih dulu).</p>'+(g.proses.length ? grouped(g.proses, prosesCard) : '<div class="panel"><p class="note">Tidak ada yang sedang diproses.</p></div>');
+    if(SUB==="siap") h += '<p class="note" style="margin-bottom:8px">Barang yang sudah ditahan untuk maintenance. Siapkan menurut bin dan centang; di hari maintenance klik Serahkan (stok berkurang). Sisa yang tidak terpakai dikembalikan ke rak, lalu klik Maintenance selesai.</p>'+(g.evs.length ? g.evs.map(siapHtml).join("") : '<div class="panel"><p class="note">Belum ada event yang perlu disiapkan.</p></div>');
+    $("#mview").innerHTML = h;
+  }
+  function modeBar(){
+    var g = mGroups(), act = ORDERS.filter(function(o){ return o.status!=="selesai" && o.status!=="batal"; }).length, n = g.tindak.length;
+    $("#modebar").innerHTML = '<div class="seg"><button type="button" data-mode="order" class="'+(MODE==="order" ? "on" : "")+'">Order mekanik <span class="note">(rusak mendadak)</span> <span class="sc">'+act+'</span></button><button type="button" data-mode="maint" class="'+(MODE==="maint" ? "on" : "")+'">Reservasi maintenance <span class="note">(terencana)</span> <span class="sc'+(n ? ' urg' : '')+'">'+n+'</span></button></div>';
+    $("#oview").hidden = MODE!=="order"; $("#mview").hidden = MODE!=="maint";
+    $("#ttl").textContent = MODE==="order" ? "Antrian pesanan" : "Reservasi maintenance";
+    $("#lede").textContent = MODE==="order" ? "Pesanan dari mekanik saat mesin rusak: siapkan barang menurut bin, tandai siap diambil, lalu serah terima." : "Daftar sparepart untuk maintenance terencana dari engineering: tindak barang yang kurang, terima barang yang datang, lalu siapkan sebelum hari H.";
+  }
+  document.addEventListener("click", function(e){
+    var t = e.target.closest ? e.target.closest("button") : null; if(!t) return; var a, f;
+    function find(id){ var r = null; mlines().forEach(function(x){ if(x.l.id===id) r = x; }); return r; }
+    if((a = t.getAttribute("data-mode"))){ MODE = a; try{ localStorage.setItem("sp-g-mode", a); }catch(x){} render(); return; }
+    if((a = t.getAttribute("data-sub"))){ SUB = a; render(); return; }
+    if((a = t.getAttribute("data-tdk"))){ var p = a.split("|"); DR[p[0]] = DR[p[0]] || { t:"", eta:"", ref:"" }; DR[p[0]].t = p[1]; renderMaint(); return; }
+    if((a = t.getAttribute("data-save"))){ f = find(a); var dr = DR[a]; if(f && dr){ setTindakan(f.ev, f.l, dr.t, dr.t==="tidak_bisa" ? "" : dr.eta, dr.ref); delete DR[a]; render(); } return; }
+    if((a = t.getAttribute("data-redo"))){ f = find(a); if(f){ DR[a] = { t:f.l.tindakan, eta:f.l.eta, ref:f.l.ref }; f.l.tindakan = ""; maintLog(f.ev, "Tindakan "+item(f.l.mat).name+" diubah", "Tim sparepart"); saveState(); SUB = "tindak"; render(); } return; }
+    if((a = t.getAttribute("data-rq"))){ var pq = a.split("|"); f = find(pq[0]); if(f){ RQ[pq[0]] = Math.max(1, (RQ[pq[0]] || f.l.tunda) + (+pq[1])); t.parentNode.querySelector("span").textContent = RQ[pq[0]]; } return; }
+    if((a = t.getAttribute("data-give"))){ var pg2 = a.split("|"), e2 = eventById(pg2[0]), l2 = e2 && lineById(e2, pg2[1]); if(l2){ handOver(e2, l2); render(); } return; }
+    if((a = t.getAttribute("data-kq"))){ var pk = a.split("|"); f = find(pk[0]); if(f){ var mx = (f.l.diambil||0)-(f.l.kembali||0); RQ["k"+pk[0]] = Math.max(1, Math.min(mx, (RQ["k"+pk[0]] || mx) + (+pk[1]))); t.parentNode.querySelector("span").textContent = RQ["k"+pk[0]]; } return; }
+    if((a = t.getAttribute("data-ret"))){ var pr = a.split("|"), e3 = eventById(pr[0]), l3 = e3 && lineById(e3, pr[1]); if(l3){ returnUnused(e3, l3, RQ["k"+l3.id] || ((l3.diambil||0)-(l3.kembali||0))); delete RQ["k"+l3.id]; render(); } return; }
+    if((a = t.getAttribute("data-back"))){ var pb = a.split("|"), e4 = eventById(pb[0]), l4 = e4 && lineById(e4, pb[1]); if(l4){ maintLog(e4, item(l4.mat).name+" dikembalikan ke rak", "Tim sparepart"); l4.balikRak = 0; saveState(); render(); } return; }
+    if((a = t.getAttribute("data-fin"))){ var e5 = eventById(a); if(e5){ finishMaint(e5); render(); } return; }
+    if((a = t.getAttribute("data-recv"))){ f = find(a); if(f){ receiveStock(f.l.mat, RQ[a] || f.l.tunda); delete RQ[a]; render(); } return; }
+  });
+  document.addEventListener("input", function(e){ var a = e.target.getAttribute && e.target.getAttribute("data-dr"); if(!a) return; var p = a.split("|"); DR[p[1]] = DR[p[1]] || { t:"", eta:"", ref:"" }; DR[p[1]][p[0]] = e.target.value; });
+  document.addEventListener("change", function(e){ var a = e.target.getAttribute && e.target.getAttribute("data-dr"); if(a && a.indexOf("eta|")===0) renderMaint(); });
+  document.addEventListener("change", function(e){ var a = e.target.getAttribute && e.target.getAttribute("data-siap"); if(!a) return; var p = a.split("|"), ev = eventById(p[0]), l = ev && lineById(ev, p[1]); if(l){ l.siapH = e.target.checked; maintLog(ev, item(l.mat).name+(l.siapH ? " sudah disiapkan" : " batal disiapkan"), "Tim sparepart"); saveState(); render(); } });
   function render(){
+    ensureMaint(); modeBar(); if(MODE==="maint") renderMaint();
     $("#store-st").innerHTML = storeBadge(); checkNew();
     Array.prototype.forEach.call(document.querySelectorAll("[data-f]"), function(b){ b.className = b.getAttribute("data-f")===F ? "on" : ""; });
     var act = ORDERS.filter(function(o){ return o.status!=="selesai" && o.status!=="batal"; });
