@@ -66,6 +66,25 @@ button.sm{padding:4px 10px; font-size:.78rem}
   /* ===== reservasi maintenance untuk tim sparepart (terpisah dari order mekanik) ===== */
   var MODE = (function(){ try{ return localStorage.getItem("sp-g-mode") || "order"; }catch(e){ return "order"; } })();
   var SUB = "tindak", DR = {}, RQ = {};
+  var RF = {};   // form pengembalian yang sedang terbuka, kuncinya "o:ORDER:mat" atau "m:EVENT:baris"
+  function rfForm(key, max, late, maint){
+    var f = RF[key]; if(!f) return "";
+    var rej = f.k==="reject";
+    return '<div class="panel rf" style="margin-top:8px"><div class="row" style="gap:6px"><b>Kembalikan barang</b>'+(late ? '<span class="tag warn">lewat '+RET_DAYS+' hari setelah serah terima</span>' : '')+'</div>'+
+      '<div class="row" style="gap:6px;margin-top:6px"><span class="note">Jumlah:</span><span class="qty"><button type="button" data-rf="q|'+key+'|-1">&minus;</button><span>'+f.q+'</span><button type="button" data-rf="q|'+key+'|1">+</button></span><span class="note">dari '+max+'</span></div>'+
+      '<div class="row" style="gap:6px;margin-top:6px"><span class="note">Kondisi:</span><button type="button" class="'+(!rej ? 'primary' : '')+'" data-rf="k|'+key+'|baik">Baik</button><button type="button" class="'+(rej ? 'primary' : '')+'" data-rf="k|'+key+'|reject">Reject (rusak/cacat)</button></div>'+
+      (rej ? '<label class="f" style="margin-top:6px">Alasan reject (opsional)<input data-rfa="'+key+'" value="'+esc(f.alasan)+'" placeholder="mis. bearing macet, cacat dari pabrik"></label><label class="chk" style="margin-top:6px"><input type="checkbox" data-rfg="'+key+'"'+(f.ganti ? ' checked' : '')+'> Mekanik minta ganti baru (dibuatkan pesanan)</label>'+(maint && f.ganti ? '<label class="f" style="margin-top:6px">Nama mekanik<input data-rfn="'+key+'" value="'+esc(f.nama)+'" placeholder="nama pemesan pengganti"></label>' : '') : '')+
+      '<p class="note" style="margin-top:6px">'+(rej ? 'Stok tidak bertambah dan pemakaian di riwayat mesin tidak berubah; hanya tercatat.' : 'Stok bertambah dan pemakaian di riwayat mesin dikurangi.')+'</p>'+
+      '<div class="row" style="gap:6px"><button type="button" class="primary" data-rf="s|'+key+'">Simpan pengembalian</button><button type="button" data-rf="x|'+key+'">Batal</button></div></div>';
+  }
+  function retRows(rs){ return (rs||[]).length ? '<div class="note">'+rs.map(function(r){ return new Date(r.t).toLocaleDateString("id-ID")+': '+(r.k==="reject" ? 'reject' : 'kembali')+' \u00d7'+r.q+(r.alasan ? ' ('+esc(r.alasan)+')' : '')+(r.ganti ? ' &middot; pengganti '+r.ganti : '')+(r.late ? ' &middot; lewat batas' : ''); }).join('<br>')+'</div>' : ''; }
+  function retLineHtml(ev, l){
+    var it = item(l.mat), can = lineCanReturn(l), key = "m:"+ev.id+":"+l.id, late = retLate(l.serahT);
+    return '<div class="ln"><div class="ln-main">'+thumbHtml(it)+'<div class="ln-txt"><b>'+esc(it.name)+'</b><div class="note"><span class="mono">'+it.mat+'</span> &middot; diserahkan '+l.diambil+' '+it.unit+(retText(l.rets) ? ' &middot; '+retText(l.rets) : '')+'</div>'+retRows(l.rets)+'</div></div><div class="ln-bar">'+(can>0 ? (late ? '<span class="tag warn">lewat '+RET_DAYS+' hari</span>' : '')+'<button type="button" class="sm" data-rf="open|'+key+'">Kembalikan</button>' : '<span class="tag dim">selesai dikembalikan</span>')+'</div>'+rfForm(key, can, late, true)+'</div>';
+  }
+  function doneEvs(){
+    return S.maint.events.filter(function(ev){ return ev.status==="selesai" && (Date.now()-(ev.closed||0))/86400000 <= 30 && ev.lines.some(function(l){ return !l.dilepas && (l.diambil||0)>0 && (lineCanReturn(l)>0 || (l.rets||[]).length); }); }).sort(function(a, b){ return (b.closed||0)-(a.closed||0); });
+  }
   function mlines(){ var out = []; S.maint.events.forEach(function(ev){ if(!evActive(ev)) return; ev.lines.forEach(function(l){ if(!l.dilepas) out.push({ ev:ev, l:l }); }); }); return out; }
   function prio(a, b){ var ka = (KRIT[a.l.krit]||[0,0,1])[2], kb = (KRIT[b.l.krit]||[0,0,1])[2]; if(ka!==kb) return ka-kb; return a.ev.tgl<b.ev.tgl ? -1 : a.ev.tgl>b.ev.tgl ? 1 : 0; }
   function mGroups(){
@@ -109,8 +128,8 @@ button.sm{padding:4px 10px; font-size:.78rem}
       var it = item(l.mat), out = (l.diambil||0)-(l.kembali||0), rq = RQ["k"+l.id] || out;
       var act;
       if(l.tahan>0) act = '<label class="chk"><input type="checkbox" data-siap="'+ev.id+'|'+l.id+'"'+(l.siapH ? ' checked' : '')+'> Disiapkan</label><button type="button" class="'+(hday ? 'primary' : '')+'" data-give="'+ev.id+'|'+l.id+'">Serahkan '+l.tahan+'</button>';
-      else act = '<span class="tag ok">Diserahkan '+l.diambil+(l.kembali ? ', kembali '+l.kembali : '')+'</span>'+(out>0 ? '<span class="row" style="gap:4px"><span class="note">Tidak terpakai:</span><span class="qty"><button type="button" data-kq="'+l.id+'|-1">&minus;</button><span>'+rq+'</span><button type="button" data-kq="'+l.id+'|1">+</button></span><button type="button" class="sm" data-ret="'+ev.id+'|'+l.id+'">Kembalikan ke rak</button></span>' : '');
-      return '<div class="ln"><div class="ln-main">'+thumbHtml(it)+'<div class="ln-txt"><b>'+esc(it.name)+'</b><div class="note"><span class="mono">bin '+esc(it.bin)+'</span> &middot; '+it.mat+' &middot; '+(l.tahan>0 ? 'ditahan '+l.tahan : 'dibutuhkan '+l.q)+' '+it.unit+(KRIT[l.krit] ? ' &middot; <span class="tag '+KRIT[l.krit][1]+'">'+KRIT[l.krit][0]+'</span>' : '')+'</div>'+(l.note ? '<div class="note">Catatan engineering: &ldquo;'+esc(l.note)+'&rdquo;</div>' : '')+'</div></div><div class="ln-bar">'+act+'</div></div>';
+      else act = '<span class="tag ok">Diserahkan '+l.diambil+(l.kembali ? ', kembali '+l.kembali : '')+(l.reject ? ', reject '+l.reject : '')+'</span>'+(lineCanReturn(l)>0 ? '<button type="button" class="sm" data-rf="open|m:'+ev.id+':'+l.id+'">Tidak terpakai? Kembalikan</button>' : '');
+      return '<div class="ln"><div class="ln-main">'+thumbHtml(it)+'<div class="ln-txt"><b>'+esc(it.name)+'</b><div class="note"><span class="mono">bin '+esc(it.bin)+'</span> &middot; '+it.mat+' &middot; '+(l.tahan>0 ? 'ditahan '+l.tahan : 'dibutuhkan '+l.q)+' '+it.unit+(KRIT[l.krit] ? ' &middot; <span class="tag '+KRIT[l.krit][1]+'">'+KRIT[l.krit][0]+'</span>' : '')+'</div>'+(l.note ? '<div class="note">Catatan engineering: &ldquo;'+esc(l.note)+'&rdquo;</div>' : '')+'</div></div><div class="ln-bar">'+act+'</div>'+rfForm("m:"+ev.id+":"+l.id, lineCanReturn(l), retLate(l.serahT), true)+'</div>';
     }).join("")+'</div>';
     var open = ls.filter(function(l){ return l.tahan>0; }).length;
     h += '<div class="res" style="margin-top:10px"><button type="button" data-fin="'+ev.id+'"'+(ls.length && given>0 ? '' : ' disabled')+'>Maintenance selesai</button><span class="note">'+(open ? open+' barang belum diserahkan; tahanannya dilepas saat selesai.' : 'Klik setelah barang tidak terpakai dikembalikan.')+'</span></div></div>';
@@ -129,7 +148,8 @@ button.sm{padding:4px 10px; font-size:.78rem}
   }
   function renderMaint(){
     ensureMaint(); var g = mGroups(), h = '';
-    h += '<div class="tabs"><button type="button" data-sub="tindak" class="'+(SUB==="tindak" ? "on" : "")+'">Perlu ditindak ('+g.tindak.length+')</button><button type="button" data-sub="proses" class="'+(SUB==="proses" ? "on" : "")+'">Diproses ('+g.proses.length+')</button><button type="button" data-sub="siap" class="'+(SUB==="siap" ? "on" : "")+'">Siapkan &amp; serah terima ('+g.evs.length+')</button></div>';
+    h += '<div class="tabs"><button type="button" data-sub="tindak" class="'+(SUB==="tindak" ? "on" : "")+'">Perlu ditindak ('+g.tindak.length+')</button><button type="button" data-sub="proses" class="'+(SUB==="proses" ? "on" : "")+'">Diproses ('+g.proses.length+')</button><button type="button" data-sub="siap" class="'+(SUB==="siap" ? "on" : "")+'">Siapkan &amp; serah terima ('+g.evs.length+')</button><button type="button" data-sub="selesai" class="'+(SUB==="selesai" ? "on" : "")+'">Sudah selesai ('+doneEvs().length+')</button></div>';
+    if(SUB==="selesai"){ var de = doneEvs(); h += '<p class="note" style="margin-bottom:8px">Maintenance yang sudah selesai (30 hari terakhir) dan masih ada barang yang bisa dikembalikan. Pengembalian dicatat di sini oleh tim sparepart; batas '+RET_DAYS+' hari setelah serah terima, lewat batas hanya ditandai.</p>'+(de.length ? de.map(function(ev){ return '<div class="order grp" style="margin-bottom:14px">'+evHead(ev, '<span class="tag dim">selesai</span>')+'<div class="lns">'+ev.lines.filter(function(l){ return !l.dilepas && (l.diambil||0)>0; }).map(function(l){ return retLineHtml(ev, l); }).join("")+'</div></div>'; }).join("") : '<div class="panel"><p class="note">Tidak ada barang yang perlu dikembalikan.</p></div>'); }
     if(SUB==="tindak") h += '<p class="note" style="margin-bottom:8px">Barang kosong atau kurang dari daftar maintenance. Pilih tindakan dan perkiraan datang; engineering melihatnya langsung di daftar mereka.</p>'+(g.tindak.length ? grouped(g.tindak, tindakCard) : '<div class="panel"><p class="note">Tidak ada barang yang perlu ditindak.</p></div>');
     if(SUB==="proses") h += '<p class="note" style="margin-bottom:8px">Barang yang sedang dibeli atau dicarikan padanan. Saat barang datang, klik Terima: stok bertambah dan otomatis ditahan untuk event yang membutuhkan (kritis dan hari H terdekat lebih dulu).</p>'+(g.proses.length ? grouped(g.proses, prosesCard) : '<div class="panel"><p class="note">Tidak ada yang sedang diproses.</p></div>');
     if(SUB==="siap") h += '<p class="note" style="margin-bottom:8px">Barang yang sudah ditahan untuk maintenance. Siapkan menurut bin dan centang; di hari maintenance klik Serahkan (stok berkurang). Sisa yang tidak terpakai dikembalikan ke rak, lalu klik Maintenance selesai.</p>'+(g.evs.length ? g.evs.map(siapHtml).join("") : '<div class="panel"><p class="note">Belum ada event yang perlu disiapkan.</p></div>');
@@ -190,6 +210,13 @@ button.sm{padding:4px 10px; font-size:.78rem}
     if(o.status==="siapkan"){ var all = o.items.every(function(x){ return x.got; }); h += '<div class="row"><button type="button" class="primary" data-go="'+o.id+'|siap"'+(all ? '' : ' disabled')+'>Siap diambil</button><span class="note">'+(all ? 'Semua barang sudah diambil dari rak.' : 'Centang tiap barang setelah diambil dari bin.')+'</span></div>';
     }
     if(o.status==="siap"){ var ok = o.items.every(function(x){ return x.res; }); h += '<div class="row"><button type="button" class="primary" data-close="'+o.id+'"'+(ok ? '' : ' disabled')+'>Selesaikan serah terima</button><span class="note">Cocokkan dengan barang rusak yang dibawa mekanik. Kandidat yang tidak cocok &rarr; kembali ke rak.</span></div>'; }
+    if(o.status==="selesai"){
+      var mats = []; o.items.forEach(function(x){ if(x.res==="pakai" && mats.indexOf(x.mat)<0) mats.push(x.mat); });
+      if(mats.length) h += '<div class="lns" style="margin-top:8px">'+mats.map(function(m){
+        var it = item(m), can = orderCanReturn(o, m), key = "o:"+o.id+":"+m, late = retLate(orderDoneT(o)), rs = (o.ret||[]).filter(function(r){ return r.mat===m; });
+        return '<div class="ln"><div class="ln-main"><div class="ln-txt"><b>'+esc(it.name)+'</b><div class="note"><span class="mono">'+m+'</span> &middot; dipakai '+orderTaken(o, m)+(retText(rs) ? ' &middot; '+retText(rs) : '')+'</div>'+retRows(rs)+'</div></div><div class="ln-bar">'+(can>0 ? (late ? '<span class="tag warn">lewat '+RET_DAYS+' hari</span>' : '')+'<button type="button" class="sm" data-rf="open|'+key+'">Kembalikan</button>' : '')+'</div>'+rfForm(key, can, late, false)+'</div>';
+      }).join("")+'</div>';
+    }
     if(DONE[o.id]) h += '<div class="msg show ok">Serah terima selesai. Stok berkurang untuk barang yang dipakai dan history '+esc(o.machine)+' diperbarui. Ingat catat GI di SAP (MB1A) setelah order engineering masuk.</div>';
     return h+'</div>';
   }
@@ -203,6 +230,26 @@ button.sm{padding:4px 10px; font-size:.78rem}
     if((a = t.getAttribute("data-close"))){ var o3 = orderById(a); if(o3){ closeOrder(o3); DONE[o3.id] = 1; saveState(); F = "aktif"; render(); var el = document.createElement("div"); el.className = "msg show ok"; el.innerHTML = 'Pesanan <b>'+o3.id+'</b> selesai. Lihat di tab "Selesai / batal". Ingat catat GI di SAP (MB1A).'; $("#list").prepend(el); } return; }
   });
   document.addEventListener("change", function(e){ var a = e.target.getAttribute && e.target.getAttribute("data-got"); if(!a) return; var p = a.split("|"), o = orderById(p[0]); if(o){ o.items[+p[1]].got = e.target.checked; saveState(); render(); } });
+  function rfFind(key){ var p = key.split(":"); if(p[0]==="o"){ var o = orderById(p[1]); return o ? { o:o, mat:p[2], max:orderCanReturn(o, p[2]) } : null; } var ev = eventById(p[1]), l = ev && lineById(ev, p[2]); return l ? { ev:ev, l:l, max:lineCanReturn(l) } : null; }
+  document.addEventListener("click", function(e){
+    var t = e.target.closest ? e.target.closest("button") : null; var a = t && t.getAttribute("data-rf"); if(!a) return;
+    var p = a.split("|"), act = p[0], key = p[1], r = rfFind(key); if(!r) return;
+    var f = RF[key];
+    if(act==="open"){ RF[key] = { q:r.max, k:"baik", alasan:"", ganti:false, nama:"" }; }
+    else if(act==="x"){ delete RF[key]; }
+    else if(f && act==="q"){ f.q = Math.max(1, Math.min(r.max, f.q + (+p[2]))); }
+    else if(f && act==="k"){ f.k = p[2]; }
+    else if(f && act==="s"){
+      var who = "Tim sparepart", q = Math.max(1, Math.min(r.max, f.q));
+      if(r.o) returnOrder(r.o, r.mat, q, f.k, f.alasan.trim(), who, f.ganti); else returnMaint(r.ev, r.l, q, f.k, f.alasan.trim(), who, f.ganti, f.nama.trim());
+      delete RF[key];
+    }
+    render();
+  });
+  document.addEventListener("input", function(e){ var t = e.target, k; if(!t.getAttribute) return;
+    if((k = t.getAttribute("data-rfa")) && RF[k]) RF[k].alasan = t.value;
+    if((k = t.getAttribute("data-rfn")) && RF[k]) RF[k].nama = t.value; });
+  document.addEventListener("change", function(e){ var t = e.target, k; if(t.getAttribute && (k = t.getAttribute("data-rfg")) && RF[k]){ RF[k].ganti = t.checked; render(); } });
   initStore(function(){ render(); });
   render();
 })();

@@ -311,6 +311,7 @@
           '<div class="note">'+esc(o.name)+' &middot; '+esc(machineById(o.machine).name)+(o.sec ? ' &rsaquo; '+esc(secName(o.machine, o.sec)) : '')+' &middot; '+tgFull(ymd(new Date(o.ts)))+' '+nowTime(o.ts)+(o.urgent ? ' &middot; <b style="color:var(--crit)">mendesak</b>' : '')+'</div>'+
           (o.status!=="batal" ? '<div class="steps">'+["Dikirim","Disiapkan","Siap diambil","Diserahkan"].map(function(x, k){ return '<span class="'+(k<si ? "done" : (k===si ? "now" : ""))+'">'+x+'</span>'; }).join("")+'</div>' : '')+
           '<div class="tbl-wrap"><table><tr><th>Barang</th><th>Qty</th><th></th></tr>'+o.items.map(function(x){ var it = item(x.mat); return '<tr><td>'+esc(it.name)+'<div class="note mono">'+it.mat+'</div></td><td class="mono">'+x.q+'</td><td>'+(x.cand ? '<span class="tag">kandidat</span> ' : '')+(x.res==="pakai" ? '<span class="tag ok">dipakai</span>' : (x.res==="kembali" ? '<span class="tag dim">dikembalikan</span>' : ''))+'</td></tr>'; }).join("")+'</table></div>'+
+          ((o.ret||[]).length ? '<div class="note">Dikembalikan ke gudang: '+(o.ret||[]).map(function(r){ return esc(item(r.mat).name)+' '+(r.k==="reject" ? 'reject' : 'kembali')+' \u00d7'+r.q+(r.ganti ? ' (pengganti '+r.ganti+')' : ''); }).join('; ')+'</div>' : '')+
           (o.status==="baru" ? '<div><button type="button" data-cancel="'+o.id+'">Batalkan</button></div>' : '')+'</div>';
       }).join("") : '<p class="note">Belum ada pesanan.</p>');
   }
@@ -380,4 +381,3 @@
 
 </body>
 </html>
-f:\Elvino\Kuliah UIN\Pribadi\APP\Mill Serang\PoC Application\sparepart-reservasi\sp-reservasi.html
