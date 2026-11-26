@@ -970,8 +970,8 @@ function evActive(ev){ return ev.status!=="selesai" && ev.status!=="dibatalkan";
 function eventById(id){ var L = (S.maint && S.maint.events) || []; for(var i=0;i<L.length;i++) if(L[i].id===id) return L[i]; return null; }
 function lineById(ev, id){ for(var i=0;i<ev.lines.length;i++) if(ev.lines[i].id===id) return ev.lines[i]; return null; }
 function heldOf(mat, except){ var n = 0; if(!S.maint) return 0; S.maint.events.forEach(function(ev){ if(!evActive(ev)) return; ev.lines.forEach(function(l){ if(l.mat===mat && l!==except && !l.dilepas) n += l.tahan; }); }); return n; }
-function grantedOf(mat){ var n = 0; if(!S.maint) return 0; S.maint.reqs.forEach(function(r){ if(r.mat===mat && r.status==='disetujui' && !r.diambil) n += r.q; }); return n; }
-function freeOf(mat){ return stockOf(mat) - heldOf(mat) - grantedOf(mat); }
+function grantedOf(mat){ var n = 0; if(!S.maint) return 0; S.maint.reqs.forEach(function(r){ if(r.mat===mat && r.status==='disetujui' && !r.diambil && !r.orderId) n += r.q; }); return n; }
+function freeOf(mat){ return stockOf(mat) - heldOf(mat) - reservedOf(mat) - grantedOf(mat); }
 function heldBy(mat){ var r = []; if(!S.maint) return r; S.maint.events.forEach(function(ev){ if(!evActive(ev)) return; ev.lines.forEach(function(l){ if(l.mat===mat && !l.dilepas && l.tahan>0) r.push({ ev:ev, line:l }); }); }); return r; }
 var HARI = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
 function tglMaint(s){ if(!s) return "-"; var a = s.split("-"); return HARI[new Date(+a[0], +a[1]-1, +a[2]).getDay()]+", "+tgFull(s); }
@@ -1088,7 +1088,11 @@ function requestUse(mat, q, by, note){
 function decideReq(r, ok, alasan, by){
   var ev = eventById(r.evId), l = ev && lineById(ev, r.lineId);
   r.status = ok ? "disetujui" : "ditolak"; r.alasan = alasan||""; r.by2 = by||"Pemilik event";
-  if(ok && l){ var mv = Math.min(r.q, l.tahan); r.q = mv; l.tahan -= mv; l.tunda += mv; maintLog(ev, "Pengajuan "+r.id+" disetujui: "+mv+" "+item(r.mat).name+" dilepas untuk "+r.by+"; baris kembali kurang", by); }
+  if(ok && l){ var mv = Math.min(r.q, l.tahan); r.q = mv; l.tahan -= mv; l.tunda += mv; 
+    // barang masih di gudang: pengajuan jadi pesanan biasa (order unplan) atas nama mekanik, diproses tim sparepart seperti order lain
+    var ord = mv>0 ? newOrder({ name:r.by, machine:ev.machine, note:"Dari reservasi maintenance "+ev.name+" ("+r.id+")", items:[{ mat:r.mat, q:mv }] }) : null;
+    if(ord) r.orderId = ord.id;
+    maintLog(ev, "Pengajuan "+r.id+" disetujui: "+mv+" "+item(r.mat).name+" dilepas untuk "+r.by+(ord ? ", jadi pesanan "+ord.id : "")+"; baris kembali kurang", by); }
   else if(ev) maintLog(ev, "Pengajuan "+r.id+" ditolak"+(alasan ? ": "+alasan : ""), by);
   saveState();
 }
@@ -1139,15 +1143,50 @@ function seedMaint2(){ S.maint = { seq:0, events:[], reqs:[] }; }
 // serah terima di hari maintenance: stok berkurang saat barang diserahkan ke mekanik
 function handOver(ev, l, by){
   var n = l.tahan; if(n<=0) return;
-  S.stock[l.mat] = Math.max(0, stockOf(l.mat)-n); l.diambil = (l.diambil||0)+n; l.tahan = 0; l.siapH = true;
+  S.stock[l.mat] = Math.max(0, stockOf(l.mat)-n); l.diambil = (l.diambil||0)+n; l.tahan = 0; l.siapH = true; l.serahT = Date.now();
   S.hist.push({ m:ev.machine, s:"", mat:l.mat, d:todayStr(), q:n, by:ev.id });
   maintLog(ev, "Diserahkan ke mekanik: "+item(l.mat).name+" ×"+n+" (stok berkurang)", by||"Tim sparepart"); saveState();
 }
 function returnUnused(ev, l, q, by){
-  q = Math.max(0, Math.min(q|0, (l.diambil||0)-(l.kembali||0))); if(!q) return;
+  q = Math.max(0, Math.min(q|0, (l.diambil||0)-(l.kembali||0)-(l.reject||0))); if(!q) return;
   S.stock[l.mat] = stockOf(l.mat)+q; l.kembali = (l.kembali||0)+q;
-  for(var i=S.hist.length-1;i>=0;i--){ var h = S.hist[i]; if(h.by===ev.id && h.mat===l.mat){ h.q -= q; if(h.q<=0) S.hist.splice(i,1); break; } }
-  maintLog(ev, "Tidak terpakai, kembali ke rak: "+item(l.mat).name+" ×"+q, by||"Tim sparepart"); saveState();
+  if(!evActive(ev)) l.terpakai = (l.diambil||0)-(l.kembali||0);
+  var left = q;
+  for(var i=S.hist.length-1;i>=0 && left>0;i--){ var h = S.hist[i]; if(h.by===ev.id && h.mat===l.mat){ var d = Math.min(left, h.q); h.q -= d; left -= d; if(h.q<=0) S.hist.splice(i,1); } }
+  maintLog(ev, "Tidak terpakai, kembali ke rak: "+item(l.mat).name+" \u00d7"+q, by||"Tim sparepart"); saveState();
+}
+/* ================= pengembalian barang (order unplan dan reservasi maintenance) =================
+   Dicatat petugas sparepart di loket, mekanik tidak mengajukan. Kondisi "baik": stok naik dan pemakaian di riwayat mesin turun.
+   Kondisi "reject" (rusak/cacat): stok dan riwayat tidak berubah, hanya tercatat. Batas 7 hari setelah serah terima (lewat batas = hanya ditandai). */
+var RET_DAYS = 7;
+function retLate(t){ return !!t && (Date.now()-t)/86400000 > RET_DAYS; }
+function orderDoneT(o){ for(var i=o.log.length-1;i>=0;i--) if(o.log[i].s==="selesai") return o.log[i].t; return o.ts; }
+function orderTaken(o, mat){ var n = 0; o.items.forEach(function(x){ if(x.mat===mat && x.res==="pakai") n += x.q; }); return n; }
+function orderRetN(o, mat, k){ var n = 0; (o.ret||[]).forEach(function(r){ if(r.mat===mat && (!k || r.k===k)) n += r.q; }); return n; }
+function orderCanReturn(o, mat){ return o.status==="selesai" ? Math.max(0, orderTaken(o, mat) - orderRetN(o, mat)) : 0; }
+function lineCanReturn(l){ return Math.max(0, (l.diambil||0)-(l.kembali||0)-(l.reject||0)); }
+function histMinus(by, mat, q){ for(var i=S.hist.length-1;i>=0 && q>0;i--){ var h = S.hist[i]; if(h.by===by && h.mat===mat){ var d = Math.min(q, h.q); h.q -= d; q -= d; if(h.q<=0) S.hist.splice(i,1); } } }
+function returnOrder(o, mat, q, kond, alasan, by, ganti){
+  q = Math.max(0, Math.min(q|0, orderCanReturn(o, mat))); if(!q) return null;
+  var rec = { t:Date.now(), mat:mat, q:q, k:kond==="reject" ? "reject" : "baik", alasan:alasan||"", by:by||"Tim sparepart", late:retLate(orderDoneT(o)), ganti:"" };
+  if(rec.k==="baik"){ S.stock[mat] = stockOf(mat)+q; histMinus(o.id, mat, q); }
+  else if(ganti){ var n = newOrder({ name:o.name, machine:o.machine, sec:o.sec, note:"Pengganti barang reject dari "+o.id, items:[{ mat:mat, q:q }] }); rec.ganti = n.id; }
+  (o.ret = o.ret || []).push(rec); saveState(); return rec;
+}
+function returnMaint(ev, l, q, kond, alasan, by, ganti, nama){
+  q = Math.min(q|0, lineCanReturn(l)); if(q<=0) return null;
+  var rec = { t:Date.now(), q:q, k:kond==="reject" ? "reject" : "baik", alasan:alasan||"", by:by||"Tim sparepart", late:retLate(l.serahT), ganti:"" };
+  if(rec.k==="baik") returnUnused(ev, l, q, by);
+  else {
+    l.reject = (l.reject||0)+q;
+    if(ganti){ var n = newOrder({ name:nama||"Mekanik maintenance", machine:ev.machine, note:"Pengganti barang reject dari "+ev.id, items:[{ mat:l.mat, q:q }] }); rec.ganti = n.id; }
+    maintLog(ev, "Barang reject dikembalikan: "+item(l.mat).name+" \u00d7"+q+(alasan ? " ("+alasan+")" : "")+(rec.ganti ? ", pengganti jadi pesanan "+rec.ganti : ""), by||"Tim sparepart");
+  }
+  (l.rets = l.rets || []).push(rec); saveState(); return rec;
+}
+function retText(rs){
+  var b = 0, r = 0; (rs||[]).forEach(function(x){ if(x.k==="reject") r += x.q; else b += x.q; });
+  return (b ? "dikembalikan \u00d7"+b : "")+(b && r ? ", " : "")+(r ? "reject \u00d7"+r : "");
 }
 function finishMaint(ev, by){
   ev.lines = ev.lines.filter(function(l){ return !l.draft; });
